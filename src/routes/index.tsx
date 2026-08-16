@@ -45,6 +45,48 @@ function Moon() {
   );
 }
 
+function Sun() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/* 淺色／深色模式切換按鈕。狀態直接讀寫 <html class="light">，
+   並存進 localStorage，重新整理後會記住上次選擇。 */
+function ThemeToggle() {
+  const [theme, setTheme] = useState<"dark" | "light">(() =>
+    document.documentElement.classList.contains("light") ? "light" : "dark",
+  );
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", theme === "light");
+    try {
+      localStorage.setItem("midnight-spa-theme", theme);
+    } catch {
+      // localStorage may be unavailable (e.g. private mode) — theme still
+      // works for this session, it just won't persist across reloads.
+    }
+  }, [theme]);
+
+  return (
+    <button
+      onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+      aria-label={theme === "dark" ? "切換為淺色模式" : "切換為深色模式"}
+      className="hairline flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-card text-silver transition-colors hover:text-primary"
+    >
+      {theme === "dark" ? <Sun /> : <Moon />}
+    </button>
+  );
+}
+
 function Stardust() {
   const stars = useMemo(
     () =>
@@ -115,7 +157,7 @@ function AnnouncementMarquee() {
   return (
     <div className="fixed inset-x-0 top-0 z-40 flex h-10 w-full items-center overflow-hidden border-y border-border/60 bg-card/90 backdrop-blur-md">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-card to-transparent" />
       <div className="flex w-max animate-marquee items-center gap-12 whitespace-nowrap text-xs tracking-[0.22em] text-silver/80">
         {[...announcements, ...announcements].map((text, idx) => (
           <div key={idx} className="flex shrink-0 items-center gap-3">
@@ -123,6 +165,9 @@ function AnnouncementMarquee() {
             <span>{text}</span>
           </div>
         ))}
+      </div>
+      <div className="absolute right-3 top-1/2 z-20 -translate-y-1/2">
+        <ThemeToggle />
       </div>
     </div>
   );

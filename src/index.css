@@ -7,6 +7,11 @@
   Colors are stored as raw "L C H" triplets (no oklch() wrapper) so
   tailwind.config.ts can compose them with an alpha channel via
   oklch(var(--token) / <alpha-value>).
+
+  Dark (the site's default "midnight" identity) lives on bare :root.
+  Adding a `.light` class on <html> (done by ThemeToggle in index.tsx,
+  and mirrored by the inline script in index.html to avoid a flash on
+  load) switches every token below to the light variant.
 */
 :root {
   --background: 0.15 0.02 280;
@@ -16,6 +21,7 @@
   --card-foreground: 0.93 0.01 280;
 
   --border: 1 0 0; /* combined with low alpha in .hairline for a soft hairline look */
+  --hairline-base: 1 0 0;
 
   --primary: 0.78 0.07 40; /* rose-gold accent */
   --primary-foreground: 0.16 0.02 40;
@@ -29,6 +35,28 @@
   --silver: 0.88 0.005 280;
 }
 
+:root.light {
+  --background: 0.96 0.006 85;
+  --foreground: 0.22 0.02 280;
+
+  --card: 0.99 0.004 85;
+  --card-foreground: 0.22 0.02 280;
+
+  --border: 0.85 0.01 280;
+  --hairline-base: 0 0 0;
+
+  --primary: 0.55 0.11 40; /* deeper rose-terracotta so it stays readable on white */
+  --primary-foreground: 0.98 0.01 40;
+
+  --secondary: 0.9 0.01 280;
+  --secondary-foreground: 0.3 0.02 280;
+
+  --muted: 0.92 0.01 280;
+  --muted-foreground: 0.42 0.02 280;
+
+  --silver: 0.2 0.02 280; /* headings become dark ink instead of light silver */
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -39,6 +67,9 @@
     font-family:
       "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", ui-sans-serif, system-ui,
       sans-serif;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
 
   /* Headings use the same Noto Sans TC family, but the webfont loaded in
@@ -54,9 +85,11 @@
 }
 
 @layer components {
-  /* Faint 1px border used across cards, pills and dividers. */
+  /* Faint 1px border used across cards, pills and dividers. Uses
+     --hairline-base (white on dark theme, black on light theme) so it
+     stays visible against either background. */
   .hairline {
-    border: 1px solid oklch(1 0 0 / 10%);
+    border: 1px solid oklch(var(--hairline-base) / 10%);
   }
 
   /* Rose-gold gradient text, used for headings and prices. */

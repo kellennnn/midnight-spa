@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Midnight SPA｜深夜靜謐舒壓會館</title>
+    <script>
+      // Apply the saved light/dark preference before the stylesheet paints,
+      // so switching pages/reloading never flashes the wrong theme.
+      (function () {
+        try {
+          if (localStorage.getItem("midnight-spa-theme") === "light") {
+            document.documentElement.classList.add("light");
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
