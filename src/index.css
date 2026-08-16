@@ -40,6 +40,17 @@
       "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", ui-sans-serif, system-ui,
       sans-serif;
   }
+
+  /* Headings use the same Noto Sans TC family, but the webfont loaded in
+     index.html actually ships a true 300-weight cut — unlike the system
+     fallback fonts (PingFang TC / Microsoft JhengHei), which only have
+     regular/bold and silently ignore font-light. That's what makes h1/h2
+     read as thin and refined instead of just falling back to regular. */
+  h1,
+  h2 {
+    font-weight: 300;
+    letter-spacing: 0.03em;
+  }
 }
 
 @layer components {
