@@ -1,0 +1,91 @@
+{
+  "site": {
+    "name": "Midnight SPA",
+    "lineUrl": "https://lin.ee/tcytYS7"
+  },
+  "seo": {
+    "title": "Midnight SPA｜深夜靜謐舒壓會館 24H 全年無休",
+    "description": "Midnight SPA 深夜專營的靜謐解壓空間，24 小時全年無休。專業芳療與指油壓課程、當日美容師陣容、LINE 集點會員優惠，立即預約。",
+    "ogTitle": "Midnight SPA｜深夜靜謐舒壓會館",
+    "ogDescription": "深夜裡的靜謐解壓空間，全天候為您棲息。24H 全年無休，LINE 立即預約。"
+  },
+  "announcements": [
+    "新網站上線！進店消費滿額贈好禮！",
+    "🌙 深夜時段（23:00 後）預約享專屬迎賓精油芳療",
+    "✨ 新客初次體驗，官方 LINE 領取 $300 折價券",
+    "📲 當日班表即時更新中，請透過 LINE 私訊卡位",
+    "⭐ Google 五星好評享下次療程現折 $200",
+    "🚗 憑特約停車場票券可折抵 1 小時停車費"
+  ],
+  "hero": {
+    "badge": "MIDNIGHT SPA",
+    "titleBefore": "深夜裡的",
+    "titleHighlight": "靜謐解壓",
+    "titleAfter": "空間",
+    "titleLine2": "全天候為您棲息",
+    "subtitle": "Midnight SPA｜24H 全年無休｜深夜專營"
+  },
+  "therapists": [
+    {
+      "no": "987號",
+      "name": "愛妮",
+      "photo": "/photos/therapist-1.jpg",
+      "tags": ["氣質型", "魔鬼身材", "手技絕佳"],
+      "schedule": "14:00 - 02:00",
+      "shift": "晚班",
+      "onDuty": true
+    },
+    {
+      "no": "512號",
+      "name": "夜微",
+      "photo": "/photos/therapist-2.jpg",
+      "tags": ["溫柔細膩", "深層筋膜", "芳療專精"],
+      "schedule": "10:00 - 20:00",
+      "shift": "早班",
+      "onDuty": true
+    },
+    {
+      "no": "306號",
+      "name": "月宸",
+      "photo": "/photos/therapist-3.jpg",
+      "tags": ["力道沉穩", "肩頸救星", "熟客指名"],
+      "schedule": "18:00 - 06:00",
+      "shift": "晚班",
+      "onDuty": false
+    },
+    {
+      "no": "148號",
+      "name": "星彌",
+      "photo": "/photos/therapist-4.jpg",
+      "tags": ["高冷系", "長腿名模", "熱石專門"],
+      "schedule": "12:00 - 22:00",
+      "shift": "早班",
+      "onDuty": true
+    }
+  ],
+  "services": [
+    { "name": "深夜靜謐舒壓課程", "desc": "全身指油壓，鬆解整日緊繃", "min": "50 min", "price": "NT$ 2,200" },
+    { "name": "精油芳療按摩", "desc": "客製精油調香，深層放鬆神經", "min": "100 min", "price": "NT$ 3,800" },
+    { "name": "肩頸深層修復", "desc": "針對久坐族的肩頸與上背", "min": "60 min", "price": "NT$ 2,600" },
+    { "name": "熱石暖流療程", "desc": "玄武岩熱石導入，暖身安眠", "min": "90 min", "price": "NT$ 4,200" },
+    { "name": "午夜雙人靜室", "desc": "雙人包廂，兩位芳療師同步服務", "min": "80 min", "price": "NT$ 6,800" }
+  ],
+  "membership": {
+    "cards": [
+      { "title": "一鍵登入集點", "desc": "加入 LINE 官方帳號，到店出示會員條碼即可累點。" },
+      { "title": "滿 10 次送 1 次", "desc": "集滿十點，免費贈送 50 min 深夜舒壓課程一次。" },
+      { "title": "首次體驗折抵", "desc": "初次到訪折抵 $300，Google 五星好評再享專屬優惠。" }
+    ]
+  },
+  "footer": {
+    "taglineLines": ["深夜靜謐舒壓會館", "24H 全年無休，深夜專營。"],
+    "address": "地址：台北市中山區南京東路二段 88 號 7 樓",
+    "phone": "電話：02-2500-0000",
+    "transit": "捷運南京復興站 6 號出口步行 3 分鐘",
+    "parking": "合作停車場消費即享停車折抵 2 小時",
+    "lineId": "LINE ID：@midnightspa",
+    "telegramId": "Telegram ID：@midnightspa_tw",
+    "disclaimer1": "本會館為合法正當經營之養生舒壓場所，僅提供純專業按摩服務，謝絕非法需求。",
+    "disclaimer2": "未滿 18 歲禁止進入。到店請攜帶身分證件以供查驗。"
+  }
+}

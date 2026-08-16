@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Midnight SPA design tokens.
+  Colors are stored as raw "L C H" triplets (no oklch() wrapper) so
+  tailwind.config.ts can compose them with an alpha channel via
+  oklch(var(--token) / <alpha-value>).
+*/
+:root {
+  --background: 0.15 0.02 280;
+  --foreground: 0.93 0.01 280;
+
+  --card: 0.19 0.02 280;
+  --card-foreground: 0.93 0.01 280;
+
+  --border: 1 0 0; /* combined with low alpha in .hairline for a soft hairline look */
+
+  --primary: 0.78 0.07 40; /* rose-gold accent */
+  --primary-foreground: 0.16 0.02 40;
+
+  --secondary: 0.26 0.02 280;
+  --secondary-foreground: 0.85 0.01 280;
+
+  --muted: 0.22 0.02 280;
+  --muted-foreground: 0.64 0.02 280;
+
+  --silver: 0.88 0.005 280;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family:
+      "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", ui-sans-serif, system-ui,
+      sans-serif;
+  }
+}
+
+@layer components {
+  /* Faint 1px border used across cards, pills and dividers. */
+  .hairline {
+    border: 1px solid oklch(1 0 0 / 10%);
+  }
+
+  /* Rose-gold gradient text, used for headings and prices. */
+  .text-gradient-rose {
+    @apply bg-gradient-to-r from-primary via-[oklch(0.85_0.06_55)] to-primary bg-clip-text text-transparent;
+  }
+
+  /* Subtle concentric-ripple background used behind the team & membership sections. */
+  .ripple-field {
+    background-image:
+      radial-gradient(circle at 20% 20%, oklch(0.78 0.07 40 / 6%) 0%, transparent 45%),
+      radial-gradient(circle at 80% 60%, oklch(0.78 0.07 40 / 5%) 0%, transparent 50%);
+  }
+
+  /* Soft glow-on-hover treatment for LINE CTA buttons. */
+  .glow-cta {
+    @apply transition-shadow duration-300;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  .glow-cta:hover,
+  .glow-cta:focus-visible {
+    box-shadow: 0 0 24px oklch(0.78 0.07 40 / 45%);
+  }
+
+  /* Twinkling stardust particles in the hero. */
+  .star {
+    animation: twinkle 3s ease-in-out infinite alternate;
+  }
+
+  /* Marquee animation classes */
+  .animate-marquee {
+    animation: marquee 28s linear infinite;
+  }
+
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* Keyframe animations */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0.15;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0.15;
+    transform: scale(0.8);
+  }
+}
