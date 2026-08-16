@@ -1,6 +1,6 @@
 # Generates simple gradient placeholder images so the site builds and runs
 # locally before real photography is supplied. Replace the files in
-# src/assets with real, licensed/consented photos before going live.
+# public/photos with real, licensed/consented photos before going live.
 
 Add-Type -AssemblyName System.Drawing
 
@@ -10,8 +10,7 @@ function New-GradientJpg {
         [int]$Width,
         [int]$Height,
         [string]$TopColor,
-        [string]$BottomColor,
-        [string]$Label
+        [string]$BottomColor
     )
 
     $bmp = New-Object System.Drawing.Bitmap($Width, $Height)
@@ -32,15 +31,6 @@ function New-GradientJpg {
         $g.DrawEllipse($ringPen, $cx - $r, $cy - $r, $r * 2, $r * 2)
     }
 
-    if ($Label) {
-        $font = New-Object System.Drawing.Font("Segoe UI", [Math]::Max(14, $Width / 22), [System.Drawing.FontStyle]::Regular)
-        $textBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(160, 255, 255, 255))
-        $sf = New-Object System.Drawing.StringFormat
-        $sf.Alignment = [System.Drawing.StringAlignment]::Center
-        $sf.LineAlignment = [System.Drawing.StringAlignment]::Center
-        $g.DrawString($Label, $font, $textBrush, (New-Object System.Drawing.RectangleF(0, 0, $Width, $Height)), $sf)
-    }
-
     $g.Dispose()
 
     $encoder = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq "image/jpeg" }
@@ -52,20 +42,20 @@ function New-GradientJpg {
     Write-Host "Wrote $Path"
 }
 
-$assets = Join-Path $PSScriptRoot "..\src\assets"
-New-Item -ItemType Directory -Force -Path $assets | Out-Null
+$photos = Join-Path $PSScriptRoot "..\public\photos"
+New-Item -ItemType Directory -Force -Path $photos | Out-Null
 
-New-GradientJpg -Path (Join-Path $assets "hero-ripple.jpg") -Width 1920 -Height 1088 `
-    -TopColor "#0d0d16" -BottomColor "#1a1420" -Label "PLACEHOLDER — hero-ripple"
+New-GradientJpg -Path (Join-Path $photos "hero-ripple.jpg") -Width 1920 -Height 1088 `
+    -TopColor "#0d0d16" -BottomColor "#1a1420"
 
-New-GradientJpg -Path (Join-Path $assets "therapist-1.jpg") -Width 768 -Height 1024 `
-    -TopColor "#241b2e" -BottomColor "#120f16" -Label "PLACEHOLDER`n愛妮"
+New-GradientJpg -Path (Join-Path $photos "therapist-1.jpg") -Width 768 -Height 1024 `
+    -TopColor "#241b2e" -BottomColor "#120f16"
 
-New-GradientJpg -Path (Join-Path $assets "therapist-2.jpg") -Width 768 -Height 1024 `
-    -TopColor "#20232e" -BottomColor "#101216" -Label "PLACEHOLDER`n夜微"
+New-GradientJpg -Path (Join-Path $photos "therapist-2.jpg") -Width 768 -Height 1024 `
+    -TopColor "#20232e" -BottomColor "#101216"
 
-New-GradientJpg -Path (Join-Path $assets "therapist-3.jpg") -Width 768 -Height 1024 `
-    -TopColor "#2a1e1e" -BottomColor "#140f0f" -Label "PLACEHOLDER`n月宸"
+New-GradientJpg -Path (Join-Path $photos "therapist-3.jpg") -Width 768 -Height 1024 `
+    -TopColor "#2a1e1e" -BottomColor "#140f0f"
 
-New-GradientJpg -Path (Join-Path $assets "therapist-4.jpg") -Width 768 -Height 1024 `
-    -TopColor "#1e2420" -BottomColor "#0f1210" -Label "PLACEHOLDER`n星彌"
+New-GradientJpg -Path (Join-Path $photos "therapist-4.jpg") -Width 768 -Height 1024 `
+    -TopColor "#1e2420" -BottomColor "#0f1210"
