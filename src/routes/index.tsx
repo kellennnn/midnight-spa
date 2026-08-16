@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import content from "@/content.json";
 
 export const Route = createFileRoute("/")({
@@ -23,7 +23,7 @@ type Shift = "早班" | "晚班";
 type Therapist = {
   no: string;
   name: string;
-  photo: string;
+  photos: string[];
   tags: string[];
   schedule: string;
   shift: Shift;
@@ -147,9 +147,174 @@ function FloatingLineWidget() {
   );
 }
 
+/* 人員細圖檢視視窗：顯示該人員的照片相簿 */
+function TherapistModal({
+  therapist,
+  onClose,
+}: {
+  therapist: Therapist;
+  onClose: () => void;
+}) {
+  const [zoomIndex, setZoomIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (zoomIndex !== null) setZoomIndex(null);
+      else onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [zoomIndex, onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-4 backdrop-blur-md"
+      onClick={onClose}
+    >
+      <div
+        className="hairline relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-card p-6 sm:p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          aria-label="關閉"
+          className="hairline absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-silver"
+        >
+          ✕
+        </button>
+
+        <h3 className="text-2xl font-light text-silver">
+          {therapist.no} · {therapist.name}
+        </h3>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {therapist.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full hairline px-2.5 py-1 text-[11px] text-muted-foreground"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <p className="mt-3 text-xs tracking-[0.16em] text-muted-foreground">
+          當日班表 {therapist.schedule}（{therapist.shift}）
+        </p>
+
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {therapist.photos.map((photo, i) => (
+            <button
+              key={photo}
+              onClick={() => setZoomIndex(i)}
+              aria-label={`放大檢視第 ${i + 1} 張照片`}
+              className="group relative aspect-[3/4] overflow-hidden rounded-md hairline"
+            >
+              <img
+                src={photo}
+                alt={`${therapist.name} 照片 ${i + 1}`}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-8">
+          <LineButton large>LINE 私訊預約</LineButton>
+        </div>
+      </div>
+
+      {zoomIndex !== null && (
+        <PhotoLightbox
+          photos={therapist.photos}
+          name={therapist.name}
+          index={zoomIndex}
+          onClose={() => setZoomIndex(null)}
+          onIndexChange={setZoomIndex}
+        />
+      )}
+    </div>
+  );
+}
+
+/* 單張照片放大檢視，可用左右箭頭切換同一人的其他照片 */
+function PhotoLightbox({
+  photos,
+  name,
+  index,
+  onClose,
+  onIndexChange,
+}: {
+  photos: string[];
+  name: string;
+  index: number;
+  onClose: () => void;
+  onIndexChange: (index: number) => void;
+}) {
+  const goPrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onIndexChange((index - 1 + photos.length) % photos.length);
+  };
+  const goNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onIndexChange((index + 1) % photos.length);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 p-4"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        aria-label="關閉放大檢視"
+        className="hairline absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-silver transition-colors hover:text-primary"
+      >
+        ✕
+      </button>
+
+      {photos.length > 1 && (
+        <>
+          <button
+            onClick={goPrev}
+            aria-label="上一張"
+            className="hairline absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-silver transition-colors hover:text-primary sm:left-6"
+          >
+            ‹
+          </button>
+          <button
+            onClick={goNext}
+            aria-label="下一張"
+            className="hairline absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-silver transition-colors hover:text-primary sm:right-6"
+          >
+            ›
+          </button>
+        </>
+      )}
+
+      <img
+        src={photos[index]}
+        alt={`${name} 放大照片 ${index + 1}`}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[85vh] max-w-full rounded-md object-contain"
+      />
+
+      <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] text-muted-foreground">
+        {index + 1} / {photos.length}
+      </span>
+    </div>
+  );
+}
+
 function Index() {
   const [filter, setFilter] = useState<"全部" | "今日上班中" | Shift>("全部");
   const [points, setPoints] = useState(3);
+  const [openPerson, setOpenPerson] = useState<Therapist | null>(null);
 
   const list = therapists.filter((t) =>
     filter === "全部" ? true : filter === "今日上班中" ? t.onDuty : t.shift === filter,
@@ -218,11 +383,12 @@ function Index() {
             {list.map((t) => (
               <article
                 key={t.no}
-                className="group overflow-hidden rounded-lg hairline bg-card/60 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1"
+                onClick={() => setOpenPerson(t)}
+                className="group cursor-pointer overflow-hidden rounded-lg hairline bg-card/60 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1"
               >
                 <div className="relative aspect-[3/4] overflow-hidden">
                   <img
-                    src={t.photo}
+                    src={t.photos[0]}
                     alt={`${t.no} ${t.name}`}
                     width={768}
                     height={1024}
@@ -230,6 +396,11 @@ function Index() {
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+                    <span className="rounded-full hairline bg-card/80 px-4 py-2 text-[11px] tracking-[0.18em] text-silver">
+                      查看 {t.photos.length} 張照片
+                    </span>
+                  </div>
                   <span
                     className={`absolute right-3 top-3 rounded-full px-3 py-1 text-[10px] tracking-[0.18em] ${
                       t.onDuty
@@ -257,7 +428,7 @@ function Index() {
                   <p className="mt-4 text-xs tracking-[0.16em] text-muted-foreground">
                     當日班表 {t.schedule}（{t.shift}）
                   </p>
-                  <div className="mt-5">
+                  <div className="mt-5" onClick={(e) => e.stopPropagation()}>
                     <LineButton>LINE 私訊預約</LineButton>
                   </div>
                 </div>
@@ -378,6 +549,11 @@ function Index() {
 
       {/* 右下角常駐浮動按鈕 */}
       <FloatingLineWidget />
+
+      {/* 人員細圖檢視視窗 */}
+      {openPerson && (
+        <TherapistModal therapist={openPerson} onClose={() => setOpenPerson(null)} />
+      )}
     </main>
   );
 }

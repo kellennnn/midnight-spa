@@ -29,7 +29,12 @@
     {
       "no": "987號",
       "name": "愛妮",
-      "photo": "/photos/therapist-1.jpg",
+      "photos": [
+        "/photos/therapist-1.jpg",
+        "/photos/therapist-1-2.jpg",
+        "/photos/therapist-1-3.jpg",
+        "/photos/therapist-1-4.jpg"
+      ],
       "tags": ["氣質型", "魔鬼身材", "手技絕佳"],
       "schedule": "14:00 - 02:00",
       "shift": "晚班",
@@ -38,7 +43,12 @@
     {
       "no": "512號",
       "name": "夜微",
-      "photo": "/photos/therapist-2.jpg",
+      "photos": [
+        "/photos/therapist-2.jpg",
+        "/photos/therapist-2-2.jpg",
+        "/photos/therapist-2-3.jpg",
+        "/photos/therapist-2-4.jpg"
+      ],
       "tags": ["溫柔細膩", "深層筋膜", "芳療專精"],
       "schedule": "10:00 - 20:00",
       "shift": "早班",
@@ -47,7 +57,12 @@
     {
       "no": "306號",
       "name": "月宸",
-      "photo": "/photos/therapist-3.jpg",
+      "photos": [
+        "/photos/therapist-3.jpg",
+        "/photos/therapist-3-2.jpg",
+        "/photos/therapist-3-3.jpg",
+        "/photos/therapist-3-4.jpg"
+      ],
       "tags": ["力道沉穩", "肩頸救星", "熟客指名"],
       "schedule": "18:00 - 06:00",
       "shift": "晚班",
@@ -56,7 +71,12 @@
     {
       "no": "148號",
       "name": "星彌",
-      "photo": "/photos/therapist-4.jpg",
+      "photos": [
+        "/photos/therapist-4.jpg",
+        "/photos/therapist-4-2.jpg",
+        "/photos/therapist-4-3.jpg",
+        "/photos/therapist-4-4.jpg"
+      ],
       "tags": ["高冷系", "長腿名模", "熱石專門"],
       "schedule": "12:00 - 22:00",
       "shift": "早班",
