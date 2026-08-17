@@ -127,7 +127,22 @@
     animation: twinkle 3s ease-in-out infinite alternate;
   }
   .light .star {
-    opacity: 0.3 !important;
+    opacity: 0.15 !important;
+  }
+
+  /* Hero 水波紋照片：這張圖是為深色模式做的深色漸層，淺色模式下
+     大幅降低透明度、讓漸層遮罩幾乎不透明，避免暗色照片透出來把
+     淺色背景弄髒。 */
+  .light .hero-photo {
+    opacity: 0.12;
+  }
+  .light .hero-overlay {
+    background-image: linear-gradient(
+      to bottom,
+      oklch(var(--background) / 92%),
+      oklch(var(--background) / 90%),
+      oklch(var(--background) / 100%)
+    );
   }
 
   /* 跑馬燈動畫 */

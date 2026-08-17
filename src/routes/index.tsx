@@ -420,9 +420,9 @@ function Index() {
           alt="午夜水波紋"
           width={1920}
           height={1088}
-          className="absolute inset-0 h-full w-full object-cover opacity-60"
+          className="hero-photo absolute inset-0 h-full w-full object-cover opacity-60"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
+        <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
         <Stardust />
         <div className="relative z-10 mx-auto max-w-3xl py-24 text-center">
           <div className="mb-8 inline-flex items-center gap-3 rounded-full hairline px-5 py-2 backdrop-blur-sm">
