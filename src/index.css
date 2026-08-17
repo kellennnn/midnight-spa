@@ -31,26 +31,28 @@
   --silver: 0.88 0.005 280;
 }
 
-/* 頂級 SPA 淺色模式：溫潤暖燕麥 / 晨光玫瑰金（飽和度加強版） */
+/* 頂級 SPA 淺色模式：溫潤暖燕麥 / 晨光玫瑰金（飽和度加強版）
+   所有中性色（背景/文字/邊框）統一用暖色相 H=68，只有 primary 是刻意
+   跳出來的對比色相（H=36，暖色系裡偏紅），避免冷暖色相打架。 */
 .light {
   --background: 0.96 0.018 68; /* 更飽和溫潤的暖燕麥色 */
-  --foreground: 0.22 0.015 280;
+  --foreground: 0.22 0.02 68;
 
   --card: 0.985 0.01 68;
-  --card-foreground: 0.22 0.015 280;
+  --card-foreground: 0.22 0.02 68;
 
-  --border: 0.25 0.015 280;
+  --border: 0.3 0.02 68;
 
   --primary: 0.5 0.17 36; /* 深邃絲絨玫瑰金，比原本更飽和鮮明 */
   --primary-foreground: 0.99 0.005 75;
 
   --secondary: 0.9 0.025 68;
-  --secondary-foreground: 0.35 0.02 280;
+  --secondary-foreground: 0.32 0.02 68;
 
   --muted: 0.93 0.018 68;
-  --muted-foreground: 0.48 0.015 280;
+  --muted-foreground: 0.46 0.02 68;
 
-  --silver: 0.25 0.02 280;
+  --silver: 0.22 0.02 68;
 }
 
 @layer base {
