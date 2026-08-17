@@ -422,8 +422,44 @@ function Index() {
         </div>
       </section>
 
+      {/* Booking Steps */}
+      <section id="booking" className="px-6 py-24">
+        <div className="mx-auto max-w-4xl">
+          <SectionTitle eyebrow="How To Book" title="預約流程" />
+          <div className="grid gap-8 sm:grid-cols-3">
+            {content.booking.steps.map((step, i) => (
+              <div key={step.title} className="text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full hairline text-lg text-gradient-rose">
+                  {i + 1}
+                </div>
+                <h3 className="text-base font-light text-silver">{step.title}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 flex flex-col items-center gap-6 rounded-lg hairline bg-card/70 p-8 backdrop-blur-sm sm:flex-row sm:justify-center">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=10&data=${encodeURIComponent(content.site.lineUrl)}`}
+              alt="掃描加入 LINE 預約"
+              width={140}
+              height={140}
+              loading="lazy"
+              className="h-[140px] w-[140px] rounded-md bg-white p-2"
+            />
+            <div className="text-center sm:text-left">
+              <p className="text-sm tracking-[0.16em] text-silver">掃描 QR Code 加入 LINE</p>
+              <p className="mt-1 text-xs text-muted-foreground">或直接點擊下方按鈕私訊預約</p>
+              <div className="mt-4">
+                <LineButton large>LINE 立即預約</LineButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Team */}
-      <section id="team" className="ripple-field relative overflow-hidden px-6 py-24">
+      <section id="team" className="ripple-field relative overflow-hidden border-t border-border px-6 py-24">
         <div className="relative mx-auto max-w-6xl">
           <SectionTitle eyebrow="Today's Team" title="今日服務人員陣容" />
 
@@ -504,42 +540,6 @@ function Index() {
               此條件目前無可預約人員，歡迎透過 LINE 詢問臨時班表。
             </p>
           )}
-        </div>
-      </section>
-
-      {/* Booking Steps */}
-      <section id="booking" className="border-t border-border px-6 py-24">
-        <div className="mx-auto max-w-4xl">
-          <SectionTitle eyebrow="How To Book" title="預約流程" />
-          <div className="grid gap-8 sm:grid-cols-3">
-            {content.booking.steps.map((step, i) => (
-              <div key={step.title} className="text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full hairline text-lg text-gradient-rose">
-                  {i + 1}
-                </div>
-                <h3 className="text-base font-light text-silver">{step.title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-12 flex flex-col items-center gap-6 rounded-lg hairline bg-card/70 p-8 backdrop-blur-sm sm:flex-row sm:justify-center">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=10&data=${encodeURIComponent(content.site.lineUrl)}`}
-              alt="掃描加入 LINE 預約"
-              width={140}
-              height={140}
-              loading="lazy"
-              className="h-[140px] w-[140px] rounded-md bg-white p-2"
-            />
-            <div className="text-center sm:text-left">
-              <p className="text-sm tracking-[0.16em] text-silver">掃描 QR Code 加入 LINE</p>
-              <p className="mt-1 text-xs text-muted-foreground">或直接點擊下方按鈕私訊預約</p>
-              <div className="mt-4">
-                <LineButton large>LINE 立即預約</LineButton>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
