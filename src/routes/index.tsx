@@ -150,35 +150,45 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
 }
 
 /* 置頂跑馬燈元件 */
+/* 生動升級版跑馬燈元件 */
+/* 款式一：勃艮第酒紅跑馬燈 */
 function AnnouncementMarquee() {
-  const announcements = content.announcements;
+  const announcements = [
+    { tag: "即時班表", text: "今日班表即時更新中，請透過 LINE 私訊卡位", icon: "🌙" },
+    { tag: "五星好評", text: "Google 五星好評享下次療程現折 $200", icon: "⭐" },
+    { tag: "夜間限定", text: "深夜時段（23:00 後）預約享專屬迎賓精油芳療", icon: "✨" },
+    { tag: "新客禮遇", text: "新客初次體驗，官方 LINE 領取 $300 折價券", icon: "🎁" },
+  ];
 
   return (
-    <div className="fixed inset-x-0 top-0 z-40 flex h-10 w-full items-center overflow-hidden border-b-2 border-primary/40 bg-card shadow-[0_2px_14px_rgba(0,0,0,0.18)] backdrop-blur-md">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-card to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-card to-transparent" />
-      <div className="flex w-max animate-marquee items-center gap-12 whitespace-nowrap text-xs font-medium tracking-[0.22em] text-silver">
-        {[...announcements, ...announcements].map((text, idx) => {
-          const isLatest = idx % announcements.length === 0;
-          return (
-            <div key={idx} className="group/item flex shrink-0 items-center gap-3">
-              <span className="relative flex h-1.5 w-1.5 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
-              </span>
-              {isLatest && (
-                <span className="rounded-full bg-primary px-2 py-0.5 text-[9px] font-medium tracking-[0.1em] text-primary-foreground">
-                  NEW
-                </span>
-              )}
-              <span className="transition-colors duration-300 group-hover/item:text-primary">
-                {text}
-              </span>
-            </div>
-          );
-        })}
+    <div className="fixed inset-x-0 top-0 z-40 flex h-14 w-full items-center overflow-hidden border-b-2 border-[#e07a86]/40 bg-[#220c12] shadow-[0_6px_30px_rgba(224,122,134,0.25)] backdrop-blur-lg">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#220c12] to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-[#220c12] to-transparent" />
+
+      <div className="flex w-max animate-marquee items-center gap-16 whitespace-nowrap text-sm tracking-[0.16em] text-[#fceade]">
+        {[...announcements, ...announcements].map((item, idx) => (
+          <div
+            key={idx}
+            className="group flex shrink-0 items-center gap-3 transition-all duration-300 hover:text-[#fca5a5]"
+          >
+            <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f87171] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#f87171]" />
+            </span>
+
+            <span className="rounded-full border border-[#e07a86]/50 bg-[#e07a86]/25 px-2.5 py-1 text-[11px] font-semibold tracking-[0.08em] text-[#fca5a5]">
+              {item.tag}
+            </span>
+
+            <span className="font-semibold">
+              <span className="mr-1.5 inline-block text-base">{item.icon}</span>
+              {item.text}
+            </span>
+          </div>
+        ))}
       </div>
-      <div className="absolute right-3 top-1/2 z-20 -translate-y-1/2">
+
+      <div className="absolute right-4 top-1/2 z-20 -translate-y-1/2">
         <ThemeToggle />
       </div>
     </div>
@@ -188,7 +198,7 @@ function AnnouncementMarquee() {
 /* 頂部快速選單：釘在跑馬燈下方，可橫向捲動跳到各區塊 */
 function QuickNav() {
   return (
-    <nav className="fixed inset-x-0 top-10 z-30 h-11 border-b border-border/60 bg-background/95 backdrop-blur-md">
+    <nav className="fixed inset-x-0 top-14 z-30 h-11 border-b border-border/60 bg-background/95 backdrop-blur-md">
       <div className="no-scrollbar mx-auto flex h-full max-w-6xl items-center gap-1 overflow-x-auto px-4 sm:justify-center sm:gap-2">
         {content.nav.map((item) => (
           <a
@@ -401,7 +411,7 @@ function Index() {
       {/* 置頂即時跑馬燈 + 快速選單 */}
       <AnnouncementMarquee />
       <QuickNav />
-      <div className="h-[84px]" aria-hidden="true" />
+      <div className="h-[100px]" aria-hidden="true" />
 
       {/* Hero */}
       <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden px-6">
