@@ -568,23 +568,19 @@ function Index() {
       <section id="services" className="border-t border-border px-6 py-24">
         <div className="mx-auto max-w-4xl">
           <SectionTitle eyebrow="Services & Price" title="服務項目與價目" />
-          <ul className="divide-y divide-border">
+          <div className="flex flex-wrap justify-center gap-6">
             {services.map((s) => (
-              <li
+              <div
                 key={s.name}
-                className="flex flex-col gap-2 py-6 sm:flex-row sm:items-baseline sm:justify-between"
+                className="w-full max-w-sm rounded-lg hairline bg-card/70 p-10 text-center backdrop-blur-sm"
               >
-                <div>
-                  <h3 className="text-xl font-light text-silver">{s.name}</h3>
-                  <p className="mt-1 text-xs tracking-wide text-muted-foreground">{s.desc}</p>
-                </div>
-                <div className="flex items-baseline gap-4 sm:text-right">
-                  <span className="text-xs tracking-[0.2em] text-muted-foreground">{s.min}</span>
-                  <span className="text-lg text-gradient-rose font-medium">{s.price}</span>
-                </div>
-              </li>
+                <h3 className="text-2xl font-light text-silver">{s.name}</h3>
+                <p className="mt-2 text-xs tracking-wide text-muted-foreground">{s.desc}</p>
+                <p className="mt-8 text-5xl font-medium text-gradient-rose">{s.price}</p>
+                <p className="mt-3 text-xs tracking-[0.24em] text-muted-foreground">{s.min}</p>
+              </div>
             ))}
-          </ul>
+          </div>
           <p className="mt-8 text-center text-xs text-muted-foreground">
             以上價格已含服務費，實際課程內容以現場說明為準。
           </p>
