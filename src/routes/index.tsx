@@ -158,12 +158,25 @@ function AnnouncementMarquee() {
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-card to-transparent" />
       <div className="flex w-max animate-marquee items-center gap-12 whitespace-nowrap text-xs tracking-[0.22em] text-silver/80">
-        {[...announcements, ...announcements].map((text, idx) => (
-          <div key={idx} className="flex shrink-0 items-center gap-3">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-            <span>{text}</span>
-          </div>
-        ))}
+        {[...announcements, ...announcements].map((text, idx) => {
+          const isLatest = idx % announcements.length === 0;
+          return (
+            <div key={idx} className="group/item flex shrink-0 items-center gap-3">
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+              </span>
+              {isLatest && (
+                <span className="rounded-full bg-primary px-2 py-0.5 text-[9px] font-medium tracking-[0.1em] text-primary-foreground">
+                  NEW
+                </span>
+              )}
+              <span className="transition-colors duration-300 group-hover/item:text-primary">
+                {text}
+              </span>
+            </div>
+          );
+        })}
       </div>
       <div className="absolute right-3 top-1/2 z-20 -translate-y-1/2">
         <ThemeToggle />
