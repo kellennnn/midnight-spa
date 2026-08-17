@@ -161,22 +161,22 @@ function AnnouncementMarquee() {
   ];
 
   return (
-    <div className="fixed inset-x-0 top-0 z-40 flex h-14 w-full items-center overflow-hidden border-b-2 border-[#e07a86]/40 bg-[#220c12] shadow-[0_6px_30px_rgba(224,122,134,0.25)] backdrop-blur-lg">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#220c12] to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-[#220c12] to-transparent" />
+    <div className="marquee-bar fixed inset-x-0 top-0 z-40 flex h-14 w-full items-center overflow-hidden border-b-2 border-[#e07a86]/40 bg-[#220c12] shadow-[0_6px_30px_rgba(224,122,134,0.25)] backdrop-blur-lg">
+      <div className="marquee-fade-left pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#220c12] to-transparent" />
+      <div className="marquee-fade-right pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-[#220c12] to-transparent" />
 
-      <div className="flex w-max animate-marquee items-center gap-16 whitespace-nowrap text-sm tracking-[0.16em] text-[#fceade]">
+      <div className="marquee-text flex w-max animate-marquee items-center gap-16 whitespace-nowrap text-sm tracking-[0.16em] text-[#fceade]">
         {[...announcements, ...announcements].map((item, idx) => (
           <div
             key={idx}
-            className="group flex shrink-0 items-center gap-3 transition-all duration-300 hover:text-[#fca5a5]"
+            className="marquee-item group flex shrink-0 items-center gap-3 transition-all duration-300 hover:text-[#fca5a5]"
           >
             <span className="relative flex h-2.5 w-2.5 items-center justify-center">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f87171] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#f87171]" />
+              <span className="marquee-dot-ping absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f87171] opacity-75" />
+              <span className="marquee-dot relative inline-flex h-2 w-2 rounded-full bg-[#f87171]" />
             </span>
 
-            <span className="rounded-full border border-[#e07a86]/50 bg-[#e07a86]/25 px-2.5 py-1 text-[11px] font-semibold tracking-[0.08em] text-[#fca5a5]">
+            <span className="marquee-tag rounded-full border border-[#e07a86]/50 bg-[#e07a86]/25 px-2.5 py-1 text-[11px] font-semibold tracking-[0.08em] text-[#fca5a5]">
               {item.tag}
             </span>
 

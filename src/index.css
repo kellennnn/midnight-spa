@@ -154,6 +154,35 @@
     animation-play-state: paused;
   }
 
+  /* 跑馬燈淺色模式配色：深色模式維持原本的勃艮第酒紅風格不變，
+     淺色模式改用半透明霧白底 + 香檳金邊框 + 石墨深灰字 + 金屬金標籤。 */
+  .light .marquee-bar {
+    background-color: rgb(255 255 255 / 80%);
+    border-color: rgb(229 178 146 / 40%); /* 香檳金 #e5b292 */
+    box-shadow: 0 6px 24px rgb(45 41 38 / 10%);
+  }
+  .light .marquee-fade-left {
+    background-image: linear-gradient(to right, rgb(255 255 255 / 80%), transparent);
+  }
+  .light .marquee-fade-right {
+    background-image: linear-gradient(to left, rgb(255 255 255 / 80%), transparent);
+  }
+  .light .marquee-text {
+    color: #2d2926; /* 石墨深灰 */
+  }
+  .light .marquee-item:hover {
+    color: #b87333; /* 金屬金 hover */
+  }
+  .light .marquee-tag {
+    border-color: rgb(229 178 146 / 60%);
+    background-color: rgb(229 178 146 / 25%);
+    color: #b87333; /* 金屬金標籤文字 */
+  }
+  .light .marquee-dot,
+  .light .marquee-dot-ping {
+    background-color: #b87333;
+  }
+
   /* Hides the scrollbar on the quick-nav's horizontally scrollable strip
      (still scrollable by touch/drag, just visually cleaner). */
   .no-scrollbar {
