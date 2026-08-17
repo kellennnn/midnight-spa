@@ -79,9 +79,12 @@ function ThemeToggle() {
     <button
       onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
       aria-label={theme === "dark" ? "切換為淺色模式" : "切換為深色模式"}
-      className="hairline flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-card text-silver transition-colors hover:text-primary"
+      className="group fixed bottom-6 left-6 z-50 flex items-center gap-2 rounded-full border border-primary/40 bg-card/95 px-4 py-3 shadow-[0_4px_25px_oklch(0.72_0.14_38/38%)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-primary"
     >
       {theme === "dark" ? <Sun /> : <Moon />}
+      <span className="text-xs tracking-[0.16em] text-silver group-hover:text-primary">
+        {theme === "dark" ? "淺色模式" : "深色模式"}
+      </span>
     </button>
   );
 }
@@ -186,10 +189,6 @@ function AnnouncementMarquee() {
             </span>
           </div>
         ))}
-      </div>
-
-      <div className="absolute right-4 top-1/2 z-20 -translate-y-1/2">
-        <ThemeToggle />
       </div>
     </div>
   );
@@ -714,8 +713,9 @@ function Index() {
         </div>
       </footer>
 
-      {/* 右下角常駐浮動按鈕 */}
+      {/* 右下角常駐浮動按鈕 + 左下角深淺色切換 */}
       <FloatingLineWidget />
+      <ThemeToggle />
 
       {/* 人員相簿 Modal */}
       {openPerson && (
