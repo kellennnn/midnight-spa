@@ -222,7 +222,7 @@ function FloatingLineWidget() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="LINE 即時預約"
-      className="group fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border border-primary/40 bg-card/95 px-4 py-3 shadow-[0_4px_25px_oklch(0.78_0.07_40/35%)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-primary"
+      className="group fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border border-primary/40 bg-card/95 px-4 py-3 shadow-[0_4px_25px_oklch(0.72_0.14_38/38%)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-primary"
     >
       <span className="relative flex h-3 w-3">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
@@ -609,7 +609,7 @@ function Index() {
                   onClick={() => setPoints(i + 1 === points ? i : i + 1)}
                   className={`h-8 w-8 rounded-full transition-all duration-300 ${
                     i < points
-                      ? "bg-primary shadow-[0_0_18px_oklch(0.78_0.07_40/45%)]"
+                      ? "bg-primary shadow-[0_0_18px_oklch(0.72_0.14_38/48%)]"
                       : "hairline bg-transparent"
                   }`}
                 />
