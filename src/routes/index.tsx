@@ -154,10 +154,10 @@ function AnnouncementMarquee() {
   const announcements = content.announcements;
 
   return (
-    <div className="fixed inset-x-0 top-0 z-40 flex h-10 w-full items-center overflow-hidden border-b border-border/60 bg-card/90 backdrop-blur-md">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background to-transparent" />
+    <div className="fixed inset-x-0 top-0 z-40 flex h-10 w-full items-center overflow-hidden border-b-2 border-primary/40 bg-card shadow-[0_2px_14px_rgba(0,0,0,0.18)] backdrop-blur-md">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-card to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-card to-transparent" />
-      <div className="flex w-max animate-marquee items-center gap-12 whitespace-nowrap text-xs tracking-[0.22em] text-silver/80">
+      <div className="flex w-max animate-marquee items-center gap-12 whitespace-nowrap text-xs font-medium tracking-[0.22em] text-silver">
         {[...announcements, ...announcements].map((text, idx) => {
           const isLatest = idx % announcements.length === 0;
           return (
