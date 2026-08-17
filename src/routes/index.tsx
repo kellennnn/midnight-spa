@@ -47,7 +47,7 @@ function Moon() {
 
 function Sun() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="h-4 w-4 text-primary" fill="none" aria-hidden="true">
       <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5" />
       <path
         d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"
@@ -59,20 +59,19 @@ function Sun() {
   );
 }
 
-/* 淺色／深色模式切換按鈕。狀態直接讀寫 <html class="light">，
-   並存進 localStorage，重新整理後會記住上次選擇。 */
+/* 淺色／深色模式切換按鈕 */
 function ThemeToggle() {
-  const [theme, setTheme] = useState<"dark" | "light">(() =>
-    document.documentElement.classList.contains("light") ? "light" : "dark",
-  );
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window === "undefined") return "dark";
+    return document.documentElement.classList.contains("light") ? "light" : "dark";
+  });
 
   useEffect(() => {
     document.documentElement.classList.toggle("light", theme === "light");
     try {
       localStorage.setItem("midnight-spa-theme", theme);
     } catch {
-      // localStorage may be unavailable (e.g. private mode) — theme still
-      // works for this session, it just won't persist across reloads.
+      // 容錯處理
     }
   }, [theme]);
 
@@ -131,7 +130,7 @@ function LineButton({
       rel="noopener noreferrer"
       className={
         large
-          ? "glow-cta inline-flex items-center justify-center rounded-full bg-primary px-10 py-4 text-base font-medium tracking-[0.18em] text-primary-foreground"
+          ? "glow-cta inline-flex items-center justify-center rounded-full bg-primary px-10 py-4 text-base font-medium tracking-[0.18em] text-primary-foreground shadow-sm"
           : "glow-cta inline-flex w-full items-center justify-center rounded-full border border-primary/50 bg-transparent px-5 py-2.5 text-sm tracking-[0.16em] text-primary"
       }
     >
@@ -150,12 +149,12 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   );
 }
 
-/* 跑馬燈元件 */
+/* 置頂跑馬燈元件 */
 function AnnouncementMarquee() {
   const announcements = content.announcements;
 
   return (
-    <div className="fixed inset-x-0 top-0 z-40 flex h-10 w-full items-center overflow-hidden border-y border-border/60 bg-card/90 backdrop-blur-md">
+    <div className="fixed inset-x-0 top-0 z-40 flex h-10 w-full items-center overflow-hidden border-b border-border/60 bg-card/90 backdrop-blur-md">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-card to-transparent" />
       <div className="flex w-max animate-marquee items-center gap-12 whitespace-nowrap text-xs tracking-[0.22em] text-silver/80">
@@ -173,7 +172,26 @@ function AnnouncementMarquee() {
   );
 }
 
-/* 右下角浮動按鈕元件 */
+/* 頂部快速選單：釘在跑馬燈下方，可橫向捲動跳到各區塊 */
+function QuickNav() {
+  return (
+    <nav className="fixed inset-x-0 top-10 z-30 h-11 border-b border-border/60 bg-background/95 backdrop-blur-md">
+      <div className="no-scrollbar mx-auto flex h-full max-w-6xl items-center gap-1 overflow-x-auto px-4 sm:justify-center sm:gap-2">
+        {content.nav.map((item) => (
+          <a
+            key={item.href}
+            href={item.href}
+            className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs tracking-[0.14em] text-muted-foreground transition-colors hover:bg-secondary hover:text-silver"
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+/* 右下角浮動按鈕 */
 function FloatingLineWidget() {
   return (
     <a
@@ -181,7 +199,7 @@ function FloatingLineWidget() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="LINE 即時預約"
-      className="group fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border border-primary/40 bg-card/90 px-4 py-3 shadow-[0_4px_25px_oklch(0.78_0.07_40/35%)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-primary"
+      className="group fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border border-primary/40 bg-card/95 px-4 py-3 shadow-[0_4px_25px_oklch(0.78_0.07_40/35%)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-primary"
     >
       <span className="relative flex h-3 w-3">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
@@ -192,7 +210,7 @@ function FloatingLineWidget() {
   );
 }
 
-/* 人員細圖檢視視窗：顯示該人員的照片相簿 */
+/* 人員相簿 Modal */
 function TherapistModal({
   therapist,
   onClose,
@@ -219,7 +237,7 @@ function TherapistModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-md"
       onClick={onClose}
     >
       <div
@@ -287,7 +305,7 @@ function TherapistModal({
   );
 }
 
-/* 單張照片放大檢視，可用左右箭頭切換同一人的其他照片 */
+/* 照片放大檢視燈箱 */
 function PhotoLightbox({
   photos,
   name,
@@ -349,7 +367,7 @@ function PhotoLightbox({
         className="max-h-[85vh] max-w-full rounded-md object-contain"
       />
 
-      <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] text-muted-foreground">
+      <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] text-silver/80">
         {index + 1} / {photos.length}
       </span>
     </div>
@@ -367,9 +385,10 @@ function Index() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* 最新即時活動跑馬燈：fixed 釘在最上方，隨捲動永遠可見 */}
+      {/* 置頂即時跑馬燈 + 快速選單 */}
       <AnnouncementMarquee />
-      <div className="h-10" aria-hidden="true" />
+      <QuickNav />
+      <div className="h-[84px]" aria-hidden="true" />
 
       {/* Hero */}
       <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden px-6">
@@ -404,7 +423,7 @@ function Index() {
       </section>
 
       {/* Team */}
-      <section className="ripple-field relative overflow-hidden px-6 py-24">
+      <section id="team" className="ripple-field relative overflow-hidden px-6 py-24">
         <div className="relative mx-auto max-w-6xl">
           <SectionTitle eyebrow="Today's Team" title="今日服務人員陣容" />
 
@@ -415,7 +434,7 @@ function Index() {
                 onClick={() => setFilter(f)}
                 className={`rounded-full px-6 py-2 text-xs tracking-[0.22em] transition-colors ${
                   filter === f
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground font-medium"
                     : "hairline text-muted-foreground hover:text-silver"
                 }`}
               >
@@ -429,7 +448,7 @@ function Index() {
               <article
                 key={t.no}
                 onClick={() => setOpenPerson(t)}
-                className="group cursor-pointer overflow-hidden rounded-lg hairline bg-card/60 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1"
+                className="group cursor-pointer overflow-hidden rounded-lg hairline bg-card/70 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1"
               >
                 <div className="relative aspect-[3/4] overflow-hidden">
                   <img
@@ -442,14 +461,14 @@ function Index() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
                   <div className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
-                    <span className="rounded-full hairline bg-card/80 px-4 py-2 text-[11px] tracking-[0.18em] text-silver">
+                    <span className="rounded-full hairline bg-card/90 px-4 py-2 text-[11px] tracking-[0.18em] text-silver">
                       查看 {t.photos.length} 張照片
                     </span>
                   </div>
                   <span
                     className={`absolute right-3 top-3 rounded-full px-3 py-1 text-[10px] tracking-[0.18em] ${
                       t.onDuty
-                        ? "bg-primary/90 text-primary-foreground"
+                        ? "bg-primary/90 text-primary-foreground font-medium"
                         : "bg-secondary text-muted-foreground"
                     }`}
                   >
@@ -488,8 +507,44 @@ function Index() {
         </div>
       </section>
 
+      {/* Booking Steps */}
+      <section id="booking" className="border-t border-border px-6 py-24">
+        <div className="mx-auto max-w-4xl">
+          <SectionTitle eyebrow="How To Book" title="預約流程" />
+          <div className="grid gap-8 sm:grid-cols-3">
+            {content.booking.steps.map((step, i) => (
+              <div key={step.title} className="text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full hairline text-lg text-gradient-rose">
+                  {i + 1}
+                </div>
+                <h3 className="text-base font-light text-silver">{step.title}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 flex flex-col items-center gap-6 rounded-lg hairline bg-card/70 p-8 backdrop-blur-sm sm:flex-row sm:justify-center">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=10&data=${encodeURIComponent(content.site.lineUrl)}`}
+              alt="掃描加入 LINE 預約"
+              width={140}
+              height={140}
+              loading="lazy"
+              className="h-[140px] w-[140px] rounded-md bg-white p-2"
+            />
+            <div className="text-center sm:text-left">
+              <p className="text-sm tracking-[0.16em] text-silver">掃描 QR Code 加入 LINE</p>
+              <p className="mt-1 text-xs text-muted-foreground">或直接點擊下方按鈕私訊預約</p>
+              <div className="mt-4">
+                <LineButton large>LINE 立即預約</LineButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Services */}
-      <section className="border-t border-border px-6 py-24">
+      <section id="services" className="border-t border-border px-6 py-24">
         <div className="mx-auto max-w-4xl">
           <SectionTitle eyebrow="Services & Price" title="服務項目與價目" />
           <ul className="divide-y divide-border">
@@ -504,7 +559,7 @@ function Index() {
                 </div>
                 <div className="flex items-baseline gap-4 sm:text-right">
                   <span className="text-xs tracking-[0.2em] text-muted-foreground">{s.min}</span>
-                  <span className="text-lg text-gradient-rose">{s.price}</span>
+                  <span className="text-lg text-gradient-rose font-medium">{s.price}</span>
                 </div>
               </li>
             ))}
@@ -519,7 +574,7 @@ function Index() {
       <section className="ripple-field relative overflow-hidden border-t border-border px-6 py-24">
         <div className="relative mx-auto max-w-4xl">
           <SectionTitle eyebrow="Membership" title="LINE 集點與會員禮遇" />
-          <div className="rounded-lg hairline bg-card/60 p-8 backdrop-blur-sm sm:p-12">
+          <div className="rounded-lg hairline bg-card/70 p-8 backdrop-blur-sm sm:p-12">
             <p className="text-center text-xs tracking-[0.28em] text-muted-foreground">
               目前集點 {points} / 10
             </p>
@@ -552,8 +607,53 @@ function Index() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section id="faq" className="border-t border-border px-6 py-24">
+        <div className="mx-auto max-w-3xl">
+          <SectionTitle eyebrow="FAQ" title="常見問題" />
+          <div className="space-y-3">
+            {content.faq.map((item) => (
+              <details
+                key={item.q}
+                className="group rounded-lg hairline bg-card/70 p-5 backdrop-blur-sm [&_summary::-webkit-details-marker]:hidden"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between text-sm text-silver">
+                  {item.q}
+                  <span className="ml-4 shrink-0 text-lg text-primary transition-transform duration-300 group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Map */}
+      <section id="map" className="border-t border-border px-6 py-24">
+        <div className="mx-auto max-w-4xl">
+          <SectionTitle eyebrow="Location" title="交通位置" />
+          <div className="overflow-hidden rounded-lg hairline">
+            <iframe
+              title="Midnight SPA 地圖位置"
+              src={`https://www.google.com/maps?q=${encodeURIComponent(content.footer.address)}&output=embed`}
+              width="100%"
+              height="360"
+              style={{ border: 0, display: "block" }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+          <div className="mt-6 grid gap-2 text-center text-xs leading-relaxed text-muted-foreground sm:grid-cols-2 sm:text-left">
+            <p>{content.footer.transit}</p>
+            <p>{content.footer.parking}</p>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="border-t border-border px-6 py-20">
+      <footer id="contact" className="border-t border-border px-6 py-20">
         <div className="mx-auto grid max-w-6xl gap-12 sm:grid-cols-3">
           <div>
             <div className="mb-4 flex items-center gap-3">
@@ -595,7 +695,7 @@ function Index() {
       {/* 右下角常駐浮動按鈕 */}
       <FloatingLineWidget />
 
-      {/* 人員細圖檢視視窗 */}
+      {/* 人員相簿 Modal */}
       {openPerson && (
         <TherapistModal therapist={openPerson} onClose={() => setOpenPerson(null)} />
       )}
