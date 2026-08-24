@@ -37,12 +37,7 @@
     {
       "no": "987號",
       "name": "愛妮",
-      "photos": [
-        "/photos/therapist-1.jpg",
-        "/photos/therapist-1-2.jpg",
-        "/photos/therapist-1-3.jpg",
-        "/photos/therapist-1-4.jpg"
-      ],
+      "photos": ["/photos/therapist-1.jpg"],
       "tags": ["氣質型", "魔鬼身材", "手技絕佳"],
       "schedule": "14:00 - 02:00",
       "shift": "晚班",
@@ -51,12 +46,7 @@
     {
       "no": "512號",
       "name": "夜微",
-      "photos": [
-        "/photos/therapist-2.jpg",
-        "/photos/therapist-2-2.jpg",
-        "/photos/therapist-2-3.jpg",
-        "/photos/therapist-2-4.jpg"
-      ],
+      "photos": ["/photos/therapist-2.jpg"],
       "tags": ["溫柔細膩", "深層筋膜", "芳療專精"],
       "schedule": "10:00 - 20:00",
       "shift": "早班",
@@ -65,12 +55,7 @@
     {
       "no": "306號",
       "name": "月宸",
-      "photos": [
-        "/photos/therapist-3.jpg",
-        "/photos/therapist-3-2.jpg",
-        "/photos/therapist-3-3.jpg",
-        "/photos/therapist-3-4.jpg"
-      ],
+      "photos": ["/photos/therapist-3.jpg"],
       "tags": ["力道沉穩", "肩頸救星", "熟客指名"],
       "schedule": "18:00 - 06:00",
       "shift": "晚班",
@@ -79,12 +64,7 @@
     {
       "no": "148號",
       "name": "星彌",
-      "photos": [
-        "/photos/therapist-4.jpg",
-        "/photos/therapist-4-2.jpg",
-        "/photos/therapist-4-3.jpg",
-        "/photos/therapist-4-4.jpg"
-      ],
+      "photos": ["/photos/therapist-4.jpg"],
       "tags": ["高冷系", "長腿名模", "熱石專門"],
       "schedule": "12:00 - 22:00",
       "shift": "早班",
@@ -141,7 +121,7 @@
   ],
   "footer": {
     "taglineLines": ["深夜靜謐舒壓會館", "24H 全年無休，深夜專營。"],
-    "address": "地址：台北市中山區南京東路二段 88 號 7 樓",
+    "address": "地址：324桃園市平鎮區新富里中豐路269巷2號",
     "phone": "電話：02-2500-0000",
     "transit": "捷運南京復興站 6 號出口步行 3 分鐘",
     "parking": "合作停車場消費即享停車折抵 2 小時",

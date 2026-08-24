@@ -73,7 +73,7 @@
   body {
     @apply bg-background text-foreground antialiased transition-colors duration-300;
     font-family:
-      "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", ui-sans-serif, system-ui,
+      "Iansui", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", ui-sans-serif, system-ui,
       sans-serif;
   }
 }

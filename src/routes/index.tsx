@@ -291,23 +291,23 @@ function TherapistModal({
           當日班表 {therapist.schedule}（{therapist.shift}）
         </p>
 
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {therapist.photos.map((photo, i) => (
-            <button
-              key={photo}
-              onClick={() => setZoomIndex(i)}
-              aria-label={`放大檢視第 ${i + 1} 張照片`}
-              className="group relative aspect-[3/4] overflow-hidden rounded-md hairline"
-            >
-              <img
-                src={photo}
-                alt={`${therapist.name} 照片 ${i + 1}`}
-                loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => setZoomIndex(0)}
+          aria-label="放大檢視照片"
+          className="group relative mx-auto mt-6 block aspect-[3/4] w-full max-w-xs overflow-hidden rounded-md hairline"
+        >
+          <img
+            src={therapist.photos[0]}
+            alt={therapist.name}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-background/0 opacity-0 backdrop-blur-0 transition-all duration-300 group-hover:bg-background/50 group-hover:opacity-100 group-hover:backdrop-blur-sm">
+            <span className="rounded-full hairline bg-card/90 px-4 py-2 text-[11px] tracking-[0.18em] text-silver">
+              點擊放大
+            </span>
+          </div>
+        </button>
 
         <div className="mt-8">
           <LineButton large>LINE 私訊預約</LineButton>
@@ -389,9 +389,11 @@ function PhotoLightbox({
         className="max-h-[85vh] max-w-full rounded-md object-contain"
       />
 
-      <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] text-silver/80">
-        {index + 1} / {photos.length}
-      </span>
+      {photos.length > 1 && (
+        <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] text-silver/80">
+          {index + 1} / {photos.length}
+        </span>
+      )}
     </div>
   );
 }
@@ -519,7 +521,7 @@ function Index() {
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
                     <span className="rounded-full hairline bg-card/90 px-4 py-2 text-[11px] tracking-[0.18em] text-silver">
-                      查看 {t.photos.length} 張照片
+                      查看詳細資料
                     </span>
                   </div>
                   <span
