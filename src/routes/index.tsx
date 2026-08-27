@@ -883,7 +883,6 @@ function Index() {
           <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
             <h3 className="mb-3 text-sm font-light tracking-[0.2em] text-silver">交通指引</h3>
             <p>{content.footer.address}</p>
-            <p>{content.footer.phone}</p>
             <p>{content.footer.transit}</p>
             <p>{content.footer.parking}</p>
           </div>
