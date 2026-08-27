@@ -1,8 +1,6 @@
-# Generates simple gradient placeholder images so the site builds and runs
-# locally before real photography is supplied. Replace the files in
-# public/photos with real, licensed/consented photos before going live.
-# Each therapist gets 4 variant images (therapist-N.jpg = cover, plus
-# therapist-N-2/3/4.jpg) so the detail gallery has something to show.
+# One-off: generates ONLY therapist-5.jpg .. therapist-16.jpg placeholders.
+# Does NOT touch hero-ripple.jpg or therapist-1..4.jpg (those already have
+# real photos the user uploaded).
 
 Add-Type -AssemblyName System.Drawing
 
@@ -27,7 +25,6 @@ function New-GradientJpg {
     $brush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($rect, $c1, $c2, 60)
     $g.FillRectangle($brush, $rect)
 
-    # Faint concentric ripple rings for texture
     $ringPen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(28, 255, 255, 255), 2)
     $cx = $Width * $RingCxRatio
     $cy = $Height * $RingCyRatio
@@ -47,19 +44,7 @@ function New-GradientJpg {
 }
 
 $photos = Join-Path $PSScriptRoot "..\public\photos"
-New-Item -ItemType Directory -Force -Path $photos | Out-Null
 
-New-GradientJpg -Path (Join-Path $photos "hero-ripple.jpg") -Width 1920 -Height 1088 `
-    -TopColor "#0d0d16" -BottomColor "#1a1420"
-
-# Base color pair per therapist, then 4 ring-position variants each so the
-# 4 images in one person's gallery look distinct but related.
-$therapistColors = @(
-    @{ Id = 1; Top = "#241b2e"; Bottom = "#120f16" },
-    @{ Id = 2; Top = "#20232e"; Bottom = "#101216" },
-    @{ Id = 3; Top = "#2a1e1e"; Bottom = "#140f0f" },
-    @{ Id = 4; Top = "#1e2420"; Bottom = "#0f1210" }
-)
 $ringPositions = @(
     @{ Cx = 0.5; Cy = 0.4 },
     @{ Cx = 0.3; Cy = 0.6 },
@@ -67,18 +52,6 @@ $ringPositions = @(
     @{ Cx = 0.5; Cy = 0.7 }
 )
 
-foreach ($t in $therapistColors) {
-    for ($i = 0; $i -lt $ringPositions.Length; $i++) {
-        $suffix = if ($i -eq 0) { "" } else { "-$($i + 1)" }
-        $pos = $ringPositions[$i]
-        New-GradientJpg -Path (Join-Path $photos "therapist-$($t.Id)$suffix.jpg") -Width 768 -Height 1024 `
-            -TopColor $t.Top -BottomColor $t.Bottom -RingCxRatio $pos.Cx -RingCyRatio $pos.Cy
-    }
-}
-
-# therapist-5 .. therapist-16: single cover placeholder each, for the
-# expanded 一般/進階 roster. Replace with real photos in public/photos
-# whenever they're available — same filename, just overwrite.
 $moreColors = @(
     @{ Id = 5;  Top = "#232030"; Bottom = "#121018" },
     @{ Id = 6;  Top = "#2b1f26"; Bottom = "#150f13" },

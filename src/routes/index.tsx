@@ -19,6 +19,7 @@ export const Route = createFileRoute("/")({
 const LINE_URL = content.site.lineUrl;
 
 type Shift = "早班" | "晚班";
+type Tier = "standard" | "premium";
 
 type Therapist = {
   no: string;
@@ -28,6 +29,7 @@ type Therapist = {
   schedule: string;
   shift: Shift;
   onDuty: boolean;
+  tier: Tier;
 };
 
 const therapists = content.therapists as Therapist[];
@@ -464,6 +466,62 @@ function AgeGate() {
   );
 }
 
+/* 人員卡片：一般 / 進階兩組共用同一張卡片樣式 */
+function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => void }) {
+  return (
+    <article
+      onClick={() => onOpen(t)}
+      className="group cursor-pointer overflow-hidden rounded-lg hairline bg-card/70 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1"
+    >
+      <div className="relative aspect-[3/4] overflow-hidden">
+        <img
+          src={t.photos[0]}
+          alt={`${t.no} ${t.name}`}
+          width={768}
+          height={1024}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+          <span className="rounded-full hairline bg-card/90 px-4 py-2 text-[11px] tracking-[0.18em] text-silver">
+            查看詳細資料
+          </span>
+        </div>
+        <span
+          className={`absolute right-3 top-3 rounded-full px-3 py-1 text-[10px] tracking-[0.18em] ${
+            t.onDuty
+              ? "bg-primary/90 text-primary-foreground font-medium"
+              : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          {t.onDuty ? "上班中" : "休假"}
+        </span>
+      </div>
+      <div className="p-5">
+        <h3 className="text-xl font-light text-silver">
+          {t.no} · {t.name}
+        </h3>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {t.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full hairline px-2.5 py-1 text-[11px] text-muted-foreground"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <p className="mt-4 text-xs tracking-[0.16em] text-muted-foreground">
+          當日班表 {t.schedule}（{t.shift}）
+        </p>
+        <div className="mt-5" onClick={(e) => e.stopPropagation()}>
+          <LineButton>LINE 私訊預約</LineButton>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function Index() {
   const [filter, setFilter] = useState<"全部" | "今日上班中" | Shift>("全部");
   const [points, setPoints] = useState(3);
@@ -472,6 +530,8 @@ function Index() {
   const list = therapists.filter((t) =>
     filter === "全部" ? true : filter === "今日上班中" ? t.onDuty : t.shift === filter,
   );
+  const standardList = list.filter((t) => t.tier === "standard");
+  const premiumList = list.filter((t) => t.tier === "premium");
 
   return (
     <main className="min-h-screen bg-background">
@@ -572,66 +632,39 @@ function Index() {
             ))}
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {list.map((t) => (
-              <article
-                key={t.no}
-                onClick={() => setOpenPerson(t)}
-                className="group cursor-pointer overflow-hidden rounded-lg hairline bg-card/70 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1"
-              >
-                <div className="relative aspect-[3/4] overflow-hidden">
-                  <img
-                    src={t.photos[0]}
-                    alt={`${t.no} ${t.name}`}
-                    width={768}
-                    height={1024}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
-                    <span className="rounded-full hairline bg-card/90 px-4 py-2 text-[11px] tracking-[0.18em] text-silver">
-                      查看詳細資料
-                    </span>
-                  </div>
-                  <span
-                    className={`absolute right-3 top-3 rounded-full px-3 py-1 text-[10px] tracking-[0.18em] ${
-                      t.onDuty
-                        ? "bg-primary/90 text-primary-foreground font-medium"
-                        : "bg-secondary text-muted-foreground"
-                    }`}
-                  >
-                    {t.onDuty ? "上班中" : "休假"}
-                  </span>
-                </div>
-                <div className="p-5">
-                  <h3 className="text-xl font-light text-silver">
-                    {t.no} · {t.name}
-                  </h3>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {t.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full hairline px-2.5 py-1 text-[11px] text-muted-foreground"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="mt-4 text-xs tracking-[0.16em] text-muted-foreground">
-                    當日班表 {t.schedule}（{t.shift}）
-                  </p>
-                  <div className="mt-5" onClick={(e) => e.stopPropagation()}>
-                    <LineButton>LINE 私訊預約</LineButton>
-                  </div>
-                </div>
-              </article>
-            ))}
+          {/* 一般按摩師 */}
+          <div>
+            <h3 className="mb-6 text-center text-xs uppercase tracking-[0.32em] text-muted-foreground">
+              一般按摩師 · 經典舒壓
+            </h3>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {standardList.map((t) => (
+                <TherapistCard key={t.no} t={t} onOpen={setOpenPerson} />
+              ))}
+            </div>
+            {standardList.length === 0 && (
+              <p className="mt-6 text-center text-sm text-muted-foreground">
+                此條件目前無可預約人員，歡迎透過 LINE 詢問臨時班表。
+              </p>
+            )}
           </div>
-          {list.length === 0 && (
-            <p className="mt-10 text-center text-sm text-muted-foreground">
-              此條件目前無可預約人員，歡迎透過 LINE 詢問臨時班表。
-            </p>
-          )}
+
+          {/* 進階芳療師 */}
+          <div className="mt-16">
+            <h3 className="mb-6 text-center text-xs uppercase tracking-[0.32em] text-[#E5B292]">
+              進階芳療師 · 深層調理
+            </h3>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {premiumList.map((t) => (
+                <TherapistCard key={t.no} t={t} onOpen={setOpenPerson} />
+              ))}
+            </div>
+            {premiumList.length === 0 && (
+              <p className="mt-6 text-center text-sm text-muted-foreground">
+                此條件目前無可預約人員，歡迎透過 LINE 詢問臨時班表。
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
