@@ -856,8 +856,7 @@ function Index() {
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
-          <div className="mt-6 grid gap-2 text-center text-xs leading-relaxed text-muted-foreground sm:grid-cols-2 sm:text-left">
-            <p>{content.footer.transit}</p>
+          <div className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
             <p>{content.footer.parking}</p>
           </div>
         </div>
@@ -883,7 +882,6 @@ function Index() {
           <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
             <h3 className="mb-3 text-sm font-light tracking-[0.2em] text-silver">交通指引</h3>
             <p>{content.footer.address}</p>
-            <p>{content.footer.transit}</p>
             <p>{content.footer.parking}</p>
           </div>
           <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
