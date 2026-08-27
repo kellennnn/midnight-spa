@@ -466,13 +466,29 @@ function AgeGate() {
   );
 }
 
-/* 人員卡片：一般 / 進階兩組共用同一張卡片樣式 */
-function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => void }) {
+/* 人員卡片：一般 / 進階兩組共用同一張卡片，premium 為 true 時套用香檳金
+   邊框、光暈與內框，跟進階價目卡是同一套「黑金珠寶盒」視覺語言。 */
+function TherapistCard({
+  t,
+  onOpen,
+  premium = false,
+}: {
+  t: Therapist;
+  onOpen: (t: Therapist) => void;
+  premium?: boolean;
+}) {
   return (
     <article
       onClick={() => onOpen(t)}
-      className="group cursor-pointer overflow-hidden rounded-lg hairline bg-card/70 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1"
+      className={
+        premium
+          ? "group relative cursor-pointer overflow-hidden rounded-lg border border-[#E5B292]/70 bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_25px_rgba(229,178,146,0.18)] transition-transform duration-500 hover:-translate-y-1"
+          : "group cursor-pointer overflow-hidden rounded-lg hairline bg-card/70 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1"
+      }
     >
+      {premium && (
+        <div className="pointer-events-none absolute inset-1.5 z-10 rounded-md border border-[#E5B292]/20" />
+      )}
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
           src={t.photos[0]}
@@ -497,25 +513,42 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
           {t.onDuty ? "上班中" : "休假"}
         </span>
       </div>
-      <div className="p-5">
-        <h3 className="text-xl font-light text-silver">
+      <div className="relative z-10 p-5">
+        <h3 className={`text-xl font-light ${premium ? "text-[#FCEADE]" : "text-silver"}`}>
           {t.no} · {t.name}
         </h3>
         <div className="mt-3 flex flex-wrap gap-2">
           {t.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full hairline px-2.5 py-1 text-[11px] text-muted-foreground"
+              className={
+                premium
+                  ? "rounded-full border border-[#E5B292]/40 px-2.5 py-1 text-[11px] text-[#E5B292]"
+                  : "rounded-full hairline px-2.5 py-1 text-[11px] text-muted-foreground"
+              }
             >
               {tag}
             </span>
           ))}
         </div>
-        <p className="mt-4 text-xs tracking-[0.16em] text-muted-foreground">
+        <p
+          className={`mt-4 text-xs tracking-[0.16em] ${premium ? "text-gray-300" : "text-muted-foreground"}`}
+        >
           當日班表 {t.schedule}（{t.shift}）
         </p>
         <div className="mt-5" onClick={(e) => e.stopPropagation()}>
-          <LineButton>LINE 私訊預約</LineButton>
+          {premium ? (
+            <a
+              href={LINE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glow-cta block w-full rounded-full bg-gradient-to-r from-[#E5B292] via-[#FCEADE] to-[#C68B59] py-2.5 text-center text-sm tracking-[0.16em] font-medium text-[#090a0f]"
+            >
+              LINE 私訊預約
+            </a>
+          ) : (
+            <LineButton>LINE 私訊預約</LineButton>
+          )}
         </div>
       </div>
     </article>
@@ -634,7 +667,7 @@ function Index() {
 
           {/* 一般按摩師 */}
           <div>
-            <h3 className="mb-6 text-center text-xs uppercase tracking-[0.32em] text-muted-foreground">
+            <h3 className="mb-6 text-center text-lg font-bold uppercase tracking-[0.24em] text-silver sm:text-xl">
               一般按摩師 · 經典舒壓
             </h3>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -651,12 +684,12 @@ function Index() {
 
           {/* 進階芳療師 */}
           <div className="mt-16">
-            <h3 className="mb-6 text-center text-xs uppercase tracking-[0.32em] text-[#E5B292]">
+            <h3 className="mb-6 text-center text-lg font-bold uppercase tracking-[0.24em] text-[#E5B292] sm:text-xl">
               進階芳療師 · 深層調理
             </h3>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {premiumList.map((t) => (
-                <TherapistCard key={t.no} t={t} onOpen={setOpenPerson} />
+                <TherapistCard key={t.no} t={t} onOpen={setOpenPerson} premium />
               ))}
             </div>
             {premiumList.length === 0 && (
