@@ -398,6 +398,72 @@ function PhotoLightbox({
   );
 }
 
+/* 進站年齡確認頁：擋在最上層，確認過一次後用 localStorage 記住 */
+function AgeGate() {
+  const [verified, setVerified] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return localStorage.getItem("midnight-spa-age-verified") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = verified ? previousOverflow : "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [verified]);
+
+  if (verified) return null;
+
+  const handleConfirm = () => {
+    try {
+      localStorage.setItem("midnight-spa-age-verified", "true");
+    } catch {
+      // localStorage 不可用時，本次瀏覽仍可繼續，只是下次會再問一次
+    }
+    setVerified(true);
+  };
+
+  const handleDecline = () => {
+    window.location.href = "https://www.google.com";
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background p-6">
+      <div className="hairline w-full max-w-sm rounded-lg bg-card/95 p-8 text-center backdrop-blur-md">
+        <div className="mb-6 flex items-center justify-center gap-3">
+          <Moon />
+          <span className="text-xs tracking-[0.34em] text-silver">{content.site.name}</span>
+        </div>
+        <h2 className="text-xl font-light text-silver">年齡確認</h2>
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+          本網站內容僅適合年滿 18 歲之成年人瀏覽。
+          <br />
+          請問您是否已年滿 18 歲？
+        </p>
+        <div className="mt-8 flex flex-col gap-3">
+          <button
+            onClick={handleConfirm}
+            className="glow-cta rounded-full bg-primary px-6 py-3 text-sm font-medium tracking-[0.16em] text-primary-foreground"
+          >
+            是，我已年滿 18 歲
+          </button>
+          <button
+            onClick={handleDecline}
+            className="hairline rounded-full px-6 py-3 text-sm tracking-[0.16em] text-muted-foreground transition-colors hover:text-silver"
+          >
+            否，離開網站
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Index() {
   const [filter, setFilter] = useState<"全部" | "今日上班中" | Shift>("全部");
   const [points, setPoints] = useState(3);
@@ -409,6 +475,9 @@ function Index() {
 
   return (
     <main className="min-h-screen bg-background">
+      {/* 進站年齡確認 */}
+      <AgeGate />
+
       {/* 置頂即時跑馬燈 + 快速選單 */}
       <AnnouncementMarquee />
       <QuickNav />
