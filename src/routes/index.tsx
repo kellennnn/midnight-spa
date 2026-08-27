@@ -568,18 +568,75 @@ function Index() {
 
       {/* Services */}
       <section id="services" className="border-t border-border px-6 py-24">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-xl">
           <SectionTitle eyebrow="Services & Price" title="服務項目與價目" />
-          <div className="flex flex-wrap justify-center gap-6">
+          <div className="space-y-8">
             {services.map((s) => (
               <div
                 key={s.name}
-                className="w-full max-w-sm rounded-lg hairline bg-card/70 p-10 text-center backdrop-blur-sm"
+                className={
+                  s.featured
+                    ? "relative rounded-2xl border border-[#E5B292]/70 bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] p-8 shadow-[0_0_25px_rgba(229,178,146,0.18)]"
+                    : "rounded-2xl hairline bg-card/70 p-8 backdrop-blur-sm"
+                }
               >
-                <h3 className="text-2xl font-light text-silver">{s.name}</h3>
-                <p className="mt-2 text-xs tracking-wide text-muted-foreground">{s.desc}</p>
-                <p className="mt-8 text-5xl font-medium text-gradient-rose">{s.price}</p>
-                <p className="mt-3 text-xs tracking-[0.24em] text-muted-foreground">{s.min}</p>
+                {s.featured && (
+                  <>
+                    <div className="pointer-events-none absolute inset-1.5 rounded-xl border border-[#E5B292]/20" />
+                    <span className="absolute -top-3 right-6 rounded-full border border-[#E5B292] bg-[#12131d] px-3 py-1 text-[10px] font-bold tracking-wider text-[#FCEADE] shadow-md">
+                      {s.badge}
+                    </span>
+                  </>
+                )}
+                {!s.featured && (
+                  <span className="inline-block rounded-full hairline px-3 py-1 text-[11px] tracking-[0.14em] text-muted-foreground">
+                    {s.badge}
+                  </span>
+                )}
+
+                <h3
+                  className={`relative z-10 mt-3 text-xl font-light ${s.featured ? "text-[#FCEADE]" : "text-silver"}`}
+                >
+                  {s.name}
+                </h3>
+                <p
+                  className={`relative z-10 mt-1 text-xs tracking-wide ${s.featured ? "text-[#E5B292]" : "text-muted-foreground"}`}
+                >
+                  {s.min}
+                </p>
+                <p
+                  className={`relative z-10 mt-4 text-3xl font-medium ${s.featured ? "text-[#FCEADE]" : "text-gradient-rose"}`}
+                >
+                  {s.price}
+                </p>
+
+                <ul
+                  className={`relative z-10 mt-6 space-y-2 border-t pt-5 text-xs leading-relaxed ${
+                    s.featured ? "border-white/10 text-gray-200" : "border-border text-muted-foreground"
+                  }`}
+                >
+                  {s.features.map((f) => (
+                    <li key={f} className="flex gap-2">
+                      <span className={s.featured ? "text-[#E5B292]" : "text-primary"}>✦</span>
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="relative z-10 mt-6">
+                  {s.featured ? (
+                    <a
+                      href={LINE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="glow-cta block w-full rounded-full bg-gradient-to-r from-[#E5B292] via-[#FCEADE] to-[#C68B59] py-3 text-center text-xs font-bold tracking-wider text-[#090a0f] shadow-lg transition hover:opacity-90"
+                    >
+                      預約{s.name}
+                    </a>
+                  ) : (
+                    <LineButton large>LINE 立即預約</LineButton>
+                  )}
+                </div>
               </div>
             ))}
           </div>
