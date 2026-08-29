@@ -1,8 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { Search, LogOut, Pencil, X, Check, ScanLine, CheckCircle2 } from 'lucide-react';
+import {
+  PRESSURE_OPTIONS,
+  FOCUS_AREA_OPTIONS,
+  AVOID_AREA_OPTIONS,
+  AROMA_OPTIONS,
+  INTERACTION_OPTIONS,
+  toggleInArray,
+  SinglePillGroup,
+  MultiPillGroup,
+} from '../lib/preferenceOptions';
+import { Search, LogOut, Pencil, X, Check, ScanLine, CheckCircle2, Trash2 } from 'lucide-react';
 
 export const Route = createFileRoute('/admin')({
   component: AdminComponent,
@@ -53,6 +63,7 @@ function AdminComponent() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<MemberRow>>({});
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [scannedCode, setScannedCode] = useState('');
 
   useEffect(() => {
@@ -121,6 +132,11 @@ function AdminComponent() {
       birth_day: m.birth_day,
       birth_year: m.birth_year,
       vip_level: m.vip_level,
+      pressure_preference: m.pressure_preference,
+      focus_areas: m.focus_areas,
+      avoid_areas: m.avoid_areas,
+      aroma_preference: m.aroma_preference,
+      interaction_style: m.interaction_style,
     });
   };
 
@@ -147,6 +163,28 @@ function AdminComponent() {
       setEditForm({});
     }
     setSaving(false);
+  };
+
+  const handleDelete = async (m: MemberRow) => {
+    const confirmed = window.confirm(
+      `確定要刪除「${m.real_name || m.display_name}」（${m.member_code}）的會員資料嗎？此動作無法復原。`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(m.id);
+    const { error } = await supabase.from('members').delete().eq('id', m.id);
+
+    if (error) {
+      alert('刪除失敗：' + error.message);
+      console.error(error);
+    } else {
+      setMembers((prev) => prev.filter((row) => row.id !== m.id));
+      if (editingId === m.id) {
+        setEditingId(null);
+        setEditForm({});
+      }
+    }
+    setDeletingId(null);
   };
 
   const scannedMatch = scannedCode ? members.find((m) => m.member_code === scannedCode) : null;
@@ -301,7 +339,8 @@ function AdminComponent() {
                   filtered.map((m) => {
                     const isEditing = editingId === m.id;
                     return (
-                      <tr key={m.id} className="border-t border-[#1e1f28]">
+                      <Fragment key={m.id}>
+                      <tr className="border-t border-[#1e1f28]">
                         <td className="px-3 py-2.5 font-mono text-xs text-[#d4af37]">{m.member_code}</td>
                         <td className="px-3 py-2.5">{m.display_name}</td>
                         <td className="px-3 py-2.5">
@@ -412,16 +451,81 @@ function AdminComponent() {
                               </button>
                             </div>
                           ) : (
-                            <button
-                              onClick={() => startEdit(m)}
-                              className="text-neutral-400 hover:text-[#d4af37] cursor-pointer"
-                              title="編輯"
-                            >
-                              <Pencil size={14} />
-                            </button>
+                            <div className="flex items-center justify-end gap-3">
+                              <button
+                                onClick={() => startEdit(m)}
+                                className="text-neutral-400 hover:text-[#d4af37] cursor-pointer"
+                                title="編輯"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(m)}
+                                disabled={deletingId === m.id}
+                                className="text-neutral-400 hover:text-red-400 cursor-pointer disabled:opacity-50"
+                                title="刪除"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>
+                      {isEditing && (
+                        <tr className="border-t border-[#1e1f28] bg-[#111218]">
+                          <td colSpan={8} className="px-3 py-4">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <div>
+                                <p className="text-[11px] text-neutral-400 mb-2">力道偏好</p>
+                                <SinglePillGroup
+                                  options={PRESSURE_OPTIONS}
+                                  value={editForm.pressure_preference ?? ''}
+                                  onChange={(v) => setEditForm((f) => ({ ...f, pressure_preference: v }))}
+                                />
+                              </div>
+                              <div>
+                                <p className="text-[11px] text-neutral-400 mb-2">店內互動風格</p>
+                                <SinglePillGroup
+                                  options={INTERACTION_OPTIONS}
+                                  value={editForm.interaction_style ?? ''}
+                                  onChange={(v) => setEditForm((f) => ({ ...f, interaction_style: v }))}
+                                />
+                              </div>
+                              <div>
+                                <p className="text-[11px] text-neutral-400 mb-2">希望加強部位</p>
+                                <MultiPillGroup
+                                  options={FOCUS_AREA_OPTIONS}
+                                  value={editForm.focus_areas ?? []}
+                                  onToggle={(v) =>
+                                    setEditForm((f) => ({ ...f, focus_areas: toggleInArray(f.focus_areas ?? [], v) }))
+                                  }
+                                />
+                              </div>
+                              <div>
+                                <p className="text-[11px] text-neutral-400 mb-2">希望避開部位</p>
+                                <MultiPillGroup
+                                  options={AVOID_AREA_OPTIONS}
+                                  value={editForm.avoid_areas ?? []}
+                                  onToggle={(v) =>
+                                    setEditForm((f) => ({ ...f, avoid_areas: toggleInArray(f.avoid_areas ?? [], v) }))
+                                  }
+                                />
+                              </div>
+                              <div className="sm:col-span-2">
+                                <p className="text-[11px] text-neutral-400 mb-2">芳療香氣偏好</p>
+                                <MultiPillGroup
+                                  options={AROMA_OPTIONS}
+                                  value={editForm.aroma_preference ?? []}
+                                  onToggle={(v) =>
+                                    setEditForm((f) => ({ ...f, aroma_preference: toggleInArray(f.aroma_preference ?? [], v) }))
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      </Fragment>
                     );
                   })
                 )}
