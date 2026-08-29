@@ -70,14 +70,22 @@ function MemberComponent() {
         if (liffId) {
           await liff.init({ liffId });
 
-          if (liff.isLoggedIn()) {
-            const userProfile = await liff.getProfile();
-            realProfile = {
-              userId: userProfile.userId,
-              displayName: userProfile.displayName,
-              pictureUrl: userProfile.pictureUrl,
-            };
+          if (!liff.isLoggedIn()) {
+            // 不是每次開這個網址都一定會自動帶著 LINE 登入狀態（例如直接貼網址
+            // 在瀏覽器打開、或不是從官方帳號選單點進來），這時候要主動導去 LINE
+            // 登入頁，確認是「這支手機、這個 LINE 帳號」真正是誰，而不是隨便
+            // 都當同一個訪客處理。登入完成後 LINE 會把使用者導回這一頁，
+            // 屆時 isLoggedIn() 才會是 true，所以這裡先中斷，不往下跑。
+            liff.login({ redirectUri: window.location.href });
+            return;
           }
+
+          const userProfile = await liff.getProfile();
+          realProfile = {
+            userId: userProfile.userId,
+            displayName: userProfile.displayName,
+            pictureUrl: userProfile.pictureUrl,
+          };
         }
       } catch (err) {
         console.warn('LIFF Init (Local Test Fallback):', err);
