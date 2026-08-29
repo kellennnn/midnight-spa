@@ -936,7 +936,7 @@ function AdminComponent() {
             {membersLoading ? (
               <p className="text-sm text-neutral-500">載入中...</p>
             ) : (
-              <div className="overflow-x-auto rounded-xl border border-[#2a2b36]">
+              <div className="hidden sm:block overflow-x-auto rounded-xl border border-[#2a2b36]">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-[#14151a] text-neutral-400 text-xs">
@@ -1383,6 +1383,404 @@ function AdminComponent() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {!membersLoading && (
+              <div className="sm:hidden space-y-3">
+                {filtered.length === 0 ? (
+                  <p className="text-center text-neutral-500 text-sm py-8">沒有符合的會員資料</p>
+                ) : (
+                  filtered.map((m) => {
+                    const isEditing = editingId === m.id;
+                    const idleDays = daysSince(lastVisitMap[m.id]);
+                    const hasWarning = m.is_blacklisted || (idleDays !== null && idleDays >= 45) || m.no_show_count >= 2;
+
+                    return (
+                      <div
+                        key={m.id}
+                        className={`rounded-xl border p-4 space-y-3 ${
+                          m.is_blacklisted ? 'border-red-500/40 bg-red-950/20' : 'border-[#2a2b36] bg-[#0e0f14]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-mono text-[11px] text-[#d4af37]">{m.member_code}</p>
+                            <p className="text-sm font-semibold text-neutral-100 mt-0.5">
+                              {m.real_name || m.display_name}
+                            </p>
+                            <p className="text-xs text-neutral-500">{m.display_name}</p>
+                          </div>
+                          <span className="text-xs text-[#d4af37] bg-[#d4af37]/10 px-2 py-1 rounded-full shrink-0">
+                            {m.vip_level}
+                          </span>
+                        </div>
+
+                        {hasWarning && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {m.is_blacklisted && (
+                              <span
+                                title={m.blacklist_reason || '黑名單'}
+                                className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/40"
+                              >
+                                <AlertTriangle size={10} /> 黑名單
+                              </span>
+                            )}
+                            {idleDays !== null && idleDays >= 45 && (
+                              <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 border border-yellow-500/40">
+                                <Clock size={10} /> 久未到店 {idleDays}天
+                              </span>
+                            )}
+                            {m.no_show_count >= 2 && (
+                              <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/40">
+                                <AlertTriangle size={10} /> 爽約 {m.no_show_count} 次
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {!isEditing && (
+                          <>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <p className="text-neutral-500">電話</p>
+                                <p className="text-neutral-200">{m.phone || '—'}</p>
+                              </div>
+                              <div>
+                                <p className="text-neutral-500">生日</p>
+                                <p className="text-neutral-200">{formatBirthday(m)}</p>
+                              </div>
+                            </div>
+
+                            {memberPreferenceTags(m).length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {memberPreferenceTags(m).map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="text-[10px] px-1.5 py-0.5 rounded-full border border-[#d4af37]/30 text-[#d4af37] bg-[#d4af37]/5"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-4 pt-2 border-t border-[#1e1f28]">
+                              <button
+                                onClick={() => toggleSessions(m.id)}
+                                className="flex items-center gap-1 text-xs text-neutral-400 cursor-pointer"
+                              >
+                                <Receipt size={13} /> 消費紀錄
+                              </button>
+                              {canEditAny && (
+                                <button
+                                  onClick={() => startEdit(m)}
+                                  className="flex items-center gap-1 text-xs text-neutral-400 cursor-pointer"
+                                >
+                                  <Pencil size={13} /> 編輯
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button
+                                  onClick={() => handleDelete(m)}
+                                  disabled={deletingId === m.id}
+                                  className="flex items-center gap-1 text-xs text-neutral-400 cursor-pointer disabled:opacity-50"
+                                >
+                                  <Trash2 size={13} /> 刪除
+                                </button>
+                              )}
+                            </div>
+                          </>
+                        )}
+
+                        {isEditing && (
+                          <div className="space-y-3 pt-1">
+                            {canEditBasic && (
+                              <div className="space-y-2">
+                                <input
+                                  value={editForm.real_name ?? ''}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, real_name: e.target.value }))}
+                                  placeholder="真實姓名"
+                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                />
+                                <input
+                                  value={editForm.phone ?? ''}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
+                                  placeholder="電話"
+                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                />
+                                <div className="flex gap-1.5">
+                                  <input
+                                    type="number"
+                                    placeholder="年"
+                                    value={editForm.birth_year ?? ''}
+                                    onChange={(e) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        birth_year: e.target.value ? Number(e.target.value) : null,
+                                      }))
+                                    }
+                                    className="w-1/3 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                  />
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={12}
+                                    placeholder="月"
+                                    value={editForm.birth_month ?? ''}
+                                    onChange={(e) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        birth_month: e.target.value ? Number(e.target.value) : null,
+                                      }))
+                                    }
+                                    className="w-1/3 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                  />
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={31}
+                                    placeholder="日"
+                                    value={editForm.birth_day ?? ''}
+                                    onChange={(e) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        birth_day: e.target.value ? Number(e.target.value) : null,
+                                      }))
+                                    }
+                                    className="w-1/3 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                  />
+                                </div>
+                                <input
+                                  value={editForm.vip_level ?? ''}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, vip_level: e.target.value }))}
+                                  placeholder="VIP 等級"
+                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                />
+                                <textarea
+                                  value={editForm.staff_notes ?? ''}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, staff_notes: e.target.value }))}
+                                  placeholder="師傅專用備註"
+                                  rows={2}
+                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs resize-none"
+                                />
+                                <div className="flex gap-1.5">
+                                  <div className="flex-1">
+                                    <label className="text-[10px] text-neutral-500 block mb-0.5">爽約次數</label>
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      value={editForm.no_show_count ?? 0}
+                                      onChange={(e) =>
+                                        setEditForm((f) => ({ ...f, no_show_count: Number(e.target.value) }))
+                                      }
+                                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                    />
+                                  </div>
+                                  <div className="flex-1">
+                                    <label className="text-[10px] text-neutral-500 block mb-0.5">取消次數</label>
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      value={editForm.cancellation_count ?? 0}
+                                      onChange={(e) =>
+                                        setEditForm((f) => ({ ...f, cancellation_count: Number(e.target.value) }))
+                                      }
+                                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                    />
+                                  </div>
+                                </div>
+                                <label className="flex items-center gap-1.5 text-xs text-red-300 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={editForm.is_blacklisted ?? false}
+                                    onChange={(e) => setEditForm((f) => ({ ...f, is_blacklisted: e.target.checked }))}
+                                  />
+                                  列入黑名單
+                                </label>
+                                {editForm.is_blacklisted && (
+                                  <input
+                                    value={editForm.blacklist_reason ?? ''}
+                                    onChange={(e) => setEditForm((f) => ({ ...f, blacklist_reason: e.target.value }))}
+                                    placeholder="黑名單原因"
+                                    className="w-full bg-[#1b1c24] border border-red-500/40 rounded px-2.5 py-1.5 text-xs"
+                                  />
+                                )}
+                              </div>
+                            )}
+
+                            {canEditPreferences && (
+                              <div className="space-y-3 pt-2 border-t border-[#1e1f28]">
+                                <div>
+                                  <p className="text-[11px] text-neutral-400 mb-1.5">力道偏好</p>
+                                  <SinglePillGroup
+                                    options={PRESSURE_OPTIONS}
+                                    value={editForm.pressure_preference ?? ''}
+                                    onChange={(v) => setEditForm((f) => ({ ...f, pressure_preference: v }))}
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-[11px] text-neutral-400 mb-1.5">店內互動風格</p>
+                                  <SinglePillGroup
+                                    options={INTERACTION_OPTIONS}
+                                    value={editForm.interaction_style ?? ''}
+                                    onChange={(v) => setEditForm((f) => ({ ...f, interaction_style: v }))}
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-[11px] text-neutral-400 mb-1.5">希望加強部位</p>
+                                  <MultiPillGroup
+                                    options={FOCUS_AREA_OPTIONS}
+                                    value={editForm.focus_areas ?? []}
+                                    onToggle={(v) =>
+                                      setEditForm((f) => ({ ...f, focus_areas: toggleInArray(f.focus_areas ?? [], v) }))
+                                    }
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-[11px] text-neutral-400 mb-1.5">希望避開部位</p>
+                                  <MultiPillGroup
+                                    options={AVOID_AREA_OPTIONS}
+                                    value={editForm.avoid_areas ?? []}
+                                    onToggle={(v) =>
+                                      setEditForm((f) => ({ ...f, avoid_areas: toggleInArray(f.avoid_areas ?? [], v) }))
+                                    }
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-[11px] text-neutral-400 mb-1.5">芳療香氣偏好</p>
+                                  <MultiPillGroup
+                                    options={AROMA_OPTIONS}
+                                    value={editForm.aroma_preference ?? []}
+                                    onToggle={(v) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        aroma_preference: toggleInArray(f.aroma_preference ?? [], v),
+                                      }))
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-2 pt-2 border-t border-[#1e1f28]">
+                              <button
+                                onClick={() => saveEdit(m.id)}
+                                disabled={saving}
+                                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#aa8024] text-black font-semibold disabled:opacity-50 cursor-pointer"
+                              >
+                                <Check size={13} /> {saving ? '儲存中...' : '儲存'}
+                              </button>
+                              <button
+                                onClick={cancelEdit}
+                                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-neutral-700 text-neutral-400 cursor-pointer"
+                              >
+                                <X size={13} /> 取消
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {sessionsOpenId === m.id && (
+                          <div className="pt-3 border-t border-[#1e1f28] space-y-3">
+                            <p className="text-[11px] text-neutral-400 uppercase tracking-widest">消費與服務紀錄</p>
+
+                            {canEditBasic && (
+                              <form onSubmit={(e) => handleAddLog(m.id, e)} className="space-y-2 pb-3 border-b border-[#1e1f28]">
+                                <input
+                                  type="datetime-local"
+                                  required
+                                  value={newLogForm.session_at}
+                                  onChange={(e) => setNewLogForm((f) => ({ ...f, session_at: e.target.value }))}
+                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                />
+                                <div className="flex gap-1.5">
+                                  <input
+                                    value={newLogForm.service_item}
+                                    onChange={(e) => setNewLogForm((f) => ({ ...f, service_item: e.target.value }))}
+                                    placeholder="服務項目"
+                                    className="flex-1 bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                  />
+                                  <input
+                                    value={newLogForm.therapist}
+                                    onChange={(e) => setNewLogForm((f) => ({ ...f, therapist: e.target.value }))}
+                                    placeholder="按摩師"
+                                    className="w-24 bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                  />
+                                </div>
+                                <div className="flex gap-1.5">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    value={newLogForm.amount}
+                                    onChange={(e) => setNewLogForm((f) => ({ ...f, amount: e.target.value }))}
+                                    placeholder="金額"
+                                    className="w-20 bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                  />
+                                  <input
+                                    value={newLogForm.notes}
+                                    onChange={(e) => setNewLogForm((f) => ({ ...f, notes: e.target.value }))}
+                                    placeholder="備註（選填）"
+                                    className="flex-1 bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                  />
+                                </div>
+                                <button
+                                  type="submit"
+                                  disabled={addingLog}
+                                  className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#aa8024] text-black font-semibold disabled:opacity-50 cursor-pointer"
+                                >
+                                  <Plus size={13} /> {addingLog ? '新增中...' : '新增紀錄'}
+                                </button>
+                              </form>
+                            )}
+
+                            {sessionLogsLoading && !sessionLogs[m.id] ? (
+                              <p className="text-xs text-neutral-500">載入中...</p>
+                            ) : (sessionLogs[m.id] || []).length === 0 ? (
+                              <p className="text-xs text-neutral-600">尚無消費紀錄</p>
+                            ) : (
+                              <div className="space-y-1.5">
+                                {(sessionLogs[m.id] || []).map((log) => (
+                                  <div key={log.id} className="text-xs bg-[#14151a] rounded-lg px-3 py-2 space-y-0.5">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-neutral-400">
+                                        {new Date(log.session_at).toLocaleString('zh-TW', {
+                                          year: 'numeric',
+                                          month: '2-digit',
+                                          day: '2-digit',
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                        })}
+                                      </span>
+                                      <span className="text-[#d4af37] font-semibold">
+                                        {log.amount != null ? `$${log.amount}` : '—'}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-neutral-200">
+                                        {log.service_item || '—'}
+                                        {log.therapist ? `・${log.therapist}` : ''}
+                                      </span>
+                                      {canDelete && (
+                                        <button
+                                          onClick={() => handleDeleteLog(m.id, log.id)}
+                                          className="text-neutral-500 hover:text-red-400 cursor-pointer"
+                                        >
+                                          <Trash2 size={12} />
+                                        </button>
+                                      )}
+                                    </div>
+                                    {log.notes && <p className="text-neutral-500">{log.notes}</p>}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             )}
           </>
