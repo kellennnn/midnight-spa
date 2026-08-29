@@ -12,7 +12,7 @@ import {
   SinglePillGroup,
   MultiPillGroup,
 } from '../lib/preferenceOptions';
-import { Search, LogOut, Pencil, X, Check, ScanLine, CheckCircle2, Trash2, ShieldCheck, UserPlus } from 'lucide-react';
+import { Search, LogOut, Pencil, X, Check, ScanLine, CheckCircle2, Trash2, ShieldCheck, UserPlus, Users } from 'lucide-react';
 
 export const Route = createFileRoute('/admin')({
   component: AdminComponent,
@@ -436,16 +436,9 @@ function AdminComponent() {
     <main className="min-h-screen bg-[#07080a] text-neutral-200 p-4 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-baseline gap-3">
-            <h1 className="font-serif tracking-widest text-[#f5e6c8] text-xl font-bold">
-              會員管理
-            </h1>
-            {canView && !membersLoading && (
-              <span className="text-xs text-neutral-500">
-                共 <span className="text-[#d4af37] font-semibold">{members.length}</span> 位會員
-              </span>
-            )}
-          </div>
+          <h1 className="font-serif tracking-widest text-[#f5e6c8] text-xl font-bold">
+            會員管理
+          </h1>
           <div className="flex items-center gap-4">
             {isOwner && (
               <button
@@ -463,6 +456,16 @@ function AdminComponent() {
             </button>
           </div>
         </div>
+
+        {canView && !membersLoading && (
+          <div className="flex items-center gap-5 rounded-xl border border-[#2a2b36] bg-gradient-to-r from-[#1c1e29] to-[#101117] px-6 py-5">
+            <Users size={32} className="text-[#d4af37] shrink-0" />
+            <div>
+              <p className="text-xs text-neutral-400 tracking-widest uppercase">會員總數</p>
+              <p className="text-4xl font-bold text-[#f5e6c8] mt-1 leading-none">{members.length}</p>
+            </div>
+          </div>
+        )}
 
         {isOwner && showRoster && (
           <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4 space-y-4">
