@@ -66,14 +66,16 @@ function MemberComponent() {
       };
       setLineProfile(activeProfile);
 
-      const { data } = await supabase
-        .from('members')
-        .select('*')
-        .eq('line_user_id', activeProfile.userId)
-        .maybeSingle();
+      // 用安全函式查詢，伺服器端只會回傳這個 line_user_id 對應的單一筆資料，
+      // 不會有機會撈到別人的會員資料（詳見 supabase/sql/001_lockdown_members_rls.sql）。
+      const { data, error } = await supabase.rpc('get_member_by_line_id', {
+        p_line_user_id: activeProfile.userId,
+      });
 
-      if (data) {
-        setProfile(data);
+      if (error) {
+        console.error('get_member_by_line_id failed:', error);
+      } else if (data && data.length > 0) {
+        setProfile(data[0]);
       }
 
       setLoading(false);
@@ -103,17 +105,24 @@ function MemberComponent() {
         vip_level: 'VIP',
       };
 
-      const { data, error } = await supabase
-        .from('members')
-        .insert([newMember])
-        .select()
-        .single();
+      // anon 角色現在只有 insert 權限、沒有 select 權限，insert 後沒辦法直接
+      // .select() 讀回那一列，所以改成用安全函式 get_member_by_line_id 另外撈一次。
+      const { error: insertError } = await supabase.from('members').insert([newMember]);
 
-      if (error) {
-        alert('開卡失敗：' + error.message);
-        console.error(error);
+      if (insertError) {
+        alert('開卡失敗：' + insertError.message);
+        console.error(insertError);
       } else {
-        setProfile(data);
+        const { data, error } = await supabase.rpc('get_member_by_line_id', {
+          p_line_user_id: lineProfile.userId,
+        });
+
+        if (error || !data || data.length === 0) {
+          alert('開卡成功，但讀取會員卡失敗，請重新整理頁面');
+          console.error(error);
+        } else {
+          setProfile(data[0]);
+        }
       }
     } catch (err: any) {
       alert('連線失敗：' + (err.message || '請檢查網路與資料庫設定'));
@@ -132,18 +141,22 @@ function MemberComponent() {
 
     setNicknameSubmitting(true);
     try {
-      const { data, error } = await supabase
-        .from('members')
-        .update({ display_name: trimmed, nickname_locked: true })
-        .eq('id', profile.id)
-        .select()
-        .single();
+      // 安全函式在伺服器端強制檢查 id + line_user_id 都要對得上，而且還沒改過，
+      // 就算有人繞過前端 UI 直接呼叫，也改不了別人的資料、也改不了第二次。
+      const { data, error } = await supabase.rpc('update_member_nickname', {
+        p_id: profile.id,
+        p_line_user_id: profile.line_user_id,
+        p_new_name: trimmed,
+      });
 
       if (error) {
         alert('更新暱稱失敗：' + error.message);
         console.error(error);
+      } else if (data && data.length > 0) {
+        setProfile(data[0]);
+        setEditingNickname(false);
       } else {
-        setProfile(data);
+        alert('暱稱已經修改過一次了，無法再次修改。');
         setEditingNickname(false);
       }
     } catch (err: any) {
