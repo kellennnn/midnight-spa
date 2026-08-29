@@ -328,6 +328,16 @@ function MemberComponent() {
                 <input
                   type="number"
                   required
+                  min={1900}
+                  max={new Date().getFullYear()}
+                  placeholder="年"
+                  value={birthYear}
+                  onChange={(e) => setBirthYear(e.target.value)}
+                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                />
+                <input
+                  type="number"
+                  required
                   min={1}
                   max={12}
                   placeholder="月"
@@ -343,16 +353,6 @@ function MemberComponent() {
                   placeholder="日"
                   value={birthDay}
                   onChange={(e) => setBirthDay(e.target.value)}
-                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-                />
-                <input
-                  type="number"
-                  required
-                  min={1900}
-                  max={new Date().getFullYear()}
-                  placeholder="年"
-                  value={birthYear}
-                  onChange={(e) => setBirthYear(e.target.value)}
                   className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                 />
               </div>

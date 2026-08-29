@@ -665,6 +665,18 @@ function AdminComponent() {
                                 <div className="flex gap-1">
                                   <input
                                     type="number"
+                                    placeholder="年"
+                                    value={editForm.birth_year ?? ''}
+                                    onChange={(e) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        birth_year: e.target.value ? Number(e.target.value) : null,
+                                      }))
+                                    }
+                                    className="w-14 bg-[#1b1c24] border border-neutral-700 rounded px-1.5 py-1 text-xs"
+                                  />
+                                  <input
+                                    type="number"
                                     min={1}
                                     max={12}
                                     placeholder="月"
@@ -690,18 +702,6 @@ function AdminComponent() {
                                       }))
                                     }
                                     className="w-12 bg-[#1b1c24] border border-neutral-700 rounded px-1.5 py-1 text-xs"
-                                  />
-                                  <input
-                                    type="number"
-                                    placeholder="年"
-                                    value={editForm.birth_year ?? ''}
-                                    onChange={(e) =>
-                                      setEditForm((f) => ({
-                                        ...f,
-                                        birth_year: e.target.value ? Number(e.target.value) : null,
-                                      }))
-                                    }
-                                    className="w-14 bg-[#1b1c24] border border-neutral-700 rounded px-1.5 py-1 text-xs"
                                   />
                                 </div>
                               ) : (
