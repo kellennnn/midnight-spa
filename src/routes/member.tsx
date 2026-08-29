@@ -136,6 +136,7 @@ function MemberComponent() {
   const [lineProfile, setLineProfile] = useState<{ userId: string; displayName: string; pictureUrl?: string } | null>(null);
 
   const [realName, setRealName] = useState('');
+  const [regNickname, setRegNickname] = useState('');
   const [phone, setPhone] = useState('');
   const [birthMonth, setBirthMonth] = useState('');
   const [birthDay, setBirthDay] = useState('');
@@ -181,6 +182,8 @@ function MemberComponent() {
         displayName: '體驗貴賓 (電腦預覽)',
       };
       setLineProfile(activeProfile);
+      // 開卡表單的「暱稱」欄位預設帶入 LINE 名稱，客人可以直接改成自己想顯示的名字
+      setRegNickname(activeProfile.displayName);
 
       // 用安全函式查詢，伺服器端只會回傳這個 line_user_id 對應的單一筆資料，
       // 不會有機會撈到別人的會員資料（詳見 supabase/sql/001_lockdown_members_rls.sql）。
@@ -219,7 +222,7 @@ function MemberComponent() {
         const newMember = {
           line_user_id: lineProfile.userId,
           member_code: randomCode,
-          display_name: lineProfile.displayName,
+          display_name: regNickname,
           real_name: realName,
           phone: phone,
           birth_month: Number(birthMonth),
@@ -357,14 +360,29 @@ function MemberComponent() {
 
             <div>
               <label className="text-xs text-neutral-400 flex items-center gap-1.5 mb-1.5">
-                <User size={14} /> 稱謂 / 暱稱
+                <User size={14} /> 真實姓名
+                <span className="text-neutral-600">（開通後無法修改，請務必填寫正確）</span>
               </label>
               <input
                 type="text"
                 required
                 value={realName}
                 onChange={(e) => setRealName(e.target.value)}
-                placeholder="例如：沈先生、Ken（不需要填本名）"
+                placeholder="請輸入真實姓名"
+                className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-neutral-400 flex items-center gap-1.5 mb-1.5">
+                <Sparkles size={14} /> 暱稱
+              </label>
+              <input
+                type="text"
+                required
+                value={regNickname}
+                onChange={(e) => setRegNickname(e.target.value)}
+                placeholder="例如：王小明"
                 className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
               />
             </div>
@@ -372,6 +390,7 @@ function MemberComponent() {
             <div>
               <label className="text-xs text-neutral-400 flex items-center gap-1.5 mb-1.5">
                 <Phone size={14} /> 手機號碼
+                <span className="text-neutral-600">（開通後無法修改）</span>
               </label>
               <input
                 type="tel"
@@ -385,7 +404,8 @@ function MemberComponent() {
 
             <div>
               <label className="text-xs text-neutral-400 flex items-center gap-1.5 mb-1.5">
-                <Calendar size={14} /> 生日（月／日必填，年份選填，享有專屬生日禮）
+                <Calendar size={14} /> 生日（月／日必填，年份選填）
+                <span className="text-neutral-600">（開通後無法修改）</span>
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <input
@@ -536,7 +556,7 @@ function MemberComponent() {
 
             <div className="grid grid-cols-2 gap-3 text-left">
               <div className="bg-[#171821] p-3 rounded-lg border border-neutral-800">
-                <p className="text-[11px] text-neutral-400">貴賓稱謂</p>
+                <p className="text-[11px] text-neutral-400">真實姓名</p>
                 <p className="text-sm font-semibold text-neutral-200 mt-0.5">{profile.real_name}</p>
               </div>
               <div className="bg-[#171821] p-3 rounded-lg border border-neutral-800">
