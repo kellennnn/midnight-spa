@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { Html5Qrcode } from 'html5-qrcode';
 import { supabase } from '../lib/supabase';
 import {
   PRESSURE_OPTIONS,
@@ -28,6 +29,8 @@ import {
   AlertTriangle,
   Receipt,
   Plus,
+  Camera,
+  Clock,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -56,6 +59,8 @@ interface MemberRow {
   staff_notes: string | null;
   is_blacklisted: boolean;
   blacklist_reason: string | null;
+  no_show_count: number;
+  cancellation_count: number;
 }
 
 interface SessionLog {
@@ -63,6 +68,7 @@ interface SessionLog {
   member_id: string;
   session_at: string;
   service_item: string | null;
+  notes: string | null;
   therapist: string | null;
   amount: number | null;
 }
@@ -88,6 +94,74 @@ function memberPreferenceTags(m: MemberRow) {
   ) as string[];
 }
 
+function daysSince(dateStr?: string) {
+  if (!dateStr) return null;
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+}
+
+// 掃到的內容可能是完整的 /admin?code=MID-xxxxxx 網址（正式用），
+// 也可能就是單純的代碼文字（相容舊資料），兩種都要能解析出代碼本身。
+function extractMemberCode(scanned: string) {
+  try {
+    const url = new URL(scanned);
+    const code = url.searchParams.get('code');
+    if (code) return code;
+  } catch {
+    // 不是網址格式，當作代碼本身直接使用
+  }
+  return scanned.trim();
+}
+
+function QrScannerPanel({ onScan, onClose }: { onScan: (code: string) => void; onClose: () => void }) {
+  const elementId = 'qr-reader';
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const [scanError, setScanError] = useState('');
+
+  useEffect(() => {
+    const scanner = new Html5Qrcode(elementId);
+    scannerRef.current = scanner;
+
+    scanner
+      .start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: 220 },
+        (decodedText) => {
+          onScan(extractMemberCode(decodedText));
+        },
+        () => {
+          // 每一幀掃不到都會呼叫一次，這是正常情況，不用理會
+        }
+      )
+      .catch((err) => {
+        console.error(err);
+        setScanError('無法啟動相機，請確認已允許瀏覽器使用相機權限。');
+      });
+
+    return () => {
+      scanner
+        .stop()
+        .then(() => scanner.clear())
+        .catch(() => {});
+    };
+  }, []);
+
+  return (
+    <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-semibold text-[#f5e6c8] flex items-center gap-1.5">
+          <Camera size={16} /> 相機掃描
+        </p>
+        <button onClick={onClose} className="text-neutral-400 hover:text-neutral-200 cursor-pointer">
+          <X size={16} />
+        </button>
+      </div>
+      {scanError && <p className="text-xs text-red-400 mb-2">{scanError}</p>}
+      <div id={elementId} className="rounded-lg overflow-hidden max-w-sm mx-auto" />
+      <p className="text-[11px] text-neutral-500 mt-2 text-center">把客人的會員卡 QR Code 對準鏡頭</p>
+    </div>
+  );
+}
+
 function AdminComponent() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -108,6 +182,7 @@ function AdminComponent() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [scannedCode, setScannedCode] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const [sessionsOpenId, setSessionsOpenId] = useState<string | null>(null);
   const [sessionLogs, setSessionLogs] = useState<Record<string, SessionLog[]>>({});
@@ -117,8 +192,10 @@ function AdminComponent() {
     service_item: '',
     therapist: '',
     amount: '',
+    notes: '',
   });
   const [addingLog, setAddingLog] = useState(false);
+  const [lastVisitMap, setLastVisitMap] = useState<Record<string, string>>({});
 
   const [showRoster, setShowRoster] = useState(false);
   const [adminRoster, setAdminRoster] = useState<AdminUser[]>([]);
@@ -182,6 +259,7 @@ function AdminComponent() {
   useEffect(() => {
     if (myAccess && canView) {
       loadMembers();
+      loadLastVisits();
     }
   }, [myAccess]);
 
@@ -201,6 +279,21 @@ function AdminComponent() {
       setMembers(data || []);
     }
     setMembersLoading(false);
+  };
+
+  const loadLastVisits = async () => {
+    const { data, error } = await supabase.from('session_logs').select('member_id, session_at');
+    if (error) {
+      console.error(error);
+      return;
+    }
+    const map: Record<string, string> = {};
+    (data || []).forEach((row) => {
+      if (!map[row.member_id] || row.session_at > map[row.member_id]) {
+        map[row.member_id] = row.session_at;
+      }
+    });
+    setLastVisitMap(map);
   };
 
   const loadRoster = async () => {
@@ -243,6 +336,8 @@ function AdminComponent() {
       staff_notes: m.staff_notes,
       is_blacklisted: m.is_blacklisted,
       blacklist_reason: m.blacklist_reason,
+      no_show_count: m.no_show_count,
+      cancellation_count: m.cancellation_count,
       pressure_preference: m.pressure_preference,
       focus_areas: m.focus_areas,
       avoid_areas: m.avoid_areas,
@@ -273,6 +368,8 @@ function AdminComponent() {
         p_staff_notes: editForm.staff_notes ?? null,
         p_is_blacklisted: editForm.is_blacklisted ?? false,
         p_blacklist_reason: editForm.blacklist_reason ?? null,
+        p_no_show_count: editForm.no_show_count ?? 0,
+        p_cancellation_count: editForm.cancellation_count ?? 0,
       });
       if (error) {
         alert('儲存基本資料失敗：' + error.message);
@@ -345,6 +442,7 @@ function AdminComponent() {
       service_item: '',
       therapist: '',
       amount: '',
+      notes: '',
     });
 
     if (!sessionLogs[memberId]) {
@@ -375,6 +473,7 @@ function AdminComponent() {
       p_service_item: newLogForm.service_item || null,
       p_therapist: newLogForm.therapist || null,
       p_amount: newLogForm.amount ? Number(newLogForm.amount) : null,
+      p_notes: newLogForm.notes || null,
     });
 
     if (error) {
@@ -392,6 +491,7 @@ function AdminComponent() {
         service_item: '',
         therapist: '',
         amount: '',
+        notes: '',
       });
     }
     setAddingLog(false);
@@ -588,6 +688,14 @@ function AdminComponent() {
             會員管理
           </h1>
           <div className="flex items-center gap-4">
+            {canView && (
+              <button
+                onClick={() => setScannerOpen((v) => !v)}
+                className="flex items-center gap-1.5 text-xs text-[#d4af37] hover:text-[#f5e6c8] cursor-pointer"
+              >
+                <Camera size={14} /> {scannerOpen ? '關閉相機掃描' : '相機掃描'}
+              </button>
+            )}
             {isOwner && (
               <button
                 onClick={() => setShowRoster((v) => !v)}
@@ -640,6 +748,17 @@ function AdminComponent() {
               </ResponsiveContainer>
             </div>
           </div>
+        )}
+
+        {scannerOpen && (
+          <QrScannerPanel
+            onClose={() => setScannerOpen(false)}
+            onScan={(code) => {
+              setScannerOpen(false);
+              setScannedCode(code);
+              setSearch(code);
+            }}
+          />
         )}
 
         {isOwner && showRoster && (
@@ -841,11 +960,12 @@ function AdminComponent() {
                     ) : (
                       filtered.map((m) => {
                         const isEditing = editingId === m.id;
+                        const idleDays = daysSince(lastVisitMap[m.id]);
                         return (
                           <Fragment key={m.id}>
                           <tr className={`border-t border-[#1e1f28] ${m.is_blacklisted ? 'bg-red-950/20' : ''}`}>
                             <td className="px-3 py-2.5 font-mono text-xs text-[#d4af37]">
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 {m.member_code}
                                 {m.is_blacklisted && (
                                   <span
@@ -853,6 +973,22 @@ function AdminComponent() {
                                     className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/40"
                                   >
                                     <AlertTriangle size={10} /> 黑名單
+                                  </span>
+                                )}
+                                {idleDays !== null && idleDays >= 45 && (
+                                  <span
+                                    title={`上次到店 ${idleDays} 天前`}
+                                    className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 border border-yellow-500/40"
+                                  >
+                                    <Clock size={10} /> 久未到店 {idleDays}天
+                                  </span>
+                                )}
+                                {m.no_show_count >= 2 && (
+                                  <span
+                                    title="建議下次預約先收訂金"
+                                    className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/40"
+                                  >
+                                    <AlertTriangle size={10} /> 爽約 {m.no_show_count} 次
                                   </span>
                                 )}
                               </div>
@@ -1009,7 +1145,7 @@ function AdminComponent() {
                           {isEditing && canEditBasic && (
                             <tr className="border-t border-[#1e1f28] bg-[#111218]">
                               <td colSpan={8} className="px-3 py-4">
-                                <div className="grid gap-4 sm:grid-cols-3">
+                                <div className="grid gap-4 sm:grid-cols-4">
                                   <div className="sm:col-span-2">
                                     <p className="text-[11px] text-neutral-400 mb-2">師傅專用備註</p>
                                     <textarea
@@ -1038,6 +1174,35 @@ function AdminComponent() {
                                         className="w-full bg-[#1b1c24] border border-red-500/40 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-red-400"
                                       />
                                     )}
+                                  </div>
+                                  <div>
+                                    <p className="text-[11px] text-neutral-400 mb-2">爽約 / 取消次數</p>
+                                    <div className="flex items-center gap-2">
+                                      <div>
+                                        <label className="text-[10px] text-neutral-500 block mb-1">爽約</label>
+                                        <input
+                                          type="number"
+                                          min={0}
+                                          value={editForm.no_show_count ?? 0}
+                                          onChange={(e) =>
+                                            setEditForm((f) => ({ ...f, no_show_count: Number(e.target.value) }))
+                                          }
+                                          className="w-16 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="text-[10px] text-neutral-500 block mb-1">取消</label>
+                                        <input
+                                          type="number"
+                                          min={0}
+                                          value={editForm.cancellation_count ?? 0}
+                                          onChange={(e) =>
+                                            setEditForm((f) => ({ ...f, cancellation_count: Number(e.target.value) }))
+                                          }
+                                          className="w-16 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                        />
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </td>
@@ -1149,6 +1314,15 @@ function AdminComponent() {
                                         className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs w-20"
                                       />
                                     </div>
+                                    <div>
+                                      <label className="text-[10px] text-neutral-500 block mb-1">備註</label>
+                                      <input
+                                        value={newLogForm.notes}
+                                        onChange={(e) => setNewLogForm((f) => ({ ...f, notes: e.target.value }))}
+                                        placeholder="選填"
+                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs w-32"
+                                      />
+                                    </div>
                                     <button
                                       type="submit"
                                       disabled={addingLog}
@@ -1179,7 +1353,10 @@ function AdminComponent() {
                                             minute: '2-digit',
                                           })}
                                         </span>
-                                        <span className="text-neutral-200 flex-1">{log.service_item || '—'}</span>
+                                        <span className="text-neutral-200 flex-1" title={log.notes || undefined}>
+                                          {log.service_item || '—'}
+                                          {log.notes && <span className="text-neutral-500"> ・{log.notes}</span>}
+                                        </span>
                                         <span className="text-neutral-400">{log.therapist || '—'}</span>
                                         <span className="text-[#d4af37] font-semibold w-16 text-right">
                                           {log.amount != null ? `$${log.amount}` : '—'}
