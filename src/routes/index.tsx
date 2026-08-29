@@ -811,8 +811,14 @@ function Index() {
                 </div>
               ))}
             </div>
-            <div className="mt-10 text-center">
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <LineButton large>LINE 立即預約</LineButton>
+              <a
+                href="/member"
+                className="glow-cta inline-flex items-center justify-center rounded-full border border-primary/50 bg-transparent px-10 py-4 text-base font-medium tracking-[0.18em] text-primary"
+              >
+                查看我的 VIP 會員卡
+              </a>
             </div>
           </div>
         </div>

@@ -15,7 +15,8 @@
     { "label": "服務項目", "href": "#services" },
     { "label": "常見問題", "href": "#faq" },
     { "label": "交通位置", "href": "#map" },
-    { "label": "聯絡我們", "href": "#contact" }
+    { "label": "聯絡我們", "href": "#contact" },
+    { "label": "會員卡", "href": "/member" }
   ],
   "announcements": [
     "新網站上線！進店消費滿額贈好禮！",
