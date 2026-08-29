@@ -111,6 +111,22 @@ function MemberComponent() {
       return;
     }
 
+    // 未滿 18 歲不開放註冊。資料庫也有同樣的檢查（見
+    // supabase/sql/006_require_adult_member.sql），這裡只是讓客人
+    // 馬上看到提示，不用等送出才被伺服器擋下來。
+    const birthDate = new Date(Number(birthYear), Number(birthMonth) - 1, Number(birthDay));
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const hasHadBirthdayThisYear =
+      today.getMonth() > birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+    if (!hasHadBirthdayThisYear) age -= 1;
+
+    if (age < 18) {
+      alert('很抱歉，未滿 18 歲無法開通 VIP 會員卡。');
+      return;
+    }
+
     setSubmitting(true);
     try {
       // 會員代碼是隨機抽的，理論上有極低機率跟其他會員撞號（資料庫有加 unique
@@ -128,7 +144,7 @@ function MemberComponent() {
           phone: phone,
           birth_month: Number(birthMonth),
           birth_day: Number(birthDay),
-          birth_year: birthYear ? Number(birthYear) : null,
+          birth_year: Number(birthYear),
           vip_level: 'VIP',
           // 力道偏好、加強/避開部位、香氣偏好、互動風格這些體驗偏好，
           // 客人開卡當下不用填，只能由店員之後在 /admin 後台幫忙補上。
@@ -151,7 +167,10 @@ function MemberComponent() {
       // anon 角色現在只有 insert 權限、沒有 select 權限，insert 後沒辦法直接
       // .select() 讀回那一列，所以改成用安全函式 get_member_by_line_id 另外撈一次。
       if (insertError) {
-        alert('開卡失敗：' + insertError.message);
+        const friendlyMessage = insertError.message.includes('at least 18 years old')
+          ? '很抱歉，未滿 18 歲無法開通 VIP 會員卡。'
+          : insertError.message;
+        alert('開卡失敗：' + friendlyMessage);
         console.error(insertError);
       } else {
         const { data, error } = await supabase.rpc('get_member_by_line_id', {
@@ -302,8 +321,8 @@ function MemberComponent() {
 
             <div>
               <label className="text-xs text-neutral-400 flex items-center gap-1.5 mb-1.5">
-                <Calendar size={14} /> 生日（月／日必填，年份選填）
-                <span className="text-neutral-600">（開通後無法修改）</span>
+                <Calendar size={14} /> 生日
+                <span className="text-neutral-600">（開通後無法修改，須年滿 18 歲才能開卡）</span>
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <input
@@ -328,9 +347,10 @@ function MemberComponent() {
                 />
                 <input
                   type="number"
+                  required
                   min={1900}
                   max={new Date().getFullYear()}
-                  placeholder="年（選填）"
+                  placeholder="年"
                   value={birthYear}
                   onChange={(e) => setBirthYear(e.target.value)}
                   className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
