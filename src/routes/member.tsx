@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import liff from '@line/liff';
 import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../lib/supabase';
-import { Sparkles, Crown, Phone, Calendar, User, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Crown, Phone, Calendar, User, CheckCircle2, Pencil } from 'lucide-react';
 
 export const Route = createFileRoute('/member')({
   component: MemberComponent,
@@ -18,6 +18,7 @@ interface MemberProfile {
   phone: string;
   birthday: string;
   vip_level: string;
+  nickname_locked: boolean;
 }
 
 function MemberComponent() {
@@ -29,6 +30,10 @@ function MemberComponent() {
   const [phone, setPhone] = useState('');
   const [birthday, setBirthday] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const [editingNickname, setEditingNickname] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [nicknameSubmitting, setNicknameSubmitting] = useState(false);
 
   useEffect(() => {
     const initLiff = async () => {
@@ -115,6 +120,37 @@ function MemberComponent() {
       console.error(err);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleNicknameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile || profile.nickname_locked) return;
+
+    const trimmed = nicknameInput.trim();
+    if (!trimmed) return;
+
+    setNicknameSubmitting(true);
+    try {
+      const { data, error } = await supabase
+        .from('members')
+        .update({ display_name: trimmed, nickname_locked: true })
+        .eq('id', profile.id)
+        .select()
+        .single();
+
+      if (error) {
+        alert('更新暱稱失敗：' + error.message);
+        console.error(error);
+      } else {
+        setProfile(data);
+        setEditingNickname(false);
+      }
+    } catch (err: any) {
+      alert('連線失敗：' + (err.message || '請稍後再試'));
+      console.error(err);
+    } finally {
+      setNicknameSubmitting(false);
     }
   };
 
@@ -211,6 +247,55 @@ function MemberComponent() {
           </form>
         ) : (
           <div className="space-y-6 text-center">
+            <div>
+              {editingNickname ? (
+                <form onSubmit={handleNicknameSubmit} className="flex items-center justify-center gap-2">
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    maxLength={20}
+                    value={nicknameInput}
+                    onChange={(e) => setNicknameInput(e.target.value)}
+                    className="flex-1 max-w-[180px] bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                  />
+                  <button
+                    type="submit"
+                    disabled={nicknameSubmitting}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#aa8024] text-black font-semibold disabled:opacity-50 cursor-pointer"
+                  >
+                    {nicknameSubmitting ? '儲存中...' : '儲存'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingNickname(false)}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-neutral-700 text-neutral-400 cursor-pointer"
+                  >
+                    取消
+                  </button>
+                </form>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-sm font-medium text-neutral-100">{profile.display_name}</span>
+                  {!profile.nickname_locked && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNicknameInput(profile.display_name);
+                        setEditingNickname(true);
+                      }}
+                      className="flex items-center gap-1 text-[11px] text-[#d4af37] cursor-pointer"
+                    >
+                      <Pencil size={11} /> 編輯暱稱
+                    </button>
+                  )}
+                </div>
+              )}
+              {profile.nickname_locked && (
+                <p className="text-[11px] text-neutral-500 mt-1">暱稱僅能修改一次，如需再次變更請洽門市</p>
+              )}
+            </div>
+
             <div className="p-6 bg-gradient-to-br from-[#1c1e29] to-[#101117] border border-[#d4af37]/30 rounded-xl shadow-lg relative">
               <div className="bg-white p-3.5 rounded-lg inline-block shadow-inner">
                 <QRCodeSVG
