@@ -12,7 +12,24 @@ import {
   SinglePillGroup,
   MultiPillGroup,
 } from '../lib/preferenceOptions';
-import { Search, LogOut, Pencil, X, Check, ScanLine, CheckCircle2, Trash2, ShieldCheck, UserPlus, Users } from 'lucide-react';
+import {
+  Search,
+  LogOut,
+  Pencil,
+  X,
+  Check,
+  ScanLine,
+  CheckCircle2,
+  Trash2,
+  ShieldCheck,
+  UserPlus,
+  Users,
+  UserPlus2,
+  AlertTriangle,
+  Receipt,
+  Plus,
+} from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const Route = createFileRoute('/admin')({
   component: AdminComponent,
@@ -35,6 +52,19 @@ interface MemberRow {
   avoid_areas: string[];
   aroma_preference: string[];
   interaction_style: string | null;
+  created_at: string;
+  staff_notes: string | null;
+  is_blacklisted: boolean;
+  blacklist_reason: string | null;
+}
+
+interface SessionLog {
+  id: string;
+  member_id: string;
+  session_at: string;
+  service_item: string | null;
+  therapist: string | null;
+  amount: number | null;
 }
 
 interface AdminUser {
@@ -78,6 +108,17 @@ function AdminComponent() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [scannedCode, setScannedCode] = useState('');
+
+  const [sessionsOpenId, setSessionsOpenId] = useState<string | null>(null);
+  const [sessionLogs, setSessionLogs] = useState<Record<string, SessionLog[]>>({});
+  const [sessionLogsLoading, setSessionLogsLoading] = useState(false);
+  const [newLogForm, setNewLogForm] = useState({
+    session_at: new Date().toISOString().slice(0, 16),
+    service_item: '',
+    therapist: '',
+    amount: '',
+  });
+  const [addingLog, setAddingLog] = useState(false);
 
   const [showRoster, setShowRoster] = useState(false);
   const [adminRoster, setAdminRoster] = useState<AdminUser[]>([]);
@@ -199,6 +240,9 @@ function AdminComponent() {
       birth_day: m.birth_day,
       birth_year: m.birth_year,
       vip_level: m.vip_level,
+      staff_notes: m.staff_notes,
+      is_blacklisted: m.is_blacklisted,
+      blacklist_reason: m.blacklist_reason,
       pressure_preference: m.pressure_preference,
       focus_areas: m.focus_areas,
       avoid_areas: m.avoid_areas,
@@ -226,6 +270,9 @@ function AdminComponent() {
         p_birth_day: editForm.birth_day ?? null,
         p_birth_year: editForm.birth_year ?? null,
         p_vip_level: editForm.vip_level ?? '',
+        p_staff_notes: editForm.staff_notes ?? null,
+        p_is_blacklisted: editForm.is_blacklisted ?? false,
+        p_blacklist_reason: editForm.blacklist_reason ?? null,
       });
       if (error) {
         alert('儲存基本資料失敗：' + error.message);
@@ -287,6 +334,85 @@ function AdminComponent() {
     setDeletingId(null);
   };
 
+  const toggleSessions = async (memberId: string) => {
+    if (sessionsOpenId === memberId) {
+      setSessionsOpenId(null);
+      return;
+    }
+    setSessionsOpenId(memberId);
+    setNewLogForm({
+      session_at: new Date().toISOString().slice(0, 16),
+      service_item: '',
+      therapist: '',
+      amount: '',
+    });
+
+    if (!sessionLogs[memberId]) {
+      setSessionLogsLoading(true);
+      const { data, error } = await supabase
+        .from('session_logs')
+        .select('*')
+        .eq('member_id', memberId)
+        .order('session_at', { ascending: false });
+
+      if (error) {
+        console.error(error);
+        alert('讀取消費紀錄失敗：' + error.message);
+      } else {
+        setSessionLogs((prev) => ({ ...prev, [memberId]: data || [] }));
+      }
+      setSessionLogsLoading(false);
+    }
+  };
+
+  const handleAddLog = async (memberId: string, e: React.FormEvent) => {
+    e.preventDefault();
+    setAddingLog(true);
+
+    const { data, error } = await supabase.rpc('admin_add_session_log', {
+      p_member_id: memberId,
+      p_session_at: new Date(newLogForm.session_at).toISOString(),
+      p_service_item: newLogForm.service_item || null,
+      p_therapist: newLogForm.therapist || null,
+      p_amount: newLogForm.amount ? Number(newLogForm.amount) : null,
+    });
+
+    if (error) {
+      alert('新增消費紀錄失敗：' + error.message);
+      console.error(error);
+    } else if (data && data.length > 0) {
+      setSessionLogs((prev) => ({
+        ...prev,
+        [memberId]: [data[0], ...(prev[memberId] || [])].sort(
+          (a, b) => new Date(b.session_at).getTime() - new Date(a.session_at).getTime()
+        ),
+      }));
+      setNewLogForm({
+        session_at: new Date().toISOString().slice(0, 16),
+        service_item: '',
+        therapist: '',
+        amount: '',
+      });
+    }
+    setAddingLog(false);
+  };
+
+  const handleDeleteLog = async (memberId: string, logId: string) => {
+    const confirmed = window.confirm('確定要刪除這筆消費紀錄嗎？');
+    if (!confirmed) return;
+
+    const { error } = await supabase.rpc('admin_delete_session_log', { p_id: logId });
+    if (error) {
+      alert('刪除失敗：' + error.message);
+      console.error(error);
+    } else {
+      setSessionLogs((prev) => ({
+        ...prev,
+        [memberId]: (prev[memberId] || []).filter((l) => l.id !== logId),
+      }));
+    }
+  };
+
   const updateRosterField = (id: string, field: keyof AdminUser, value: boolean) => {
     setAdminRoster((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
   };
@@ -346,6 +472,28 @@ function AdminComponent() {
   };
 
   const scannedMatch = scannedCode ? members.find((m) => m.member_code === scannedCode) : null;
+
+  const now = new Date();
+  const thisMonthCount = members.filter((m) => {
+    const d = new Date(m.created_at);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+
+  const monthlyChartData = (() => {
+    const buckets: { key: string; label: string; 新增會員: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      buckets.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: `${d.getMonth() + 1}月`, 新增會員: 0 });
+    }
+    members.forEach((m) => {
+      if (!m.created_at) return;
+      const d = new Date(m.created_at);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      const bucket = buckets.find((b) => b.key === key);
+      if (bucket) bucket.新增會員 += 1;
+    });
+    return buckets;
+  })();
 
   const filtered = members.filter((m) => {
     const q = search.trim();
@@ -458,11 +606,38 @@ function AdminComponent() {
         </div>
 
         {canView && !membersLoading && (
-          <div className="flex items-center gap-5 rounded-xl border border-[#2a2b36] bg-gradient-to-r from-[#1c1e29] to-[#101117] px-6 py-5">
-            <Users size={32} className="text-[#d4af37] shrink-0" />
-            <div>
-              <p className="text-xs text-neutral-400 tracking-widest uppercase">會員總數</p>
-              <p className="text-4xl font-bold text-[#f5e6c8] mt-1 leading-none">{members.length}</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="flex items-center gap-4 rounded-xl border border-[#2a2b36] bg-gradient-to-r from-[#1c1e29] to-[#101117] px-5 py-5 sm:col-span-1">
+              <Users size={30} className="text-[#d4af37] shrink-0" />
+              <div>
+                <p className="text-xs text-neutral-400 tracking-widest uppercase">會員總數</p>
+                <p className="text-3xl font-bold text-[#f5e6c8] mt-1 leading-none">{members.length}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 rounded-xl border border-[#2a2b36] bg-gradient-to-r from-[#1c1e29] to-[#101117] px-5 py-5 sm:col-span-1">
+              <UserPlus2 size={30} className="text-[#d4af37] shrink-0" />
+              <div>
+                <p className="text-xs text-neutral-400 tracking-widest uppercase">本月新開卡</p>
+                <p className="text-3xl font-bold text-[#f5e6c8] mt-1 leading-none">{thisMonthCount}</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] px-5 py-4 sm:col-span-1">
+              <p className="text-xs text-neutral-400 tracking-widest uppercase mb-2">近 6 個月開卡趨勢</p>
+              <ResponsiveContainer width="100%" height={90}>
+                <BarChart data={monthlyChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2b36" vertical={false} />
+                  <XAxis dataKey="label" tick={{ fill: '#8a8a94', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis hide allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{ background: '#14151a', border: '1px solid #2a2b36', borderRadius: 8, fontSize: 12 }}
+                    labelStyle={{ color: '#f5e6c8' }}
+                    cursor={{ fill: '#d4af3712' }}
+                  />
+                  <Bar dataKey="新增會員" fill="#d4af37" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         )}
@@ -570,15 +745,32 @@ function AdminComponent() {
 
         {scannedCode && !membersLoading && (
           scannedMatch ? (
-            <div className="flex items-center gap-4 rounded-xl border border-[#d4af37]/50 bg-gradient-to-r from-[#1c1e29] to-[#101117] p-5">
-              <CheckCircle2 size={28} className="shrink-0 text-[#d4af37]" />
+            <div
+              className={`flex items-center gap-4 rounded-xl border p-5 ${
+                scannedMatch.is_blacklisted
+                  ? 'border-red-500/60 bg-gradient-to-r from-red-950/40 to-[#101117]'
+                  : 'border-[#d4af37]/50 bg-gradient-to-r from-[#1c1e29] to-[#101117]'
+              }`}
+            >
+              {scannedMatch.is_blacklisted ? (
+                <AlertTriangle size={28} className="shrink-0 text-red-400" />
+              ) : (
+                <CheckCircle2 size={28} className="shrink-0 text-[#d4af37]" />
+              )}
               <div className="flex-1">
-                <p className="text-xs tracking-widest text-[#d4af37]">掃碼核銷成功</p>
+                {scannedMatch.is_blacklisted ? (
+                  <p className="text-xs tracking-widest text-red-400">⚠ 黑名單會員，請留意</p>
+                ) : (
+                  <p className="text-xs tracking-widest text-[#d4af37]">掃碼核銷成功</p>
+                )}
                 <p className="mt-1 text-lg font-semibold text-neutral-100">
                   {scannedMatch.real_name || scannedMatch.display_name}
                   <span className="ml-2 text-sm font-normal text-[#d4af37]">{scannedMatch.vip_level}</span>
                 </p>
                 <p className="mt-0.5 font-mono text-xs text-neutral-500">{scannedMatch.member_code}</p>
+                {scannedMatch.is_blacklisted && scannedMatch.blacklist_reason && (
+                  <p className="mt-1.5 text-sm text-red-300">原因：{scannedMatch.blacklist_reason}</p>
+                )}
               </div>
               <button
                 onClick={() => {
@@ -651,8 +843,20 @@ function AdminComponent() {
                         const isEditing = editingId === m.id;
                         return (
                           <Fragment key={m.id}>
-                          <tr className="border-t border-[#1e1f28]">
-                            <td className="px-3 py-2.5 font-mono text-xs text-[#d4af37]">{m.member_code}</td>
+                          <tr className={`border-t border-[#1e1f28] ${m.is_blacklisted ? 'bg-red-950/20' : ''}`}>
+                            <td className="px-3 py-2.5 font-mono text-xs text-[#d4af37]">
+                              <div className="flex items-center gap-1.5">
+                                {m.member_code}
+                                {m.is_blacklisted && (
+                                  <span
+                                    title={m.blacklist_reason || '黑名單'}
+                                    className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/40"
+                                  >
+                                    <AlertTriangle size={10} /> 黑名單
+                                  </span>
+                                )}
+                              </div>
+                            </td>
                             <td className="px-3 py-2.5">{m.display_name}</td>
                             <td className="px-3 py-2.5">
                               {isEditing && canEditBasic ? (
@@ -772,6 +976,13 @@ function AdminComponent() {
                                 </div>
                               ) : (
                                 <div className="flex items-center justify-end gap-3">
+                                  <button
+                                    onClick={() => toggleSessions(m.id)}
+                                    className="text-neutral-400 hover:text-[#d4af37] cursor-pointer"
+                                    title="消費紀錄"
+                                  >
+                                    <Receipt size={14} />
+                                  </button>
                                   {canEditAny && (
                                     <button
                                       onClick={() => startEdit(m)}
@@ -795,6 +1006,43 @@ function AdminComponent() {
                               )}
                             </td>
                           </tr>
+                          {isEditing && canEditBasic && (
+                            <tr className="border-t border-[#1e1f28] bg-[#111218]">
+                              <td colSpan={8} className="px-3 py-4">
+                                <div className="grid gap-4 sm:grid-cols-3">
+                                  <div className="sm:col-span-2">
+                                    <p className="text-[11px] text-neutral-400 mb-2">師傅專用備註</p>
+                                    <textarea
+                                      value={editForm.staff_notes ?? ''}
+                                      onChange={(e) => setEditForm((f) => ({ ...f, staff_notes: e.target.value }))}
+                                      placeholder="例如：左肩有舊傷不能壓太重、喜歡喝溫水"
+                                      rows={2}
+                                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37] resize-none"
+                                    />
+                                  </div>
+                                  <div>
+                                    <p className="text-[11px] text-neutral-400 mb-2">黑名單</p>
+                                    <label className="flex items-center gap-1.5 text-xs text-red-300 cursor-pointer mb-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={editForm.is_blacklisted ?? false}
+                                        onChange={(e) => setEditForm((f) => ({ ...f, is_blacklisted: e.target.checked }))}
+                                      />
+                                      列入黑名單
+                                    </label>
+                                    {editForm.is_blacklisted && (
+                                      <input
+                                        value={editForm.blacklist_reason ?? ''}
+                                        onChange={(e) => setEditForm((f) => ({ ...f, blacklist_reason: e.target.value }))}
+                                        placeholder="原因（例如：多次無故爽約）"
+                                        className="w-full bg-[#1b1c24] border border-red-500/40 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-red-400"
+                                      />
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
                           {isEditing && canEditPreferences && (
                             <tr className="border-t border-[#1e1f28] bg-[#111218]">
                               <td colSpan={8} className="px-3 py-4">
@@ -849,6 +1097,106 @@ function AdminComponent() {
                                     />
                                   </div>
                                 </div>
+                              </td>
+                            </tr>
+                          )}
+                          {sessionsOpenId === m.id && (
+                            <tr className="border-t border-[#1e1f28] bg-[#111218]">
+                              <td colSpan={8} className="px-3 py-4">
+                                <p className="text-[11px] text-neutral-400 uppercase tracking-widest mb-3">消費與服務紀錄</p>
+
+                                {canEditBasic && (
+                                  <form
+                                    onSubmit={(e) => handleAddLog(m.id, e)}
+                                    className="flex flex-wrap items-end gap-2 mb-4 pb-4 border-b border-[#1e1f28]"
+                                  >
+                                    <div>
+                                      <label className="text-[10px] text-neutral-500 block mb-1">日期時間</label>
+                                      <input
+                                        type="datetime-local"
+                                        required
+                                        value={newLogForm.session_at}
+                                        onChange={(e) => setNewLogForm((f) => ({ ...f, session_at: e.target.value }))}
+                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] text-neutral-500 block mb-1">服務項目</label>
+                                      <input
+                                        value={newLogForm.service_item}
+                                        onChange={(e) => setNewLogForm((f) => ({ ...f, service_item: e.target.value }))}
+                                        placeholder="例如：全身指壓 90 分"
+                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs w-40"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] text-neutral-500 block mb-1">服務按摩師</label>
+                                      <input
+                                        value={newLogForm.therapist}
+                                        onChange={(e) => setNewLogForm((f) => ({ ...f, therapist: e.target.value }))}
+                                        placeholder="例如：小雨"
+                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs w-24"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] text-neutral-500 block mb-1">消費金額</label>
+                                      <input
+                                        type="number"
+                                        min={0}
+                                        value={newLogForm.amount}
+                                        onChange={(e) => setNewLogForm((f) => ({ ...f, amount: e.target.value }))}
+                                        placeholder="0"
+                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs w-20"
+                                      />
+                                    </div>
+                                    <button
+                                      type="submit"
+                                      disabled={addingLog}
+                                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#aa8024] text-black font-semibold disabled:opacity-50 cursor-pointer"
+                                    >
+                                      <Plus size={13} /> {addingLog ? '新增中...' : '新增'}
+                                    </button>
+                                  </form>
+                                )}
+
+                                {sessionLogsLoading && !sessionLogs[m.id] ? (
+                                  <p className="text-xs text-neutral-500">載入中...</p>
+                                ) : (sessionLogs[m.id] || []).length === 0 ? (
+                                  <p className="text-xs text-neutral-600">尚無消費紀錄</p>
+                                ) : (
+                                  <div className="space-y-1.5">
+                                    {(sessionLogs[m.id] || []).map((log) => (
+                                      <div
+                                        key={log.id}
+                                        className="flex items-center gap-3 text-xs bg-[#14151a] rounded-lg px-3 py-2"
+                                      >
+                                        <span className="text-neutral-400 shrink-0">
+                                          {new Date(log.session_at).toLocaleString('zh-TW', {
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                          })}
+                                        </span>
+                                        <span className="text-neutral-200 flex-1">{log.service_item || '—'}</span>
+                                        <span className="text-neutral-400">{log.therapist || '—'}</span>
+                                        <span className="text-[#d4af37] font-semibold w-16 text-right">
+                                          {log.amount != null ? `$${log.amount}` : '—'}
+                                        </span>
+                                        {canDelete && (
+                                          <button
+                                            onClick={() => handleDeleteLog(m.id, log.id)}
+                                            className="text-neutral-500 hover:text-red-400 cursor-pointer"
+                                            title="刪除這筆紀錄"
+                                          >
+                                            <Trash2 size={12} />
+                                          </button>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </td>
                             </tr>
                           )}
