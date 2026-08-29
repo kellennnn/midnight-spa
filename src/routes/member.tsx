@@ -3,16 +3,6 @@ import { useEffect, useState } from 'react';
 import liff from '@line/liff';
 import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../lib/supabase';
-import {
-  PRESSURE_OPTIONS,
-  FOCUS_AREA_OPTIONS,
-  AVOID_AREA_OPTIONS,
-  AROMA_OPTIONS,
-  INTERACTION_OPTIONS,
-  toggleInArray,
-  SinglePillGroup,
-  MultiPillGroup,
-} from '../lib/preferenceOptions';
 import { Sparkles, Crown, Phone, Calendar, User, CheckCircle2, Pencil } from 'lucide-react';
 
 export const Route = createFileRoute('/member')({
@@ -49,11 +39,6 @@ function MemberComponent() {
   const [birthMonth, setBirthMonth] = useState('');
   const [birthDay, setBirthDay] = useState('');
   const [birthYear, setBirthYear] = useState('');
-  const [pressurePreference, setPressurePreference] = useState('');
-  const [focusAreas, setFocusAreas] = useState<string[]>([]);
-  const [avoidAreas, setAvoidAreas] = useState<string[]>([]);
-  const [aromaPreference, setAromaPreference] = useState<string[]>([]);
-  const [interactionStyle, setInteractionStyle] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const [editingNickname, setEditingNickname] = useState(false);
@@ -145,11 +130,8 @@ function MemberComponent() {
           birth_day: Number(birthDay),
           birth_year: birthYear ? Number(birthYear) : null,
           vip_level: 'VIP',
-          pressure_preference: pressurePreference || null,
-          focus_areas: focusAreas,
-          avoid_areas: avoidAreas,
-          aroma_preference: aromaPreference,
-          interaction_style: interactionStyle || null,
+          // 力道偏好、加強/避開部位、香氣偏好、互動風格這些體驗偏好，
+          // 客人開卡當下不用填，只能由店員之後在 /admin 後台幫忙補上。
         };
 
         const { error } = await supabase.from('members').insert([newMember]);
@@ -353,45 +335,6 @@ function MemberComponent() {
                   onChange={(e) => setBirthYear(e.target.value)}
                   className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                 />
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-neutral-800 space-y-5">
-              <div>
-                <p className="text-xs text-neutral-400 mb-2">力道偏好</p>
-                <SinglePillGroup options={PRESSURE_OPTIONS} value={pressurePreference} onChange={setPressurePreference} />
-              </div>
-
-              <div>
-                <p className="text-xs text-neutral-400 mb-2">希望加強部位（可複選）</p>
-                <MultiPillGroup
-                  options={FOCUS_AREA_OPTIONS}
-                  value={focusAreas}
-                  onToggle={(v) => setFocusAreas((prev) => toggleInArray(prev, v))}
-                />
-              </div>
-
-              <div>
-                <p className="text-xs text-neutral-400 mb-2">希望避開部位（可複選）</p>
-                <MultiPillGroup
-                  options={AVOID_AREA_OPTIONS}
-                  value={avoidAreas}
-                  onToggle={(v) => setAvoidAreas((prev) => toggleInArray(prev, v))}
-                />
-              </div>
-
-              <div>
-                <p className="text-xs text-neutral-400 mb-2">芳療香氣偏好（可複選）</p>
-                <MultiPillGroup
-                  options={AROMA_OPTIONS}
-                  value={aromaPreference}
-                  onToggle={(v) => setAromaPreference((prev) => toggleInArray(prev, v))}
-                />
-              </div>
-
-              <div>
-                <p className="text-xs text-neutral-400 mb-2">店內互動風格</p>
-                <SinglePillGroup options={INTERACTION_OPTIONS} value={interactionStyle} onChange={setInteractionStyle} />
               </div>
             </div>
 
