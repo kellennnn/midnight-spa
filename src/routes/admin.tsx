@@ -436,9 +436,16 @@ function AdminComponent() {
     <main className="min-h-screen bg-[#07080a] text-neutral-200 p-4 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="font-serif tracking-widest text-[#f5e6c8] text-xl font-bold">
-            會員管理
-          </h1>
+          <div className="flex items-baseline gap-3">
+            <h1 className="font-serif tracking-widest text-[#f5e6c8] text-xl font-bold">
+              會員管理
+            </h1>
+            {canView && !membersLoading && (
+              <span className="text-xs text-neutral-500">
+                共 <span className="text-[#d4af37] font-semibold">{members.length}</span> 位會員
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-4">
             {isOwner && (
               <button
@@ -605,6 +612,12 @@ function AdminComponent() {
                 className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg pl-9 pr-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
               />
             </div>
+
+            {search.trim() && !membersLoading && (
+              <p className="text-xs text-neutral-500">
+                符合搜尋條件：{filtered.length} / {members.length} 位
+              </p>
+            )}
 
             {membersLoading ? (
               <p className="text-sm text-neutral-500">載入中...</p>
