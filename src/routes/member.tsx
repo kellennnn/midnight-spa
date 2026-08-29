@@ -32,47 +32,39 @@ function MemberComponent() {
 
   useEffect(() => {
     const initLiff = async () => {
+      let realProfile: { userId: string; displayName: string; pictureUrl?: string } | null = null;
+
       try {
         const liffId = import.meta.env.VITE_LIFF_ID;
-        
+
         if (liffId) {
           await liff.init({ liffId });
 
           if (liff.isLoggedIn()) {
             const userProfile = await liff.getProfile();
-            setLineProfile({
+            realProfile = {
               userId: userProfile.userId,
               displayName: userProfile.displayName,
               pictureUrl: userProfile.pictureUrl,
-            });
-
-            const { data, error } = await supabase
-              .from('members')
-              .select('*')
-              .eq('line_user_id', userProfile.userId)
-              .maybeSingle();
-
-            if (data && !error) {
-              setProfile(data);
-              setLoading(false);
-              return;
-            }
+            };
           }
         }
       } catch (err) {
         console.warn('LIFF Init (Local Test Fallback):', err);
       }
 
-      // 電腦本地預覽模式
-      setLineProfile((prev) => prev || {
+      // 拿到真實 LINE 使用者就一定用他的身份查詢；只有完全拿不到 LIFF 資訊
+      // （例如電腦本地預覽）才 fallback 成測試帳號，避免新客人被誤判成 dev_test_user_001。
+      const activeProfile = realProfile || {
         userId: 'dev_test_user_001',
         displayName: '體驗貴賓 (電腦預覽)',
-      });
+      };
+      setLineProfile(activeProfile);
 
       const { data } = await supabase
         .from('members')
         .select('*')
-        .eq('line_user_id', 'dev_test_user_001')
+        .eq('line_user_id', activeProfile.userId)
         .maybeSingle();
 
       if (data) {
