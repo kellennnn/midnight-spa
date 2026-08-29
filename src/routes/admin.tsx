@@ -15,9 +15,27 @@ interface MemberRow {
   display_name: string;
   real_name: string;
   phone: string;
-  birthday: string;
+  birth_month: number | null;
+  birth_day: number | null;
+  birth_year: number | null;
   vip_level: string;
   nickname_locked: boolean;
+  pressure_preference: string | null;
+  focus_areas: string[];
+  avoid_areas: string[];
+  aroma_preference: string[];
+  interaction_style: string | null;
+}
+
+function formatBirthday(m: Pick<MemberRow, 'birth_month' | 'birth_day' | 'birth_year'>) {
+  if (!m.birth_month || !m.birth_day) return '未填寫';
+  return `${m.birth_year ? m.birth_year + '/' : ''}${m.birth_month}/${m.birth_day}`;
+}
+
+function memberPreferenceTags(m: MemberRow) {
+  return [m.pressure_preference, m.interaction_style, ...m.focus_areas, ...m.avoid_areas, ...m.aroma_preference].filter(
+    Boolean
+  ) as string[];
 }
 
 function AdminComponent() {
@@ -99,7 +117,9 @@ function AdminComponent() {
     setEditForm({
       real_name: m.real_name,
       phone: m.phone,
-      birthday: m.birthday,
+      birth_month: m.birth_month,
+      birth_day: m.birth_day,
+      birth_year: m.birth_year,
       vip_level: m.vip_level,
     });
   };
@@ -266,13 +286,14 @@ function AdminComponent() {
                   <th className="text-left px-3 py-2.5 font-medium">電話</th>
                   <th className="text-left px-3 py-2.5 font-medium">生日</th>
                   <th className="text-left px-3 py-2.5 font-medium">VIP 等級</th>
+                  <th className="text-left px-3 py-2.5 font-medium">體驗偏好</th>
                   <th className="text-right px-3 py-2.5 font-medium">操作</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center px-3 py-8 text-neutral-500">
+                    <td colSpan={8} className="text-center px-3 py-8 text-neutral-500">
                       沒有符合的會員資料
                     </td>
                   </tr>
@@ -307,14 +328,41 @@ function AdminComponent() {
                         </td>
                         <td className="px-3 py-2.5">
                           {isEditing ? (
-                            <input
-                              type="date"
-                              value={editForm.birthday ?? ''}
-                              onChange={(e) => setEditForm((f) => ({ ...f, birthday: e.target.value }))}
-                              className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1 text-xs"
-                            />
+                            <div className="flex gap-1">
+                              <input
+                                type="number"
+                                min={1}
+                                max={12}
+                                placeholder="月"
+                                value={editForm.birth_month ?? ''}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({ ...f, birth_month: e.target.value ? Number(e.target.value) : null }))
+                                }
+                                className="w-12 bg-[#1b1c24] border border-neutral-700 rounded px-1.5 py-1 text-xs"
+                              />
+                              <input
+                                type="number"
+                                min={1}
+                                max={31}
+                                placeholder="日"
+                                value={editForm.birth_day ?? ''}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({ ...f, birth_day: e.target.value ? Number(e.target.value) : null }))
+                                }
+                                className="w-12 bg-[#1b1c24] border border-neutral-700 rounded px-1.5 py-1 text-xs"
+                              />
+                              <input
+                                type="number"
+                                placeholder="年"
+                                value={editForm.birth_year ?? ''}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({ ...f, birth_year: e.target.value ? Number(e.target.value) : null }))
+                                }
+                                className="w-14 bg-[#1b1c24] border border-neutral-700 rounded px-1.5 py-1 text-xs"
+                              />
+                            </div>
                           ) : (
-                            m.birthday
+                            formatBirthday(m)
                           )}
                         </td>
                         <td className="px-3 py-2.5">
@@ -327,6 +375,22 @@ function AdminComponent() {
                           ) : (
                             <span className="text-[#d4af37]">{m.vip_level}</span>
                           )}
+                        </td>
+                        <td className="px-3 py-2.5 max-w-[220px]">
+                          <div className="flex flex-wrap gap-1">
+                            {memberPreferenceTags(m).length === 0 ? (
+                              <span className="text-neutral-600">—</span>
+                            ) : (
+                              memberPreferenceTags(m).map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="text-[10px] px-1.5 py-0.5 rounded-full border border-[#d4af37]/30 text-[#d4af37] bg-[#d4af37]/5 whitespace-nowrap"
+                                >
+                                  {tag}
+                                </span>
+                              ))
+                            )}
+                          </div>
                         </td>
                         <td className="px-3 py-2.5 text-right">
                           {isEditing ? (

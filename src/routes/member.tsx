@@ -16,9 +16,118 @@ interface MemberProfile {
   display_name: string;
   real_name: string;
   phone: string;
-  birthday: string;
+  birth_month: number | null;
+  birth_day: number | null;
+  birth_year: number | null;
   vip_level: string;
   nickname_locked: boolean;
+  pressure_preference: string | null;
+  focus_areas: string[];
+  avoid_areas: string[];
+  aroma_preference: string[];
+  interaction_style: string | null;
+}
+
+type PillOption = { value: string; hint?: string };
+
+const PRESSURE_OPTIONS: PillOption[] = [
+  { value: '輕柔放鬆', hint: '怕痛、純舒壓' },
+  { value: '適中舒適', hint: '標準力道' },
+  { value: '深層加強', hint: '重度受力、解緊繃' },
+];
+
+const FOCUS_AREA_OPTIONS: PillOption[] = [
+  { value: '肩頸緊繃' },
+  { value: '腰部酸痛' },
+  { value: '腿部浮腫' },
+  { value: '頭部放鬆' },
+];
+
+const AVOID_AREA_OPTIONS: PillOption[] = [
+  { value: '舊傷處' },
+  { value: '肚子' },
+  { value: '腳底' },
+  { value: '頸部' },
+];
+
+const AROMA_OPTIONS: PillOption[] = [
+  { value: '木質調', hint: '雪松、檀香，助眠沉靜' },
+  { value: '柑橘草本', hint: '甜橙、薰衣草，舒緩減壓' },
+  { value: '清涼舒暢', hint: '薄荷、尤加利，提神通暢' },
+  { value: '無香精／敏感肌專用' },
+];
+
+const INTERACTION_OPTIONS: PillOption[] = [
+  { value: '安靜休息', hint: '只想閉眼睡覺，請勿過度交談' },
+  { value: '適度引導', hint: '針對緊繃部位說明即可' },
+  { value: '親切互動', hint: '喜歡放鬆聊天' },
+];
+
+function toggleInArray(arr: string[], v: string) {
+  return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+}
+
+function SinglePillGroup({
+  options,
+  value,
+  onChange,
+}: {
+  options: PillOption[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="grid gap-2">
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`text-left rounded-lg border px-3.5 py-2.5 text-sm transition-colors cursor-pointer ${
+            value === opt.value
+              ? 'border-[#d4af37] bg-[#d4af37]/10 text-[#f5e6c8]'
+              : 'border-neutral-700 bg-[#1b1c24] text-neutral-300 hover:border-neutral-500'
+          }`}
+        >
+          <span className="font-medium">{opt.value}</span>
+          {opt.hint && <span className="block text-[11px] text-neutral-500 mt-0.5">{opt.hint}</span>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function MultiPillGroup({
+  options,
+  value,
+  onToggle,
+}: {
+  options: PillOption[];
+  value: string[];
+  onToggle: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const selected = value.includes(opt.value);
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onToggle(opt.value)}
+            title={opt.hint}
+            className={`rounded-full border px-3.5 py-2 text-xs transition-colors cursor-pointer ${
+              selected
+                ? 'border-[#d4af37] bg-[#d4af37]/15 text-[#f5e6c8]'
+                : 'border-neutral-700 bg-[#1b1c24] text-neutral-300 hover:border-neutral-500'
+            }`}
+          >
+            {opt.value}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 function MemberComponent() {
@@ -28,7 +137,14 @@ function MemberComponent() {
 
   const [realName, setRealName] = useState('');
   const [phone, setPhone] = useState('');
-  const [birthday, setBirthday] = useState('');
+  const [birthMonth, setBirthMonth] = useState('');
+  const [birthDay, setBirthDay] = useState('');
+  const [birthYear, setBirthYear] = useState('');
+  const [pressurePreference, setPressurePreference] = useState('');
+  const [focusAreas, setFocusAreas] = useState<string[]>([]);
+  const [avoidAreas, setAvoidAreas] = useState<string[]>([]);
+  const [aromaPreference, setAromaPreference] = useState<string[]>([]);
+  const [interactionStyle, setInteractionStyle] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const [editingNickname, setEditingNickname] = useState(false);
@@ -106,8 +222,15 @@ function MemberComponent() {
           display_name: lineProfile.displayName,
           real_name: realName,
           phone: phone,
-          birthday: birthday,
+          birth_month: Number(birthMonth),
+          birth_day: Number(birthDay),
+          birth_year: birthYear ? Number(birthYear) : null,
           vip_level: 'VIP',
+          pressure_preference: pressurePreference || null,
+          focus_areas: focusAreas,
+          avoid_areas: avoidAreas,
+          aroma_preference: aromaPreference,
+          interaction_style: interactionStyle || null,
         };
 
         const { error } = await supabase.from('members').insert([newMember]);
@@ -193,8 +316,14 @@ function MemberComponent() {
     );
   }
 
+  const birthdayText = profile
+    ? profile.birth_month && profile.birth_day
+      ? `${profile.birth_year ? profile.birth_year + ' 年 ' : ''}${profile.birth_month} 月 ${profile.birth_day} 日`
+      : '未填寫'
+    : '';
+
   return (
-    <main className="min-h-screen bg-[#07080a] text-neutral-200 flex items-center justify-center p-4">
+    <main className="min-h-screen bg-[#07080a] text-neutral-200 flex items-center justify-center p-4 py-10">
       <div className="w-full max-w-md bg-gradient-to-b from-[#14151a] to-[#0c0d10] border border-[#2a2b36] rounded-2xl shadow-2xl p-6 relative overflow-hidden">
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#d4af37]/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -219,8 +348,8 @@ function MemberComponent() {
         </div>
 
         {!profile ? (
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div className="text-center mb-6">
+          <form onSubmit={handleRegister} className="space-y-5">
+            <div className="text-center mb-2">
               <Sparkles className="w-8 h-8 text-[#d4af37] mx-auto mb-2" />
               <h2 className="text-base font-semibold text-neutral-100">開通專屬 VIP 黑卡</h2>
               <p className="text-xs text-neutral-400 mt-1">完善資料即可享有尊榮預約與專屬貴賓禮遇</p>
@@ -228,14 +357,14 @@ function MemberComponent() {
 
             <div>
               <label className="text-xs text-neutral-400 flex items-center gap-1.5 mb-1.5">
-                <User size={14} /> 真實姓名
+                <User size={14} /> 稱謂 / 暱稱
               </label>
               <input
                 type="text"
                 required
                 value={realName}
                 onChange={(e) => setRealName(e.target.value)}
-                placeholder="請輸入姓名"
+                placeholder="例如：沈先生、Ken（不需要填本名）"
                 className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
               />
             </div>
@@ -256,15 +385,78 @@ function MemberComponent() {
 
             <div>
               <label className="text-xs text-neutral-400 flex items-center gap-1.5 mb-1.5">
-                <Calendar size={14} /> 生日（享有專屬生日禮）
+                <Calendar size={14} /> 生日（月／日必填，年份選填，享有專屬生日禮）
               </label>
-              <input
-                type="date"
-                required
-                value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-                className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-              />
+              <div className="grid grid-cols-3 gap-2">
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  max={12}
+                  placeholder="月"
+                  value={birthMonth}
+                  onChange={(e) => setBirthMonth(e.target.value)}
+                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                />
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  max={31}
+                  placeholder="日"
+                  value={birthDay}
+                  onChange={(e) => setBirthDay(e.target.value)}
+                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                />
+                <input
+                  type="number"
+                  min={1900}
+                  max={new Date().getFullYear()}
+                  placeholder="年（選填）"
+                  value={birthYear}
+                  onChange={(e) => setBirthYear(e.target.value)}
+                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-neutral-800 space-y-5">
+              <div>
+                <p className="text-xs text-neutral-400 mb-2">力道偏好</p>
+                <SinglePillGroup options={PRESSURE_OPTIONS} value={pressurePreference} onChange={setPressurePreference} />
+              </div>
+
+              <div>
+                <p className="text-xs text-neutral-400 mb-2">希望加強部位（可複選）</p>
+                <MultiPillGroup
+                  options={FOCUS_AREA_OPTIONS}
+                  value={focusAreas}
+                  onToggle={(v) => setFocusAreas((prev) => toggleInArray(prev, v))}
+                />
+              </div>
+
+              <div>
+                <p className="text-xs text-neutral-400 mb-2">希望避開部位（可複選）</p>
+                <MultiPillGroup
+                  options={AVOID_AREA_OPTIONS}
+                  value={avoidAreas}
+                  onToggle={(v) => setAvoidAreas((prev) => toggleInArray(prev, v))}
+                />
+              </div>
+
+              <div>
+                <p className="text-xs text-neutral-400 mb-2">芳療香氣偏好（可複選）</p>
+                <MultiPillGroup
+                  options={AROMA_OPTIONS}
+                  value={aromaPreference}
+                  onToggle={(v) => setAromaPreference((prev) => toggleInArray(prev, v))}
+                />
+              </div>
+
+              <div>
+                <p className="text-xs text-neutral-400 mb-2">店內互動風格</p>
+                <SinglePillGroup options={INTERACTION_OPTIONS} value={interactionStyle} onChange={setInteractionStyle} />
+              </div>
             </div>
 
             <button
@@ -335,7 +527,7 @@ function MemberComponent() {
                   includeMargin={false}
                 />
               </div>
-              
+
               <div className="mt-4">
                 <p className="text-xs text-neutral-400 tracking-widest uppercase">Member Code</p>
                 <p className="font-mono text-lg font-bold text-[#f5e6c8] tracking-widest mt-0.5">{profile.member_code}</p>
@@ -344,14 +536,42 @@ function MemberComponent() {
 
             <div className="grid grid-cols-2 gap-3 text-left">
               <div className="bg-[#171821] p-3 rounded-lg border border-neutral-800">
-                <p className="text-[11px] text-neutral-400">貴賓姓名</p>
+                <p className="text-[11px] text-neutral-400">貴賓稱謂</p>
                 <p className="text-sm font-semibold text-neutral-200 mt-0.5">{profile.real_name}</p>
               </div>
               <div className="bg-[#171821] p-3 rounded-lg border border-neutral-800">
-                <p className="text-[11px] text-neutral-400">會員狀態</p>
-                <p className="text-sm font-semibold text-[#d4af37] mt-0.5">專屬 VIP 會員</p>
+                <p className="text-[11px] text-neutral-400">生日</p>
+                <p className="text-sm font-semibold text-neutral-200 mt-0.5">{birthdayText}</p>
               </div>
             </div>
+
+            {(profile.pressure_preference ||
+              profile.interaction_style ||
+              profile.focus_areas.length > 0 ||
+              profile.avoid_areas.length > 0 ||
+              profile.aroma_preference.length > 0) && (
+              <div className="text-left space-y-2 bg-[#171821] p-4 rounded-lg border border-neutral-800">
+                <p className="text-[11px] text-neutral-400 uppercase tracking-widest">我的體驗偏好</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    profile.pressure_preference,
+                    profile.interaction_style,
+                    ...profile.focus_areas,
+                    ...profile.avoid_areas,
+                    ...profile.aroma_preference,
+                  ]
+                    .filter(Boolean)
+                    .map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[11px] px-2.5 py-1 rounded-full border border-[#d4af37]/30 text-[#d4af37] bg-[#d4af37]/5"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-center gap-1.5 text-xs text-neutral-500 pt-2">
               <CheckCircle2 size={13} className="text-[#d4af37]" />
