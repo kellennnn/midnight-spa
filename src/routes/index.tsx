@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { Crown } from "lucide-react";
 import content from "@/content.json";
 
 export const Route = createFileRoute("/")({
@@ -201,15 +202,25 @@ function QuickNav() {
   return (
     <nav className="fixed inset-x-0 top-14 z-30 h-11 border-b border-border/60 bg-background/95 backdrop-blur-md">
       <div className="no-scrollbar mx-auto flex h-full max-w-6xl items-center gap-1 overflow-x-auto px-4 sm:justify-center sm:gap-2">
-        {content.nav.map((item) => (
-          <a
-            key={item.href}
-            href={item.href}
-            className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs tracking-[0.14em] text-muted-foreground transition-colors hover:bg-secondary hover:text-silver"
-          >
-            {item.label}
-          </a>
-        ))}
+        {content.nav.map((item) =>
+          item.href === "/member" ? (
+            <a
+              key={item.href}
+              href={item.href}
+              className="ml-1 flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-gradient-to-r from-[#d4af37] to-[#aa8024] px-3 py-1.5 text-xs font-semibold tracking-[0.14em] text-black transition-transform hover:scale-105"
+            >
+              <Crown size={12} /> {item.label}
+            </a>
+          ) : (
+            <a
+              key={item.href}
+              href={item.href}
+              className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs tracking-[0.14em] text-muted-foreground transition-colors hover:bg-secondary hover:text-silver"
+            >
+              {item.label}
+            </a>
+          )
+        )}
       </div>
     </nav>
   );
@@ -230,6 +241,20 @@ function FloatingLineWidget() {
         <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
       </span>
       <span className="text-xs tracking-[0.16em] text-silver group-hover:text-primary">LINE 預約</span>
+    </a>
+  );
+}
+
+/* 右下角浮動按鈕（疊在 LINE 按鈕上方）：金色實心，跟 LINE 按鈕做出區隔，最醒目的會員卡入口 */
+function FloatingMemberWidget() {
+  return (
+    <a
+      href="/member"
+      aria-label="查看我的 VIP 會員卡"
+      className="group fixed bottom-24 right-6 z-50 flex items-center gap-2 rounded-full bg-gradient-to-r from-[#d4af37] to-[#aa8024] px-4 py-3 text-black shadow-[0_4px_25px_oklch(0.72_0.14_38/55%)] transition-all duration-300 hover:scale-105 hover:brightness-110"
+    >
+      <Crown size={16} />
+      <span className="text-xs font-semibold tracking-[0.16em]">VIP 會員卡</span>
     </a>
   );
 }
@@ -906,7 +931,8 @@ function Index() {
         </div>
       </footer>
 
-      {/* 右下角常駐浮動按鈕 + 左下角深淺色切換 */}
+      {/* 右下角常駐浮動按鈕（疊兩層：VIP 會員卡在上、LINE 預約在下）+ 左下角深淺色切換 */}
+      <FloatingMemberWidget />
       <FloatingLineWidget />
       <ThemeToggle />
 
