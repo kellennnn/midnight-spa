@@ -93,22 +93,39 @@ function MemberComponent() {
 
     setSubmitting(true);
     try {
-      const randomCode = 'MID-' + Math.floor(100000 + Math.random() * 900000);
+      // 會員代碼是隨機抽的，理論上有極低機率跟其他會員撞號（資料庫有加 unique
+      // 限制擋掉重複），所以這裡撞到的話就重抽一組再試一次，最多試 5 次。
+      let insertError: { code?: string; message: string } | null = null;
 
-      const newMember = {
-        line_user_id: lineProfile.userId,
-        member_code: randomCode,
-        display_name: lineProfile.displayName,
-        real_name: realName,
-        phone: phone,
-        birthday: birthday,
-        vip_level: 'VIP',
-      };
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const randomCode = 'MID-' + Math.floor(100000 + Math.random() * 900000);
+
+        const newMember = {
+          line_user_id: lineProfile.userId,
+          member_code: randomCode,
+          display_name: lineProfile.displayName,
+          real_name: realName,
+          phone: phone,
+          birthday: birthday,
+          vip_level: 'VIP',
+        };
+
+        const { error } = await supabase.from('members').insert([newMember]);
+
+        if (!error) {
+          insertError = null;
+          break;
+        }
+
+        insertError = error;
+        if (error.code !== '23505') {
+          // 不是「代碼重複」造成的錯誤，重試也沒用，直接停下來
+          break;
+        }
+      }
 
       // anon 角色現在只有 insert 權限、沒有 select 權限，insert 後沒辦法直接
       // .select() 讀回那一列，所以改成用安全函式 get_member_by_line_id 另外撈一次。
-      const { error: insertError } = await supabase.from('members').insert([newMember]);
-
       if (insertError) {
         alert('開卡失敗：' + insertError.message);
         console.error(insertError);
