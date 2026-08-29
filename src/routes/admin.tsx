@@ -196,6 +196,7 @@ function AdminComponent() {
   });
   const [addingLog, setAddingLog] = useState(false);
   const [lastVisitMap, setLastVisitMap] = useState<Record<string, string>>({});
+  const [chartRangeMonths, setChartRangeMonths] = useState<6 | 12 | 24 | 0>(6); // 0 = 全部時間
 
   const [showRoster, setShowRoster] = useState(false);
   const [adminRoster, setAdminRoster] = useState<AdminUser[]>([]);
@@ -580,10 +581,23 @@ function AdminComponent() {
   }).length;
 
   const monthlyChartData = (() => {
+    let monthsBack: number = chartRangeMonths;
+    if (monthsBack === 0) {
+      // 全部時間：從最早的會員建立月份開始算
+      const earliest = members.reduce<Date | null>((min, m) => {
+        if (!m.created_at) return min;
+        const d = new Date(m.created_at);
+        return !min || d < min ? d : min;
+      }, null);
+      monthsBack = earliest
+        ? (now.getFullYear() - earliest.getFullYear()) * 12 + (now.getMonth() - earliest.getMonth())
+        : 0;
+    }
     const buckets: { key: string; label: string; 新增會員: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
+    for (let i = monthsBack; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      buckets.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: `${d.getMonth() + 1}月`, 新增會員: 0 });
+      const label = d.getFullYear() === now.getFullYear() ? `${d.getMonth() + 1}月` : `${d.getFullYear()}/${d.getMonth() + 1}`;
+      buckets.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label, 新增會員: 0 });
     }
     members.forEach((m) => {
       if (!m.created_at) return;
@@ -732,20 +746,44 @@ function AdminComponent() {
             </div>
 
             <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] px-5 py-4 sm:col-span-1">
-              <p className="text-xs text-neutral-400 tracking-widest uppercase mb-2">近 6 個月開卡趨勢</p>
-              <ResponsiveContainer width="100%" height={90}>
-                <BarChart data={monthlyChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2b36" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fill: '#8a8a94', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis hide allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{ background: '#14151a', border: '1px solid #2a2b36', borderRadius: 8, fontSize: 12 }}
-                    labelStyle={{ color: '#f5e6c8' }}
-                    cursor={{ fill: '#d4af3712' }}
-                  />
-                  <Bar dataKey="新增會員" fill="#d4af37" radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <p className="text-xs text-neutral-400 tracking-widest uppercase shrink-0">開卡趨勢</p>
+                <div className="flex items-center gap-1">
+                  {([
+                    { v: 6, label: '6月' },
+                    { v: 12, label: '12月' },
+                    { v: 24, label: '24月' },
+                    { v: 0, label: '全部' },
+                  ] as const).map((opt) => (
+                    <button
+                      key={opt.v}
+                      onClick={() => setChartRangeMonths(opt.v)}
+                      className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors cursor-pointer ${
+                        chartRangeMonths === opt.v
+                          ? 'border-[#d4af37] text-[#f5e6c8] bg-[#d4af3722]'
+                          : 'border-[#2a2b36] text-neutral-500 hover:text-neutral-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <ResponsiveContainer width="100%" height={90} minWidth={Math.max(monthlyChartData.length * 34, 200)}>
+                  <BarChart data={monthlyChartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2a2b36" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fill: '#8a8a94', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis hide allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{ background: '#14151a', border: '1px solid #2a2b36', borderRadius: 8, fontSize: 12 }}
+                      labelStyle={{ color: '#f5e6c8' }}
+                      cursor={{ fill: '#d4af3712' }}
+                    />
+                    <Bar dataKey="新增會員" fill="#d4af37" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         )}
