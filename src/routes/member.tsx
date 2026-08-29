@@ -312,7 +312,7 @@ function MemberComponent() {
             <div className="p-6 bg-gradient-to-br from-[#1c1e29] to-[#101117] border border-[#d4af37]/30 rounded-xl shadow-lg relative">
               <div className="bg-white p-3.5 rounded-lg inline-block shadow-inner">
                 <QRCodeSVG
-                  value={profile.member_code}
+                  value={`${window.location.origin}/admin?code=${encodeURIComponent(profile.member_code)}`}
                   size={168}
                   level="H"
                   includeMargin={false}

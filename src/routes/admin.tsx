@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { Search, LogOut, Pencil, X, Check } from 'lucide-react';
+import { Search, LogOut, Pencil, X, Check, ScanLine, CheckCircle2 } from 'lucide-react';
 
 export const Route = createFileRoute('/admin')({
   component: AdminComponent,
@@ -35,6 +35,17 @@ function AdminComponent() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<MemberRow>>({});
   const [saving, setSaving] = useState(false);
+  const [scannedCode, setScannedCode] = useState('');
+
+  useEffect(() => {
+    // 從會員卡 QR code 掃進來的話，網址會帶 ?code=MID-xxxxxx，直接帶入搜尋欄，
+    // 不用管理員自己手動打字找人。
+    const code = new URLSearchParams(window.location.search).get('code');
+    if (code) {
+      setScannedCode(code);
+      setSearch(code);
+    }
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -118,6 +129,8 @@ function AdminComponent() {
     setSaving(false);
   };
 
+  const scannedMatch = scannedCode ? members.find((m) => m.member_code === scannedCode) : null;
+
   const filtered = members.filter((m) => {
     const q = search.trim();
     if (!q) return true;
@@ -195,6 +208,39 @@ function AdminComponent() {
             <LogOut size={14} /> 登出
           </button>
         </div>
+
+        {scannedCode && !membersLoading && (
+          scannedMatch ? (
+            <div className="flex items-center gap-4 rounded-xl border border-[#d4af37]/50 bg-gradient-to-r from-[#1c1e29] to-[#101117] p-5">
+              <CheckCircle2 size={28} className="shrink-0 text-[#d4af37]" />
+              <div className="flex-1">
+                <p className="text-xs tracking-widest text-[#d4af37]">掃碼核銷成功</p>
+                <p className="mt-1 text-lg font-semibold text-neutral-100">
+                  {scannedMatch.real_name || scannedMatch.display_name}
+                  <span className="ml-2 text-sm font-normal text-[#d4af37]">{scannedMatch.vip_level}</span>
+                </p>
+                <p className="mt-0.5 font-mono text-xs text-neutral-500">{scannedMatch.member_code}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setScannedCode('');
+                  setSearch('');
+                  window.history.replaceState({}, '', '/admin');
+                }}
+                className="text-xs text-neutral-500 hover:text-neutral-300 cursor-pointer"
+              >
+                清除
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 rounded-xl border border-red-500/40 bg-red-500/5 p-4">
+              <ScanLine size={20} className="shrink-0 text-red-400" />
+              <p className="text-sm text-red-300">
+                掃到的會員代碼「{scannedCode}」查無資料，可能是偽造或已失效的 QR code。
+              </p>
+            </div>
+          )
+        )}
 
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
