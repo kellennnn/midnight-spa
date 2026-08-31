@@ -121,7 +121,7 @@ function daysSince(dateStr?: string) {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
 }
 
-// 掃到的內容可能是完整的 /admin?code=MID-xxxxxx 網址（正式用），
+// 掃到的內容可能是完整的 /admin?code=LSP-xxxxxx 網址（正式用），
 // 也可能就是單純的代碼文字（相容舊資料），兩種都要能解析出代碼本身。
 function extractMemberCode(scanned: string) {
   try {
@@ -254,7 +254,7 @@ function AdminComponent() {
   const canEditAny = canEditBasic || canEditPreferences;
 
   useEffect(() => {
-    // 從會員卡 QR code 掃進來的話，網址會帶 ?code=MID-xxxxxx，直接帶入搜尋欄，
+    // 從會員卡 QR code 掃進來的話，網址會帶 ?code=LSP-xxxxxx，直接帶入搜尋欄，
     // 不用管理員自己手動打字找人。
     const code = new URLSearchParams(window.location.search).get('code');
     if (code) {

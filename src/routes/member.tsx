@@ -176,7 +176,7 @@ function MemberComponent() {
       let insertError: { code?: string; message: string } | null = null;
 
       for (let attempt = 0; attempt < 5; attempt++) {
-        const randomCode = 'MID-' + Math.floor(100000 + Math.random() * 900000);
+        const randomCode = 'LSP-' + Math.floor(100000 + Math.random() * 900000);
 
         const newMember = {
           line_user_id: lineProfile.userId,
