@@ -1,12 +1,12 @@
 {
   "site": {
-    "name": "Midnight SPA",
+    "name": "Lounge SPA",
     "lineUrl": "https://lin.ee/tcytYS7"
   },
   "seo": {
-    "title": "Midnight SPA｜深夜靜謐舒壓會館 24H 全年無休",
-    "description": "Midnight SPA 深夜專營的靜謐解壓空間，24 小時全年無休。專業芳療與指油壓課程、當日美容師陣容、LINE 集點會員優惠，立即預約。",
-    "ogTitle": "Midnight SPA｜深夜靜謐舒壓會館",
+    "title": "Lounge SPA｜深夜靜謐舒壓會館 24H 全年無休",
+    "description": "Lounge SPA 深夜專營的靜謐解壓空間，24 小時全年無休。專業芳療與指油壓課程、當日美容師陣容、LINE 集點會員優惠，立即預約。",
+    "ogTitle": "Lounge SPA｜深夜靜謐舒壓會館",
     "ogDescription": "深夜裡的靜謐解壓空間，全天候為您棲息。24H 全年無休，LINE 立即預約。"
   },
   "nav": [
@@ -27,12 +27,12 @@
     "🚗 憑特約停車場票券可折抵 1 小時停車費"
   ],
   "hero": {
-    "badge": "MIDNIGHT SPA",
+    "badge": "LOUNGE SPA",
     "titleBefore": "深夜裡的",
     "titleHighlight": "靜謐解壓",
     "titleAfter": "空間",
     "titleLine2": "全天候為您棲息",
-    "subtitle": "Midnight SPA｜24H 全年無休｜深夜專營"
+    "subtitle": "Lounge SPA｜24H 全年無休｜深夜專營"
   },
   "therapists": [
     {

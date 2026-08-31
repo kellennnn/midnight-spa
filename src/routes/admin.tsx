@@ -634,7 +634,7 @@ function AdminComponent() {
           className="w-full max-w-sm bg-gradient-to-b from-[#14151a] to-[#0c0d10] border border-[#2a2b36] rounded-2xl shadow-2xl p-6 space-y-4"
         >
           <h1 className="font-serif tracking-widest text-[#f5e6c8] text-lg font-bold text-center">
-            MIDNIGHT SPA 管理後台
+            LOUNGE SPA 管理後台
           </h1>
 
           <div>

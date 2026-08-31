@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
-  Midnight SPA design tokens.
+  Lounge SPA design tokens.
   Colors are stored as raw "L C H" triplets (no oklch() wrapper) so
   tailwind.config.ts can compose them with an alpha channel via
   oklch(var(--token) / <alpha-value>).

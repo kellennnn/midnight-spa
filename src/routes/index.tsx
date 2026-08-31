@@ -878,7 +878,7 @@ function Index() {
           <SectionTitle eyebrow="Location" title="交通位置" />
           <div className="overflow-hidden rounded-lg hairline">
             <iframe
-              title="Midnight SPA 地圖位置"
+              title="Lounge SPA 地圖位置"
               src={`https://www.google.com/maps?q=${encodeURIComponent(content.footer.address)}&output=embed`}
               width="100%"
               height="360"
