@@ -621,7 +621,7 @@ function MemberComponent() {
 
               {showBookingForm && (
                 <form onSubmit={handleBookingSubmit} className="space-y-2.5 border-b border-neutral-800 pb-3.5">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div className="min-w-0">
                       <label className="text-[10px] text-neutral-500 mb-1 block">預約日期</label>
                       <input
