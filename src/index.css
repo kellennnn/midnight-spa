@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 /*
-  Lounge SPA design tokens.
+  Lounge Spa design tokens.
   Colors are stored as raw "L C H" triplets (no oklch() wrapper) so
   tailwind.config.ts can compose them with an alpha channel via
   oklch(var(--token) / <alpha-value>).
 */
 
-/* 預設深色模式：海軍藍夜色 + 香檳金（配合 LOUNGE SPA 新視覺） */
+/* 預設深色模式：海軍藍夜色 + 香檳金（配合 LOUNGE Spa 新視覺） */
 :root {
   --background: 0.15 0.05 255; /* 深海軍藍，比舊版靛紫更藍、更貼近品牌色 */
   --foreground: 0.93 0.01 255;

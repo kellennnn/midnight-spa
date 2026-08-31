@@ -810,7 +810,7 @@ function Index() {
             ))}
           </div>
           <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground">
-            ※ Lounge SPA 採全預約專屬制。每項療程均依貴賓當日身心狀態與精油配方進行客製化配置，
+            ※ Lounge Spa 採全預約專屬制。每項療程均依貴賓當日身心狀態與精油配方進行客製化配置，
             完整療程細節將於到店時由專業芳療師為您細心諮詢與說明。
           </p>
         </div>
@@ -845,7 +845,7 @@ function Index() {
           <SectionTitle eyebrow="Location" title="交通位置" />
           <div className="overflow-hidden rounded-lg hairline">
             <iframe
-              title="Lounge SPA 地圖位置"
+              title="Lounge Spa 地圖位置"
               src={`https://www.google.com/maps?q=${encodeURIComponent(content.footer.address)}&output=embed`}
               width="100%"
               height="360"

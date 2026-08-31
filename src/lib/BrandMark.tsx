@@ -1,4 +1,4 @@
-// LOUNGE SPA 品牌標誌：小壁虎 + 弦月 + 星星的簡化線稿圖示，取代原本純文字
+// LOUNGE Spa 品牌標誌：小壁虎 + 弦月 + 星星的簡化線稿圖示，取代原本純文字
 // 的 LOGO。用純 SVG 手繪，不依賴外部圖檔，顏色跟著現有的金色（--primary /
 // #d4af37）走，深色、淺色模式都能直接沿用同一份標記。
 export function BrandMark({ className = 'h-8 w-8' }: { className?: string }) {
