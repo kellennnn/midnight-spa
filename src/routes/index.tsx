@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Crown } from "lucide-react";
 import content from "@/content.json";
 import { BrandMark } from "@/lib/BrandMark";
 
@@ -17,8 +16,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Index,
 });
-
-const LINE_URL = content.site.lineUrl;
 
 type Shift = "早班" | "晚班";
 type Tier = "standard" | "premium";
@@ -123,29 +120,6 @@ function Stardust() {
   );
 }
 
-function LineButton({
-  children,
-  large = false,
-}: {
-  children: React.ReactNode;
-  large?: boolean;
-}) {
-  return (
-    <a
-      href={LINE_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={
-        large
-          ? "glow-cta inline-flex items-center justify-center rounded-full bg-primary px-10 py-4 text-base font-medium tracking-[0.18em] text-primary-foreground shadow-sm"
-          : "glow-cta inline-flex w-full items-center justify-center rounded-full border border-primary/50 bg-transparent px-5 py-2.5 text-sm tracking-[0.16em] text-primary"
-      }
-    >
-      {children}
-    </a>
-  );
-}
-
 function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <div className="mb-12 text-center">
@@ -203,16 +177,9 @@ function QuickNav() {
   return (
     <nav className="fixed inset-x-0 top-14 z-30 h-11 border-b border-border/60 bg-background/95 backdrop-blur-md">
       <div className="no-scrollbar mx-auto flex h-full max-w-6xl items-center gap-1 overflow-x-auto px-4 sm:justify-center sm:gap-2">
-        {content.nav.map((item) =>
-          item.href === "/member" ? (
-            <a
-              key={item.href}
-              href={item.href}
-              className="ml-1 flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-gradient-to-r from-[#d4af37] to-[#aa8024] px-3 py-1.5 text-xs font-semibold tracking-[0.14em] text-black transition-transform hover:scale-105"
-            >
-              <Crown size={12} /> {item.label}
-            </a>
-          ) : (
+        {content.nav
+          .filter((item) => item.href !== "/member" && item.href !== "#booking")
+          .map((item) => (
             <a
               key={item.href}
               href={item.href}
@@ -220,43 +187,9 @@ function QuickNav() {
             >
               {item.label}
             </a>
-          )
-        )}
+          ))}
       </div>
     </nav>
-  );
-}
-
-/* 右下角浮動按鈕 */
-function FloatingLineWidget() {
-  return (
-    <a
-      href={LINE_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="LINE 即時預約"
-      className="group fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border border-primary/40 bg-card/95 px-4 py-3 shadow-[0_4px_25px_oklch(0.72_0.14_38/38%)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-primary"
-    >
-      <span className="relative flex h-3 w-3">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-        <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-      </span>
-      <span className="text-xs tracking-[0.16em] text-silver group-hover:text-primary">LINE 預約</span>
-    </a>
-  );
-}
-
-/* 右下角浮動按鈕（疊在 LINE 按鈕上方）：金色實心，跟 LINE 按鈕做出區隔，最醒目的會員卡入口 */
-function FloatingMemberWidget() {
-  return (
-    <a
-      href="/member"
-      aria-label="查看我的 VIP 會員卡"
-      className="group fixed bottom-24 right-6 z-50 flex items-center gap-2 rounded-full bg-gradient-to-r from-[#d4af37] to-[#aa8024] px-4 py-3 text-black shadow-[0_4px_25px_oklch(0.72_0.14_38/55%)] transition-all duration-300 hover:scale-105 hover:brightness-110"
-    >
-      <Crown size={16} />
-      <span className="text-xs font-semibold tracking-[0.16em]">VIP 會員卡</span>
-    </a>
   );
 }
 
@@ -337,9 +270,6 @@ function TherapistModal({
           </div>
         </button>
 
-        <div className="mt-8">
-          <LineButton large>LINE 私訊預約</LineButton>
-        </div>
       </div>
 
       {zoomIndex !== null && (
@@ -562,20 +492,6 @@ function TherapistCard({
         >
           當日班表 {t.schedule}（{t.shift}）
         </p>
-        <div className="mt-5" onClick={(e) => e.stopPropagation()}>
-          {premium ? (
-            <a
-              href={LINE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="glow-cta block w-full rounded-full bg-gradient-to-r from-[#E5B292] via-[#FCEADE] to-[#C68B59] py-2.5 text-center text-sm tracking-[0.16em] font-medium text-[#090a0f]"
-            >
-              LINE 私訊預約
-            </a>
-          ) : (
-            <LineButton>LINE 私訊預約</LineButton>
-          )}
-        </div>
       </div>
     </article>
   );
@@ -627,45 +543,6 @@ function Index() {
           <p className="mt-8 text-sm tracking-[0.24em] text-muted-foreground sm:text-base">
             {content.hero.subtitle}
           </p>
-          <div className="mt-12">
-            <LineButton large>LINE 立即預約</LineButton>
-          </div>
-        </div>
-      </section>
-
-      {/* Booking Steps */}
-      <section id="booking" className="px-6 py-24">
-        <div className="mx-auto max-w-4xl">
-          <SectionTitle eyebrow="How To Book" title="預約流程" />
-          <div className="grid gap-8 sm:grid-cols-3">
-            {content.booking.steps.map((step, i) => (
-              <div key={step.title} className="text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full hairline text-lg text-gradient-rose">
-                  {i + 1}
-                </div>
-                <h3 className="text-base font-light text-silver">{step.title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-12 flex flex-col items-center gap-6 rounded-lg hairline bg-card/70 p-8 backdrop-blur-sm sm:flex-row sm:justify-center">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=10&data=${encodeURIComponent(content.site.lineUrl)}`}
-              alt="掃描加入 LINE 預約"
-              width={140}
-              height={140}
-              loading="lazy"
-              className="h-[140px] w-[140px] rounded-md bg-white p-2"
-            />
-            <div className="text-center sm:text-left">
-              <p className="text-sm tracking-[0.16em] text-silver">掃描 QR Code 加入 LINE</p>
-              <p className="mt-1 text-xs text-muted-foreground">或直接點擊下方按鈕私訊預約</p>
-              <div className="mt-4">
-                <LineButton large>LINE 立即預約</LineButton>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -791,21 +668,6 @@ function Index() {
                     </li>
                   ))}
                 </ul>
-
-                <div className="relative z-10 mt-6">
-                  {s.featured ? (
-                    <a
-                      href={LINE_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="glow-cta block w-full rounded-full bg-gradient-to-r from-[#E5B292] via-[#FCEADE] to-[#C68B59] py-3 text-center text-xs font-bold tracking-wider text-[#090a0f] shadow-lg transition hover:opacity-90"
-                    >
-                      預約專屬時段
-                    </a>
-                  ) : (
-                    <LineButton large>預約專屬時段</LineButton>
-                  )}
-                </div>
               </div>
             ))}
           </div>
@@ -886,9 +748,6 @@ function Index() {
             <h3 className="mb-3 text-sm font-light tracking-[0.2em] text-silver">聯絡預約</h3>
             <p>{content.footer.lineId}</p>
             <p>{content.footer.telegramId}</p>
-            <div className="pt-4">
-              <LineButton>LINE 立即預約</LineButton>
-            </div>
           </div>
         </div>
         <div className="mx-auto mt-14 max-w-6xl border-t border-border pt-8 text-center text-[11px] leading-relaxed text-muted-foreground">
@@ -898,9 +757,7 @@ function Index() {
         </div>
       </footer>
 
-      {/* 右下角常駐浮動按鈕（疊兩層：VIP 會員卡在上、LINE 預約在下）+ 左下角深淺色切換 */}
-      <FloatingMemberWidget />
-      <FloatingLineWidget />
+      {/* 左下角深淺色切換 */}
       <ThemeToggle />
 
       {/* 人員相簿 Modal */}
