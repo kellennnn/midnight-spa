@@ -595,18 +595,17 @@ function MemberComponent() {
         ) : (
           <div className="space-y-4">
             <div className="text-left bg-[#171821] p-4 rounded-lg border border-neutral-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] text-neutral-400 uppercase tracking-widest">預約服務</p>
-                {!showBookingForm && (
-                  <button
-                    type="button"
-                    onClick={() => setShowBookingForm(true)}
-                    className="flex items-center gap-1 text-[11px] text-[#d4af37] cursor-pointer"
-                  >
-                    <CalendarPlus size={12} /> 我要預約
-                  </button>
-                )}
-              </div>
+              <p className="text-[11px] text-neutral-400 uppercase tracking-widest">預約服務</p>
+
+              {!showBookingForm && (
+                <button
+                  type="button"
+                  onClick={() => setShowBookingForm(true)}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#d4af37] to-[#aa8024] hover:brightness-110 text-black font-semibold py-3 rounded-lg text-sm tracking-wider transition-all duration-200 cursor-pointer"
+                >
+                  <CalendarPlus size={16} /> 我要預約
+                </button>
+              )}
 
               {showBookingForm && (
                 <form onSubmit={handleBookingSubmit} className="space-y-2.5 border-b border-neutral-800 pb-3.5">
