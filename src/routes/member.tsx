@@ -42,6 +42,13 @@ interface Booking {
   created_at: string;
 }
 
+// 24 小時營業，時段選單以 30 分鐘為一格（00:00、00:30 ... 23:30）
+const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
+  const h = String(Math.floor(i / 2)).padStart(2, '0');
+  const m = i % 2 === 0 ? '00' : '30';
+  return `${h}:${m}`;
+});
+
 const BOOKING_STATUS_LABEL: Record<Booking['status'], { label: string; className: string }> = {
   pending: { label: '待確認', className: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' },
   confirmed: { label: '已確認', className: 'text-green-400 border-green-500/30 bg-green-500/10' },
@@ -615,20 +622,32 @@ function MemberComponent() {
               {showBookingForm && (
                 <form onSubmit={handleBookingSubmit} className="space-y-2.5 border-b border-neutral-800 pb-3.5">
                   <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="date"
-                      required
-                      min={new Date().toISOString().slice(0, 10)}
-                      value={bookingForm.date}
-                      onChange={(e) => setBookingForm((f) => ({ ...f, date: e.target.value }))}
-                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-                    />
-                    <input
-                      type="time"
-                      value={bookingForm.time}
-                      onChange={(e) => setBookingForm((f) => ({ ...f, time: e.target.value }))}
-                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-                    />
+                    <div className="min-w-0">
+                      <label className="text-[10px] text-neutral-500 mb-1 block">預約日期</label>
+                      <input
+                        type="date"
+                        required
+                        min={new Date().toISOString().slice(0, 10)}
+                        value={bookingForm.date}
+                        onChange={(e) => setBookingForm((f) => ({ ...f, date: e.target.value }))}
+                        className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <label className="text-[10px] text-neutral-500 mb-1 block">預約時段</label>
+                      <select
+                        value={bookingForm.time}
+                        onChange={(e) => setBookingForm((f) => ({ ...f, time: e.target.value }))}
+                        className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                      >
+                        <option value="">選擇時段</option>
+                        {TIME_SLOTS.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <select
                     value={bookingForm.service}
