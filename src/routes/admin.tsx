@@ -238,7 +238,11 @@ function AdminComponent() {
   const [bookingFilter, setBookingFilter] = useState<'all' | Booking['status']>('pending');
   const [decidingBookingId, setDecidingBookingId] = useState<string | null>(null);
 
-  const [notifSettings, setNotifSettings] = useState({ telegram_bot_token: '', telegram_chat_id: '' });
+  const [notifSettings, setNotifSettings] = useState({
+    telegram_bot_token: '',
+    telegram_chat_id: '',
+    line_channel_access_token: '',
+  });
   const [notifSettingsLoading, setNotifSettingsLoading] = useState(false);
   const [notifSaving, setNotifSaving] = useState(false);
 
@@ -377,6 +381,7 @@ function AdminComponent() {
       setNotifSettings({
         telegram_bot_token: data.telegram_bot_token || '',
         telegram_chat_id: data.telegram_chat_id || '',
+        line_channel_access_token: data.line_channel_access_token || '',
       });
     }
     setNotifSettingsLoading(false);
@@ -389,6 +394,7 @@ function AdminComponent() {
       .update({
         telegram_bot_token: notifSettings.telegram_bot_token || null,
         telegram_chat_id: notifSettings.telegram_chat_id || null,
+        line_channel_access_token: notifSettings.line_channel_access_token || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', 1);
@@ -1126,36 +1132,56 @@ function AdminComponent() {
         {isOwner && activeTab === 'overview' && (
           <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4 space-y-3">
             <h2 className="text-sm font-semibold text-[#f5e6c8] flex items-center gap-1.5">
-              <Bell size={14} /> 新預約通知（Telegram）
+              <Bell size={14} /> 預約通知設定
             </h2>
             <p className="text-xs text-neutral-500">
-              有新的預約請求送出時，會自動推播訊息到這裡設定的 Telegram。填好 Bot Token 跟 Chat
-              ID 後存檔即可，兩個欄位都留空的話就不會發送通知。
+              有新的預約請求送出時，會自動推播訊息到這裡設定的 Telegram 給你；當你在「預約管理」按確認/婉拒時，也會用
+              LINE 推播訊息通知客人本人。欄位留空就不會發送對應的通知。
             </p>
             {notifSettingsLoading ? (
               <p className="text-xs text-neutral-500">載入中...</p>
             ) : (
-              <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px]">
-                  <label className="text-[11px] text-neutral-400 mb-1 block">Telegram Bot Token</label>
-                  <input
-                    type="text"
-                    value={notifSettings.telegram_bot_token}
-                    onChange={(e) => setNotifSettings((s) => ({ ...s, telegram_bot_token: e.target.value }))}
-                    placeholder="123456789:AA..."
-                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-                  />
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[11px] text-[#d4af37] uppercase tracking-widest mb-2">給你的通知（新預約 → Telegram）</p>
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="flex-1 min-w-[220px]">
+                      <label className="text-[11px] text-neutral-400 mb-1 block">Telegram Bot Token</label>
+                      <input
+                        type="text"
+                        value={notifSettings.telegram_bot_token}
+                        onChange={(e) => setNotifSettings((s) => ({ ...s, telegram_bot_token: e.target.value }))}
+                        placeholder="123456789:AA..."
+                        className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-[160px]">
+                      <label className="text-[11px] text-neutral-400 mb-1 block">Chat ID</label>
+                      <input
+                        type="text"
+                        value={notifSettings.telegram_chat_id}
+                        onChange={(e) => setNotifSettings((s) => ({ ...s, telegram_chat_id: e.target.value }))}
+                        placeholder="123456789"
+                        className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-[160px]">
-                  <label className="text-[11px] text-neutral-400 mb-1 block">Chat ID</label>
-                  <input
-                    type="text"
-                    value={notifSettings.telegram_chat_id}
-                    onChange={(e) => setNotifSettings((s) => ({ ...s, telegram_chat_id: e.target.value }))}
-                    placeholder="123456789"
-                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-                  />
+
+                <div>
+                  <p className="text-[11px] text-[#d4af37] uppercase tracking-widest mb-2">給客人的通知（確認/婉拒 → LINE）</p>
+                  <div>
+                    <label className="text-[11px] text-neutral-400 mb-1 block">LINE Messaging API Channel Access Token</label>
+                    <input
+                      type="text"
+                      value={notifSettings.line_channel_access_token}
+                      onChange={(e) => setNotifSettings((s) => ({ ...s, line_channel_access_token: e.target.value }))}
+                      placeholder="長長一串..."
+                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
                 </div>
+
                 <button
                   onClick={saveNotifSettings}
                   disabled={notifSaving}
