@@ -197,6 +197,7 @@ function AdminComponent() {
   const [addingLog, setAddingLog] = useState(false);
   const [lastVisitMap, setLastVisitMap] = useState<Record<string, string>>({});
   const [chartRangeMonths, setChartRangeMonths] = useState<6 | 12 | 24 | 0>(6); // 0 = 全部時間
+  const [activeTab, setActiveTab] = useState<'members' | 'overview'>('members');
 
   const [showRoster, setShowRoster] = useState(false);
   const [adminRoster, setAdminRoster] = useState<AdminUser[]>([]);
@@ -704,7 +705,10 @@ function AdminComponent() {
           <div className="flex items-center gap-4">
             {canView && (
               <button
-                onClick={() => setScannerOpen((v) => !v)}
+                onClick={() => {
+                  setScannerOpen((v) => !v);
+                  setActiveTab('members');
+                }}
                 className="flex items-center gap-1.5 text-xs text-[#d4af37] hover:text-[#f5e6c8] cursor-pointer"
               >
                 <Camera size={14} /> {scannerOpen ? '關閉相機掃描' : '相機掃描'}
@@ -712,7 +716,10 @@ function AdminComponent() {
             )}
             {isOwner && (
               <button
-                onClick={() => setShowRoster((v) => !v)}
+                onClick={() => {
+                  setShowRoster((v) => !v);
+                  setActiveTab('overview');
+                }}
                 className="flex items-center gap-1.5 text-xs text-[#d4af37] hover:text-[#f5e6c8] cursor-pointer"
               >
                 <ShieldCheck size={14} /> {showRoster ? '關閉員工權限管理' : '員工權限管理'}
@@ -727,7 +734,30 @@ function AdminComponent() {
           </div>
         </div>
 
-        {canView && !membersLoading && (
+        {canView && (
+          <div className="flex items-center gap-2 border-b border-[#1e1f28]">
+            {(
+              [
+                ['members', '會員資料'],
+                ['overview', '總覽 / 管理'],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+                  activeTab === key
+                    ? 'border-[#d4af37] text-[#f5e6c8]'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {canView && activeTab === 'overview' && !membersLoading && (
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="flex items-center gap-4 rounded-xl border border-[#2a2b36] bg-gradient-to-r from-[#1c1e29] to-[#101117] px-5 py-5 sm:col-span-1">
               <Users size={30} className="text-[#d4af37] shrink-0" />
@@ -788,7 +818,7 @@ function AdminComponent() {
           </div>
         )}
 
-        {scannerOpen && (
+        {activeTab === 'members' && scannerOpen && (
           <QrScannerPanel
             onClose={() => setScannerOpen(false)}
             onScan={(code) => {
@@ -799,7 +829,7 @@ function AdminComponent() {
           />
         )}
 
-        {isOwner && showRoster && (
+        {isOwner && activeTab === 'overview' && showRoster && (
           <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4 space-y-4">
             <h2 className="text-sm font-semibold text-[#f5e6c8]">員工權限管理</h2>
 
@@ -900,7 +930,7 @@ function AdminComponent() {
           </div>
         )}
 
-        {scannedCode && !membersLoading && (
+        {activeTab === 'members' && scannedCode && !membersLoading && (
           scannedMatch ? (
             <div
               className={`flex items-center gap-4 rounded-xl border p-5 ${
@@ -950,7 +980,7 @@ function AdminComponent() {
           )
         )}
 
-        {!canView ? (
+        {activeTab === 'members' && (!canView ? (
           <p className="text-sm text-neutral-500">你目前沒有查看會員資料的權限，請聯絡管理者。</p>
         ) : (
           <>
@@ -1822,7 +1852,7 @@ function AdminComponent() {
               </div>
             )}
           </>
-        )}
+        ))}
       </div>
     </main>
   );
