@@ -133,10 +133,9 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
 /* 置頂公告列：低調單行輪播，一次只顯示一則，淡入淡出切換 */
 function AnnouncementMarquee() {
   const announcements = [
-    "✨ 新客首次體驗，官方 LINE 領取 $300 折價券",
-    "🌙 深夜時段（23:00 後）預約享專屬迎賓精油芳療",
-    "⭐ Google 五星好評享下次療程現折 $200",
-    "📲 今日班表即時更新中，請透過 LINE 私訊卡位",
+    "✦ 採會員專屬預約制 ｜ 首次使用請先完成會員註冊",
+    "✦ 24H 全年無休 ｜ 獨立私密包廂，全時段開放線上預約",
+    "✦ 全館嚴格執行一客一清消毒 ｜ 享受純淨無干擾的解壓時光",
   ];
   const [index, setIndex] = useState(0);
 
@@ -148,11 +147,11 @@ function AnnouncementMarquee() {
   }, [announcements.length]);
 
   return (
-    <div className="fixed inset-x-0 top-0 z-40 h-9 w-full border-b border-primary/10 bg-background/60 backdrop-blur-md">
+    <div className="fixed inset-x-0 top-0 z-40 h-12 w-full border-b-2 border-primary/50 bg-card/90 shadow-[0_2px_20px_oklch(0.76_0.12_83/15%)] backdrop-blur-md">
       <div className="mx-auto flex h-full max-w-6xl items-center justify-center px-6">
         <p
           key={index}
-          className="announcement-fade truncate text-center text-[11px] tracking-[0.16em] text-muted-foreground"
+          className="announcement-fade truncate text-center text-sm font-medium tracking-[0.18em] text-primary sm:text-base"
         >
           {announcements[index]}
         </p>
@@ -163,25 +162,27 @@ function AnnouncementMarquee() {
 
 /* 頂部導覽列：釘在公告列下方，左側品牌標誌，右側導覽連結 */
 function QuickNav() {
+  const accentColors = ["text-primary", "text-[#e5b292]", "text-silver"];
   return (
-    <nav className="fixed inset-x-0 top-9 z-30 h-16 border-b border-white/5 bg-background/85 backdrop-blur-md">
+    <nav className="fixed inset-x-0 top-12 z-30 h-20 border-b border-white/5 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6">
         <a href="/" className="flex shrink-0 items-center gap-2.5">
-          <BrandMark className="h-6 w-10 text-primary" />
-          <span className="font-serif text-sm tracking-[0.22em] text-silver sm:text-base">
+          <BrandMark className="h-8 w-12 text-primary" />
+          <span className="font-serif text-base tracking-[0.22em] text-silver sm:text-lg">
             Lounge <span className="text-primary">Spa</span>
           </span>
         </a>
-        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto sm:gap-2">
+        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto sm:gap-3">
           {content.nav
             .filter((item) => item.href !== "/member" && item.href !== "#booking")
-            .map((item) => (
+            .map((item, i) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+                className={`group relative shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-medium tracking-[0.18em] transition-colors sm:text-base ${accentColors[i % accentColors.length]} opacity-80 hover:opacity-100`}
               >
                 {item.label}
+                <span className="absolute inset-x-3 -bottom-0.5 h-px scale-x-0 bg-current transition-transform duration-300 group-hover:scale-x-100" />
               </a>
             ))}
         </div>
@@ -512,7 +513,7 @@ function Index() {
       {/* 置頂即時跑馬燈 + 快速選單 */}
       <AnnouncementMarquee />
       <QuickNav />
-      <div className="h-[100px]" aria-hidden="true" />
+      <div className="h-[128px]" aria-hidden="true" />
 
       {/* Hero */}
       <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden px-6">
