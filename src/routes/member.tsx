@@ -630,7 +630,7 @@ function MemberComponent() {
                         min={new Date().toISOString().slice(0, 10)}
                         value={bookingForm.date}
                         onChange={(e) => setBookingForm((f) => ({ ...f, date: e.target.value }))}
-                        className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2 py-1.5 text-[11px] text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                        className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                     <div className="min-w-0">
@@ -638,7 +638,7 @@ function MemberComponent() {
                       <select
                         value={bookingForm.time}
                         onChange={(e) => setBookingForm((f) => ({ ...f, time: e.target.value }))}
-                        className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2 py-1.5 text-[11px] text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                        className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                       >
                         <option value="">選擇時段</option>
                         {TIME_SLOTS.map((t) => (
