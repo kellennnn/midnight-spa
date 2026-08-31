@@ -1,47 +1,8 @@
-// Lounge Spa 品牌標誌：壁虎 + 弦月 + 星星，取代原本純文字的 LOGO。
-// 純 SVG 手繪、不依賴外部圖檔，套一層淡淡的金屬感漸層（brushedMetal），
-// 顏色仍然跟著 currentColor 走，深色／淺色模式、金色／銀色都能直接沿用。
-export function BrandMark({ className = 'h-8 w-8' }: { className?: string }) {
-  const gradId = 'brandMarkSheen';
-  return (
-    <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <defs>
-        <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
-          <stop offset="55%" stopColor="currentColor" stopOpacity="0.82" />
-          <stop offset="100%" stopColor="currentColor" stopOpacity="1" />
-        </linearGradient>
-      </defs>
-
-      {/* 弦月：右上角，開口朝左 */}
-      <path
-        d="M74 8c-6.5 0-11.8 5.3-11.8 11.8S67.5 31.6 74 31.6c1.6 0 3.1-0.3 4.5-0.9-3 3.9-7.7 6.4-13 6.4-9 0-16.3-7.3-16.3-16.3S56.5 4.5 65.5 4.5c1.5 0 3 0.2 4.4 0.6-1.9 0.6-3.7 1.6-5.3 2.9 3-0.2 6.1 0 9.4 0z"
-        fill={`url(#${gradId})`}
-      />
-      {/* 星星 */}
-      <path d="M84 6.5l1.1 2.6L87.7 10.2l-2.6 1.1L84 13.9l-1.1-2.6-2.6-1.1 2.6-1.1L84 6.5z" fill="currentColor" />
-      <path d="M91 14.5l0.6 1.5 1.5 0.6-1.5 0.6-0.6 1.5-0.6-1.5-1.5-0.6 1.5-0.6 0.6-1.5z" fill="currentColor" />
-
-      {/* 壁虎：頭在左、尾巴甩向右側 */}
-      <g fill={`url(#${gradId})`}>
-        {/* 尾巴（先畫在身體下方，讓身體疊上去銜接更自然） */}
-        <path d="M40 30c9 3.4 19 3.8 28.5-0.4 6.5-2.9 12-7.7 15.8-13.6 0.8-1.2 2.6-0.5 2.4 0.9-1 7-5.3 13.4-11.6 17.9-6.9 4.9-15.4 7.1-23.9 6.5-4.2-0.3-8.3-1.4-12-3.2-1.3-0.6-0.6-2.6 0.8-2.1z" />
-
-        {/* 身體 */}
-        <path d="M14 24.5c0-4.4 4-8 9-8s9 3.9 9 8.5c0 3.3-1.9 6.2-4.8 7.6 6 3 12.8 4.4 19.8 4 2.7-0.2 5.3-0.7 7.8-1.6 1.3-0.5 2.2 1.4 1 2.1-8.1 4.8-18 6.4-27.4 4.5-6.7-1.4-12.9-4.7-17.6-9.5-1.8-1.9-3.4-4-4.6-6.3-0.7-1.4 1-2.7 2.2-1.7 1.7 1.4 3.6 2.6 5.6 3.5-0.7-1-0.6 0.3 0-3.1z" />
-
-        {/* 頭 */}
-        <path d="M8 20c-3.3 0-6 2.7-6 6.2 0 2 0.9 3.8 2.4 5l-1.4 3.3 3.7-1.6c0.7 0.2 1.5 0.3 2.3 0.3 3.3 0 6-2.8 6-6.2S11.3 20 8 20z" />
-        <circle cx="6" cy="25.3" r="1.15" fill="#0f1a2b" />
-
-        {/* 四肢：前腳兩隻、後腳兩隻，各帶三根小趾 */}
-        <g strokeWidth="1.6" strokeLinecap="round" fill="none" stroke={`url(#${gradId})`}>
-          <path d="M18 30.5l-2.2 3.4M15.8 33.9l-1.4-1M15.8 33.9l0.3-1.7" />
-          <path d="M24 34l-1.6 3.7M22.4 37.7l-1.5-0.8M22.4 37.7l0.5-1.6" />
-          <path d="M34 39l-1.2 3.9M32.8 42.9l-1.6-0.6M32.8 42.9l0.7-1.5" />
-          <path d="M44 41.5l-0.6 4.1M43.4 45.6l-1.7-0.3M43.4 45.6l0.9-1.4" />
-        </g>
-      </g>
-    </svg>
-  );
+// Lounge Spa 品牌標誌：壁虎 + 弦月 + 星星。這是老闆提供的原始設計稿
+// （public/brand-mark.png）去背後裁切出來的圖，不是手繪 SVG——保留這支
+// 元件只是為了讓呼叫端維持同一個 <BrandMark className="h-X w-Y" /> 用法，
+// 不用一個個改成 <img>。原圖比例約 548:374（寬:高 ≈ 1.465:1），套用
+// className 時寬高盡量抓這個比例，不然圖會被拉伸變形。
+export function BrandMark({ className = 'h-8 w-12' }: { className?: string }) {
+  return <img src="/brand-mark.png" alt="Lounge Spa" className={`${className} object-contain`} />;
 }
