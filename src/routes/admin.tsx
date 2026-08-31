@@ -763,7 +763,7 @@ function AdminComponent() {
           className="w-full max-w-sm bg-gradient-to-b from-[#152236] to-[#0d1726] border border-[#2b4670] rounded-2xl shadow-2xl p-6 space-y-4"
         >
           <h1 className="flex items-center justify-center gap-2 font-serif tracking-widest text-[#f5e6c8] text-lg font-bold text-center">
-            <BrandMark className="h-6 w-6 text-[#d4af37]" />
+            <BrandMark className="h-6 w-10 text-[#d4af37]" />
             LOUNGE Spa 管理後台
           </h1>
 
@@ -830,7 +830,7 @@ function AdminComponent() {
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="flex items-center gap-2 font-serif tracking-widest text-[#f5e6c8] text-xl font-bold">
-            <BrandMark className="h-6 w-6 text-[#d4af37]" />
+            <BrandMark className="h-6 w-10 text-[#d4af37]" />
             會員管理
           </h1>
           <div className="flex items-center gap-4">

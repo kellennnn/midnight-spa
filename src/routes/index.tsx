@@ -167,7 +167,7 @@ function QuickNav() {
     <nav className="fixed inset-x-0 top-9 z-30 h-16 border-b border-white/5 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6">
         <a href="/" className="flex shrink-0 items-center gap-2.5">
-          <BrandMark className="h-6 w-6 text-primary" />
+          <BrandMark className="h-6 w-10 text-primary" />
           <span className="font-serif text-sm tracking-[0.22em] text-silver sm:text-base">
             LOUNGE <span className="text-primary">Spa</span>
           </span>
@@ -391,7 +391,7 @@ function AgeGate() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background p-6">
       <div className="hairline w-full max-w-sm rounded-lg bg-card/95 p-8 text-center backdrop-blur-md">
         <div className="mb-6 flex items-center justify-center gap-3">
-          <BrandMark className="h-5 w-5 text-silver" />
+          <BrandMark className="h-5 w-8 text-silver" />
           <span className="text-xs tracking-[0.34em] text-silver">{content.site.name}</span>
         </div>
         <h2 className="text-xl font-light text-silver">年齡確認</h2>
@@ -527,7 +527,7 @@ function Index() {
         <Stardust />
         <div className="relative z-10 mx-auto max-w-3xl py-24 text-center">
           <div className="mb-10 flex flex-col items-center gap-4">
-            <BrandMark className="hero-emblem-glow h-12 w-12 text-primary sm:h-14 sm:w-14" />
+            <BrandMark className="hero-emblem-glow h-14 w-24 text-primary sm:h-20 sm:w-32" />
             <span className="hero-emblem-glow font-serif text-xl tracking-[0.4em] text-primary sm:text-2xl">
               {content.hero.badge}
             </span>
@@ -737,7 +737,7 @@ function Index() {
         <div className="mx-auto grid max-w-6xl gap-12 sm:grid-cols-3">
           <div>
             <div className="mb-4 flex items-center gap-3">
-              <BrandMark className="h-5 w-5 text-silver" />
+              <BrandMark className="h-5 w-8 text-silver" />
               <span className="text-xs tracking-[0.34em] text-silver">{content.site.name}</span>
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">
