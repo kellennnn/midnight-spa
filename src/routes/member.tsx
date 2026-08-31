@@ -65,6 +65,7 @@ function MemberComponent() {
   const [nicknameInput, setNicknameInput] = useState('');
   const [nicknameSubmitting, setNicknameSubmitting] = useState(false);
 
+  const [activeTab, setActiveTab] = useState<'card' | 'booking'>('card');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
@@ -357,6 +358,30 @@ function MemberComponent() {
           </div>
         </div>
 
+        {profile && (
+          <div className="flex items-center gap-1 border-b border-neutral-800 mb-5">
+            {(
+              [
+                ['card', '會員卡'],
+                ['booking', '預約'],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setActiveTab(key)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+                  activeTab === key
+                    ? 'border-[#d4af37] text-[#f5e6c8]'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {!profile ? (
           <form onSubmit={handleRegister} className="space-y-5">
             <div className="text-center mb-2">
@@ -456,7 +481,7 @@ function MemberComponent() {
               {submitting ? '開卡處理中...' : '開通 VIP 會員卡'}
             </button>
           </form>
-        ) : (
+        ) : activeTab === 'card' ? (
           <div className="space-y-6 text-center">
             <div>
               {editingNickname ? (
@@ -562,6 +587,13 @@ function MemberComponent() {
               </div>
             )}
 
+            <div className="flex items-center justify-center gap-1.5 text-xs text-neutral-500 pt-2">
+              <CheckCircle2 size={13} className="text-[#d4af37]" />
+              <span>來店出示 QR Code 即可享有專屬尊榮禮遇</span>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
             <div className="text-left bg-[#171821] p-4 rounded-lg border border-neutral-800 space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] text-neutral-400 uppercase tracking-widest">預約服務</p>
@@ -677,11 +709,6 @@ function MemberComponent() {
                   })}
                 </div>
               )}
-            </div>
-
-            <div className="flex items-center justify-center gap-1.5 text-xs text-neutral-500 pt-2">
-              <CheckCircle2 size={13} className="text-[#d4af37]" />
-              <span>來店出示 QR Code 即可享有專屬尊榮禮遇</span>
             </div>
           </div>
         )}
