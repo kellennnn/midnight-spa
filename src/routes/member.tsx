@@ -37,7 +37,7 @@ interface Booking {
   service_item: string;
   therapist_preference: string | null;
   note: string | null;
-  status: 'pending' | 'confirmed' | 'declined' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'declined' | 'cancelled' | 'completed';
   staff_note: string | null;
   created_at: string;
 }
@@ -47,6 +47,7 @@ const BOOKING_STATUS_LABEL: Record<Booking['status'], { label: string; className
   confirmed: { label: '已確認', className: 'text-green-400 border-green-500/30 bg-green-500/10' },
   declined: { label: '無法安排', className: 'text-red-400 border-red-500/30 bg-red-500/10' },
   cancelled: { label: '已取消', className: 'text-neutral-500 border-neutral-700 bg-neutral-800/40' },
+  completed: { label: '已完成', className: 'text-[#d4af37] border-[#d4af37]/30 bg-[#d4af37]/10' },
 };
 
 function MemberComponent() {

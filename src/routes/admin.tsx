@@ -94,9 +94,10 @@ interface Booking {
   service_item: string;
   therapist_preference: string | null;
   note: string | null;
-  status: 'pending' | 'confirmed' | 'declined' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'declined' | 'cancelled' | 'completed';
   staff_note: string | null;
   created_at: string;
+  redeemed_at: string | null;
 }
 
 const BOOKING_STATUS_LABEL: Record<Booking['status'], { label: string; className: string }> = {
@@ -104,6 +105,7 @@ const BOOKING_STATUS_LABEL: Record<Booking['status'], { label: string; className
   confirmed: { label: '已確認', className: 'text-green-400 border-green-500/30 bg-green-500/10' },
   declined: { label: '無法安排', className: 'text-red-400 border-red-500/30 bg-red-500/10' },
   cancelled: { label: '已取消', className: 'text-neutral-500 border-neutral-700 bg-neutral-800/40' },
+  completed: { label: '已核銷', className: 'text-[#d4af37] border-[#d4af37]/30 bg-[#d4af37]/10' },
 };
 
 function formatBirthday(m: Pick<MemberRow, 'birth_month' | 'birth_day' | 'birth_year'>) {
@@ -238,6 +240,9 @@ function AdminComponent() {
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [bookingFilter, setBookingFilter] = useState<'all' | Booking['status']>('pending');
   const [decidingBookingId, setDecidingBookingId] = useState<string | null>(null);
+  const [redeemingId, setRedeemingId] = useState<string | null>(null);
+  const [redeemForm, setRedeemForm] = useState({ amount: '', therapist: '', notes: '' });
+  const [redeemSubmitting, setRedeemSubmitting] = useState(false);
 
   const [notifSettings, setNotifSettings] = useState({
     telegram_bot_token: '',
@@ -371,6 +376,29 @@ function AdminComponent() {
       setBookings((prev) => prev.map((b) => (b.id === id ? data[0] : b)));
     }
     setDecidingBookingId(null);
+  };
+
+  const redeemBooking = async (id: string) => {
+    if (!redeemForm.amount) {
+      alert('請填寫金額');
+      return;
+    }
+    setRedeemSubmitting(true);
+    const { data, error } = await supabase.rpc('admin_redeem_booking', {
+      p_id: id,
+      p_amount: Number(redeemForm.amount),
+      p_therapist: redeemForm.therapist || null,
+      p_notes: redeemForm.notes || null,
+    });
+    if (error) {
+      alert('核銷失敗：' + error.message);
+      console.error(error);
+    } else if (data && data.length > 0) {
+      setBookings((prev) => prev.map((b) => (b.id === id ? data[0] : b)));
+      setRedeemingId(null);
+      setRedeemForm({ amount: '', therapist: '', notes: '' });
+    }
+    setRedeemSubmitting(false);
   };
 
   const loadNotifSettings = async () => {
@@ -873,6 +901,7 @@ function AdminComponent() {
                 [
                   ['pending', '待確認'],
                   ['confirmed', '已確認'],
+                  ['completed', '已核銷'],
                   ['declined', '無法安排'],
                   ['cancelled', '已取消'],
                   ['all', '全部'],
@@ -937,6 +966,17 @@ function AdminComponent() {
                             </button>
                           </div>
                         )}
+                        {canEditBasic && b.status === 'confirmed' && redeemingId !== b.id && (
+                          <button
+                            onClick={() => {
+                              setRedeemingId(b.id);
+                              setRedeemForm({ amount: '', therapist: b.therapist_preference || '', notes: '' });
+                            }}
+                            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#aa8024] text-black font-semibold cursor-pointer"
+                          >
+                            <Receipt size={13} /> 核銷
+                          </button>
+                        )}
                       </div>
                       <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 mt-3 text-xs text-neutral-400">
                         <p className="flex items-center gap-1">
@@ -951,6 +991,53 @@ function AdminComponent() {
                       <p className="text-[10px] text-neutral-600 mt-2">
                         送出時間：{new Date(b.created_at).toLocaleString('zh-TW')}
                       </p>
+
+                      {redeemingId === b.id && (
+                        <div className="mt-3 pt-3 border-t border-[#203658] space-y-2">
+                          <div className="grid sm:grid-cols-3 gap-2">
+                            <input
+                              type="number"
+                              required
+                              placeholder="金額 *"
+                              value={redeemForm.amount}
+                              onChange={(e) => setRedeemForm((f) => ({ ...f, amount: e.target.value }))}
+                              className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                            />
+                            <input
+                              type="text"
+                              placeholder="服務人員"
+                              value={redeemForm.therapist}
+                              onChange={(e) => setRedeemForm((f) => ({ ...f, therapist: e.target.value }))}
+                              className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                            />
+                            <input
+                              type="text"
+                              placeholder="備註（選填）"
+                              value={redeemForm.notes}
+                              onChange={(e) => setRedeemForm((f) => ({ ...f, notes: e.target.value }))}
+                              className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => redeemBooking(b.id)}
+                              disabled={redeemSubmitting}
+                              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#aa8024] text-black font-semibold disabled:opacity-50 cursor-pointer"
+                            >
+                              <Check size={13} /> {redeemSubmitting ? '處理中...' : '確認核銷'}
+                            </button>
+                            <button
+                              onClick={() => setRedeemingId(null)}
+                              className="text-xs px-3 py-1.5 rounded-lg border border-neutral-700 text-neutral-400 cursor-pointer"
+                            >
+                              取消
+                            </button>
+                          </div>
+                          <p className="text-[10px] text-neutral-500">
+                            核銷後會自動在該會員的消費紀錄新增一筆（日期為核銷當下時間、項目沿用此預約）。
+                          </p>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
