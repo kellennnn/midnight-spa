@@ -6,6 +6,15 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        serif: [
+          '"Cormorant Garamond"',
+          '"Noto Serif TC"',
+          "ui-serif",
+          "Georgia",
+          "serif",
+        ],
+      },
       colors: {
         background: "oklch(var(--background) / <alpha-value>)",
         foreground: "oklch(var(--foreground) / <alpha-value>)",

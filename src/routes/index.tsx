@@ -130,64 +130,61 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   );
 }
 
-/* 置頂跑馬燈元件 */
-/* 生動升級版跑馬燈元件 */
-/* 款式一：勃艮第酒紅跑馬燈 */
+/* 置頂公告列：低調單行輪播，一次只顯示一則，淡入淡出切換 */
 function AnnouncementMarquee() {
   const announcements = [
-    { tag: "即時班表", text: "今日班表即時更新中，請透過 LINE 私訊卡位", icon: "🌙" },
-    { tag: "五星好評", text: "Google 五星好評享下次療程現折 $200", icon: "⭐" },
-    { tag: "夜間限定", text: "深夜時段（23:00 後）預約享專屬迎賓精油芳療", icon: "✨" },
-    { tag: "新客禮遇", text: "新客初次體驗，官方 LINE 領取 $300 折價券", icon: "🎁" },
+    "✨ 新客首次體驗，官方 LINE 領取 $300 折價券",
+    "🌙 深夜時段（23:00 後）預約享專屬迎賓精油芳療",
+    "⭐ Google 五星好評享下次療程現折 $200",
+    "📲 今日班表即時更新中，請透過 LINE 私訊卡位",
   ];
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((i) => (i + 1) % announcements.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [announcements.length]);
 
   return (
-    <div className="marquee-bar fixed inset-x-0 top-0 z-40 flex h-14 w-full items-center overflow-hidden border-b-2 border-[#e07a86]/40 bg-[#220c12] shadow-[0_6px_30px_rgba(224,122,134,0.25)] backdrop-blur-lg">
-      <div className="marquee-fade-left pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#220c12] to-transparent" />
-      <div className="marquee-fade-right pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-[#220c12] to-transparent" />
-
-      <div className="marquee-text flex w-max animate-marquee items-center gap-16 whitespace-nowrap text-sm tracking-[0.16em] text-[#fceade]">
-        {[...announcements, ...announcements].map((item, idx) => (
-          <div
-            key={idx}
-            className="marquee-item group flex shrink-0 items-center gap-3 transition-all duration-300 hover:text-[#fca5a5]"
-          >
-            <span className="relative flex h-2.5 w-2.5 items-center justify-center">
-              <span className="marquee-dot-ping absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f87171] opacity-75" />
-              <span className="marquee-dot relative inline-flex h-2 w-2 rounded-full bg-[#f87171]" />
-            </span>
-
-            <span className="marquee-tag rounded-full border border-[#e07a86]/50 bg-[#e07a86]/25 px-2.5 py-1 text-[11px] font-semibold tracking-[0.08em] text-[#fca5a5]">
-              {item.tag}
-            </span>
-
-            <span className="font-semibold">
-              <span className="mr-1.5 inline-block text-base">{item.icon}</span>
-              {item.text}
-            </span>
-          </div>
-        ))}
+    <div className="fixed inset-x-0 top-0 z-40 h-9 w-full border-b border-primary/10 bg-background/60 backdrop-blur-md">
+      <div className="mx-auto flex h-full max-w-6xl items-center justify-center px-6">
+        <p
+          key={index}
+          className="announcement-fade truncate text-center text-[11px] tracking-[0.16em] text-muted-foreground"
+        >
+          {announcements[index]}
+        </p>
       </div>
     </div>
   );
 }
 
-/* 頂部快速選單：釘在跑馬燈下方，可橫向捲動跳到各區塊 */
+/* 頂部導覽列：釘在公告列下方，左側品牌標誌，右側導覽連結 */
 function QuickNav() {
   return (
-    <nav className="fixed inset-x-0 top-14 z-30 h-11 border-b border-border/60 bg-background/95 backdrop-blur-md">
-      <div className="no-scrollbar mx-auto flex h-full max-w-6xl items-center gap-1 overflow-x-auto px-4 sm:justify-center sm:gap-2">
-        {content.nav
-          .filter((item) => item.href !== "/member" && item.href !== "#booking")
-          .map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs tracking-[0.14em] text-muted-foreground transition-colors hover:bg-secondary hover:text-silver"
-            >
-              {item.label}
-            </a>
-          ))}
+    <nav className="fixed inset-x-0 top-9 z-30 h-16 border-b border-white/5 bg-background/85 backdrop-blur-md">
+      <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6">
+        <a href="/" className="flex shrink-0 items-center gap-2.5">
+          <BrandMark className="h-6 w-6 text-primary" />
+          <span className="font-serif text-sm tracking-[0.22em] text-silver sm:text-base">
+            LOUNGE <span className="text-primary">Spa</span>
+          </span>
+        </a>
+        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto sm:gap-2">
+          {content.nav
+            .filter((item) => item.href !== "/member" && item.href !== "#booking")
+            .map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+              >
+                {item.label}
+              </a>
+            ))}
+        </div>
       </div>
     </nav>
   );
@@ -529,20 +526,33 @@ function Index() {
         <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
         <Stardust />
         <div className="relative z-10 mx-auto max-w-3xl py-24 text-center">
-          <div className="mb-8 inline-flex items-center gap-3 rounded-full hairline px-5 py-2 backdrop-blur-sm">
-            <BrandMark className="h-5 w-5 text-silver" />
-            <span className="text-xs tracking-[0.34em] text-silver">{content.hero.badge}</span>
+          <div className="mb-10 flex flex-col items-center gap-4">
+            <BrandMark className="hero-emblem-glow h-12 w-12 text-primary sm:h-14 sm:w-14" />
+            <span className="hero-emblem-glow font-serif text-xl tracking-[0.4em] text-primary sm:text-2xl">
+              {content.hero.badge}
+            </span>
           </div>
-          <h1 className="text-4xl font-light leading-[1.35] text-silver sm:text-6xl">
+          <h1 className="font-serif text-4xl font-light leading-[1.4] text-silver sm:text-6xl">
             {content.hero.titleBefore}
             <span className="text-gradient-rose">{content.hero.titleHighlight}</span>
             {content.hero.titleAfter}
             <br />
             {content.hero.titleLine2}
           </h1>
-          <p className="mt-8 text-sm tracking-[0.24em] text-muted-foreground sm:text-base">
+          <p className="mt-8 text-sm tracking-[0.32em] text-muted-foreground sm:text-base">
             {content.hero.subtitle}
           </p>
+        </div>
+
+        {/* 向下滾動提示 */}
+        <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-scroll-hint">
+          <div className="flex flex-col items-center gap-2 text-muted-foreground">
+            <span className="text-[10px] tracking-[0.3em]">SCROLL</span>
+            <svg width="14" height="22" viewBox="0 0 14 22" fill="none" aria-hidden="true">
+              <rect x="1" y="1" width="12" height="20" rx="6" stroke="currentColor" strokeOpacity="0.5" />
+              <circle className="scroll-hint-dot" cx="7" cy="6" r="1.5" fill="currentColor" />
+            </svg>
+          </div>
         </div>
       </section>
 
