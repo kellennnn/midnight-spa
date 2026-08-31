@@ -583,7 +583,6 @@ function TherapistCard({
 
 function Index() {
   const [filter, setFilter] = useState<"全部" | "今日上班中" | Shift>("全部");
-  const [points, setPoints] = useState(3);
   const [openPerson, setOpenPerson] = useState<Therapist | null>(null);
 
   const list = therapists.filter((t) =>
@@ -814,49 +813,6 @@ function Index() {
             ※ Lounge SPA 採全預約專屬制。每項療程均依貴賓當日身心狀態與精油配方進行客製化配置，
             完整療程細節將於到店時由專業芳療師為您細心諮詢與說明。
           </p>
-        </div>
-      </section>
-
-      {/* Loyalty */}
-      <section className="ripple-field relative overflow-hidden border-t border-border px-6 py-24">
-        <div className="relative mx-auto max-w-4xl">
-          <SectionTitle eyebrow="Membership" title="LINE 集點與會員禮遇" />
-          <div className="rounded-lg hairline bg-card/70 p-8 backdrop-blur-sm sm:p-12">
-            <p className="text-center text-xs tracking-[0.28em] text-muted-foreground">
-              目前集點 {points} / 10
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              {Array.from({ length: 10 }, (_, i) => (
-                <button
-                  key={i}
-                  aria-label={`第 ${i + 1} 點`}
-                  onClick={() => setPoints(i + 1 === points ? i : i + 1)}
-                  className={`h-8 w-8 rounded-full transition-all duration-300 ${
-                    i < points
-                      ? "bg-primary shadow-[0_0_18px_oklch(0.72_0.14_38/48%)]"
-                      : "hairline bg-transparent"
-                  }`}
-                />
-              ))}
-            </div>
-            <div className="mt-10 grid gap-6 sm:grid-cols-3">
-              {content.membership.cards.map((c) => (
-                <div key={c.title} className="rounded-lg hairline p-5">
-                  <h3 className="text-base font-light text-silver">{c.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{c.desc}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <LineButton large>LINE 立即預約</LineButton>
-              <a
-                href="/member"
-                className="glow-cta inline-flex items-center justify-center rounded-full border border-primary/50 bg-transparent px-10 py-4 text-base font-medium tracking-[0.18em] text-primary"
-              >
-                查看我的 VIP 會員卡
-              </a>
-            </div>
-          </div>
         </div>
       </section>
 
