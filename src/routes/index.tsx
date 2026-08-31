@@ -169,7 +169,7 @@ function QuickNav() {
         <a href="/" className="flex shrink-0 items-center gap-2.5">
           <BrandMark className="h-6 w-10 text-primary" />
           <span className="font-serif text-sm tracking-[0.22em] text-silver sm:text-base">
-            LOUNGE <span className="text-primary">Spa</span>
+            Lounge <span className="text-primary">Spa</span>
           </span>
         </a>
         <div className="no-scrollbar flex items-center gap-1 overflow-x-auto sm:gap-2">

@@ -764,7 +764,7 @@ function AdminComponent() {
         >
           <h1 className="flex items-center justify-center gap-2 font-serif tracking-widest text-[#f5e6c8] text-lg font-bold text-center">
             <BrandMark className="h-6 w-10 text-[#d4af37]" />
-            LOUNGE Spa 管理後台
+            Lounge Spa 管理後台
           </h1>
 
           <div>

@@ -1,4 +1,4 @@
-// LOUNGE Spa 品牌標誌：壁虎 + 弦月 + 星星，取代原本純文字的 LOGO。
+// Lounge Spa 品牌標誌：壁虎 + 弦月 + 星星，取代原本純文字的 LOGO。
 // 純 SVG 手繪、不依賴外部圖檔，套一層淡淡的金屬感漸層（brushedMetal），
 // 顏色仍然跟著 currentColor 走，深色／淺色模式、金色／銀色都能直接沿用。
 export function BrandMark({ className = 'h-8 w-8' }: { className?: string }) {

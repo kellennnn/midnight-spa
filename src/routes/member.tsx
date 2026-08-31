@@ -331,7 +331,7 @@ function MemberComponent() {
     return (
       <div className="min-h-screen bg-[#0b1523] flex flex-col items-center justify-center text-[#d4af37]">
         <div className="w-10 h-10 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="tracking-widest text-sm text-neutral-400">正在連接 LOUNGE VIP 系統...</p>
+        <p className="tracking-widest text-sm text-neutral-400">正在連接 Lounge VIP 系統...</p>
       </div>
     );
   }
@@ -359,7 +359,7 @@ function MemberComponent() {
             <div>
               <div className="flex items-center gap-1.5">
                 <BrandMark className="h-4 w-7 text-[#d4af37]" />
-                <h1 className="font-serif tracking-widest text-[#f5e6c8] text-lg font-bold">LOUNGE Spa</h1>
+                <h1 className="font-serif tracking-widest text-[#f5e6c8] text-lg font-bold">Lounge Spa</h1>
               </div>
               <p className="text-xs text-neutral-500 tracking-wider">VIP EXCLUSIVE PASS</p>
             </div>
