@@ -31,6 +31,8 @@ import {
   Plus,
   Camera,
   Clock,
+  CalendarClock,
+  Bell,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -82,6 +84,26 @@ interface AdminUser {
   can_edit_preferences: boolean;
   can_delete: boolean;
 }
+
+interface Booking {
+  id: string;
+  member_id: string;
+  preferred_date: string;
+  preferred_time: string | null;
+  service_item: string;
+  therapist_preference: string | null;
+  note: string | null;
+  status: 'pending' | 'confirmed' | 'declined' | 'cancelled';
+  staff_note: string | null;
+  created_at: string;
+}
+
+const BOOKING_STATUS_LABEL: Record<Booking['status'], { label: string; className: string }> = {
+  pending: { label: '待確認', className: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' },
+  confirmed: { label: '已確認', className: 'text-green-400 border-green-500/30 bg-green-500/10' },
+  declined: { label: '無法安排', className: 'text-red-400 border-red-500/30 bg-red-500/10' },
+  cancelled: { label: '已取消', className: 'text-neutral-500 border-neutral-700 bg-neutral-800/40' },
+};
 
 function formatBirthday(m: Pick<MemberRow, 'birth_month' | 'birth_day' | 'birth_year'>) {
   if (!m.birth_month || !m.birth_day) return '未填寫';
@@ -197,7 +219,7 @@ function AdminComponent() {
   const [addingLog, setAddingLog] = useState(false);
   const [lastVisitMap, setLastVisitMap] = useState<Record<string, string>>({});
   const [chartRangeMonths, setChartRangeMonths] = useState<6 | 12 | 24 | 0>(6); // 0 = 全部時間
-  const [activeTab, setActiveTab] = useState<'members' | 'overview'>('members');
+  const [activeTab, setActiveTab] = useState<'members' | 'overview' | 'bookings'>('members');
 
   const [showRoster, setShowRoster] = useState(false);
   const [adminRoster, setAdminRoster] = useState<AdminUser[]>([]);
@@ -210,6 +232,15 @@ function AdminComponent() {
     can_delete: false,
   });
   const [granting, setGranting] = useState(false);
+
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingFilter, setBookingFilter] = useState<'all' | Booking['status']>('pending');
+  const [decidingBookingId, setDecidingBookingId] = useState<string | null>(null);
+
+  const [notifSettings, setNotifSettings] = useState({ telegram_bot_token: '', telegram_chat_id: '' });
+  const [notifSettingsLoading, setNotifSettingsLoading] = useState(false);
+  const [notifSaving, setNotifSaving] = useState(false);
 
   const isOwner = myAccess?.role === 'owner';
   const canView = isOwner || !!myAccess?.can_view;
@@ -262,12 +293,14 @@ function AdminComponent() {
     if (myAccess && canView) {
       loadMembers();
       loadLastVisits();
+      loadBookings();
     }
   }, [myAccess]);
 
   useEffect(() => {
     if (isOwner) {
       loadRoster();
+      loadNotifSettings();
     }
   }, [isOwner]);
 
@@ -307,6 +340,65 @@ function AdminComponent() {
       setAdminRoster(data || []);
     }
     setRosterLoading(false);
+  };
+
+  const loadBookings = async () => {
+    setBookingsLoading(true);
+    const { data, error } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.error(error);
+    } else {
+      setBookings(data || []);
+    }
+    setBookingsLoading(false);
+  };
+
+  const decideBooking = async (id: string, status: 'confirmed' | 'declined') => {
+    setDecidingBookingId(id);
+    const { data, error } = await supabase.rpc('admin_update_booking_status', {
+      p_id: id,
+      p_status: status,
+    });
+    if (error) {
+      alert('操作失敗：' + error.message);
+      console.error(error);
+    } else if (data && data.length > 0) {
+      setBookings((prev) => prev.map((b) => (b.id === id ? data[0] : b)));
+    }
+    setDecidingBookingId(null);
+  };
+
+  const loadNotifSettings = async () => {
+    setNotifSettingsLoading(true);
+    const { data, error } = await supabase.from('notification_settings').select('*').eq('id', 1).maybeSingle();
+    if (error) {
+      console.error(error);
+    } else if (data) {
+      setNotifSettings({
+        telegram_bot_token: data.telegram_bot_token || '',
+        telegram_chat_id: data.telegram_chat_id || '',
+      });
+    }
+    setNotifSettingsLoading(false);
+  };
+
+  const saveNotifSettings = async () => {
+    setNotifSaving(true);
+    const { error } = await supabase
+      .from('notification_settings')
+      .update({
+        telegram_bot_token: notifSettings.telegram_bot_token || null,
+        telegram_chat_id: notifSettings.telegram_chat_id || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', 1);
+    if (error) {
+      alert('儲存失敗：' + error.message);
+      console.error(error);
+    } else {
+      alert('通知設定已儲存');
+    }
+    setNotifSaving(false);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -574,6 +666,8 @@ function AdminComponent() {
   };
 
   const scannedMatch = scannedCode ? members.find((m) => m.member_code === scannedCode) : null;
+  const pendingBookingCount = bookings.filter((b) => b.status === 'pending').length;
+  const filteredBookings = bookings.filter((b) => bookingFilter === 'all' || b.status === bookingFilter);
 
   const now = new Date();
   const thisMonthCount = members.filter((m) => {
@@ -739,21 +833,120 @@ function AdminComponent() {
             {(
               [
                 ['members', '會員資料'],
+                ['bookings', '預約管理'],
                 ['overview', '總覽 / 管理'],
               ] as const
             ).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
                   activeTab === key
                     ? 'border-[#d4af37] text-[#f5e6c8]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-300'
                 }`}
               >
                 {label}
+                {key === 'bookings' && pendingBookingCount > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5">
+                    {pendingBookingCount}
+                  </span>
+                )}
               </button>
             ))}
+          </div>
+        )}
+
+        {canView && activeTab === 'bookings' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {(
+                [
+                  ['pending', '待確認'],
+                  ['confirmed', '已確認'],
+                  ['declined', '無法安排'],
+                  ['cancelled', '已取消'],
+                  ['all', '全部'],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setBookingFilter(key)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${
+                    bookingFilter === key
+                      ? 'border-[#d4af37] text-[#f5e6c8] bg-[#d4af3722]'
+                      : 'border-[#2a2b36] text-neutral-500 hover:text-neutral-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {bookingsLoading ? (
+              <p className="text-sm text-neutral-500">載入中...</p>
+            ) : filteredBookings.length === 0 ? (
+              <p className="text-sm text-neutral-500">沒有符合的預約紀錄</p>
+            ) : (
+              <div className="space-y-2.5">
+                {filteredBookings.map((b) => {
+                  const member = members.find((m) => m.id === b.member_id);
+                  const status = BOOKING_STATUS_LABEL[b.status];
+                  return (
+                    <div key={b.id} className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-neutral-100">
+                              {member ? member.real_name || member.display_name : '未知會員'}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${status.className}`}>
+                              {status.label}
+                            </span>
+                          </div>
+                          {member && (
+                            <p className="text-xs text-neutral-500 mt-0.5">
+                              {member.phone} ・ {member.member_code}
+                            </p>
+                          )}
+                        </div>
+                        {canEditBasic && b.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => decideBooking(b.id, 'confirmed')}
+                              disabled={decidingBookingId === b.id}
+                              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#aa8024] text-black font-semibold disabled:opacity-50 cursor-pointer"
+                            >
+                              <Check size={13} /> 確認
+                            </button>
+                            <button
+                              onClick={() => decideBooking(b.id, 'declined')}
+                              disabled={decidingBookingId === b.id}
+                              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 disabled:opacity-50 cursor-pointer"
+                            >
+                              <X size={13} /> 無法安排
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 mt-3 text-xs text-neutral-400">
+                        <p className="flex items-center gap-1">
+                          <CalendarClock size={12} />
+                          {b.preferred_date}
+                          {b.preferred_time ? ` ${b.preferred_time}` : ''}
+                        </p>
+                        <p>項目：{b.service_item}</p>
+                        {b.therapist_preference && <p>指定人員：{b.therapist_preference}</p>}
+                        {b.note && <p className="sm:col-span-2">備註：{b.note}</p>}
+                      </div>
+                      <p className="text-[10px] text-neutral-600 mt-2">
+                        送出時間：{new Date(b.created_at).toLocaleString('zh-TW')}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -925,6 +1118,51 @@ function AdminComponent() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {isOwner && activeTab === 'overview' && (
+          <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4 space-y-3">
+            <h2 className="text-sm font-semibold text-[#f5e6c8] flex items-center gap-1.5">
+              <Bell size={14} /> 新預約通知（Telegram）
+            </h2>
+            <p className="text-xs text-neutral-500">
+              有新的預約請求送出時，會自動推播訊息到這裡設定的 Telegram。填好 Bot Token 跟 Chat
+              ID 後存檔即可，兩個欄位都留空的話就不會發送通知。
+            </p>
+            {notifSettingsLoading ? (
+              <p className="text-xs text-neutral-500">載入中...</p>
+            ) : (
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px]">
+                  <label className="text-[11px] text-neutral-400 mb-1 block">Telegram Bot Token</label>
+                  <input
+                    type="text"
+                    value={notifSettings.telegram_bot_token}
+                    onChange={(e) => setNotifSettings((s) => ({ ...s, telegram_bot_token: e.target.value }))}
+                    placeholder="123456789:AA..."
+                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                  />
+                </div>
+                <div className="flex-1 min-w-[160px]">
+                  <label className="text-[11px] text-neutral-400 mb-1 block">Chat ID</label>
+                  <input
+                    type="text"
+                    value={notifSettings.telegram_chat_id}
+                    onChange={(e) => setNotifSettings((s) => ({ ...s, telegram_chat_id: e.target.value }))}
+                    placeholder="123456789"
+                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                  />
+                </div>
+                <button
+                  onClick={saveNotifSettings}
+                  disabled={notifSaving}
+                  className="text-xs px-4 py-2 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#aa8024] text-black font-semibold disabled:opacity-50 cursor-pointer"
+                >
+                  {notifSaving ? '儲存中...' : '儲存'}
+                </button>
               </div>
             )}
           </div>

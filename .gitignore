@@ -8,5 +8,6 @@ src/routeTree.gen.ts
 .env.local
 
 .vercel
+supabase/.temp
 
 midnight-spa/

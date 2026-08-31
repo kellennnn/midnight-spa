@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import liff from '@line/liff';
 import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../lib/supabase';
-import { Sparkles, Crown, Phone, Calendar, User, CheckCircle2, Pencil } from 'lucide-react';
+import content from '@/content.json';
+import { Sparkles, Crown, Phone, Calendar, User, CheckCircle2, Pencil, CalendarPlus, X, Clock3 } from 'lucide-react';
 
 export const Route = createFileRoute('/member')({
   component: MemberComponent,
@@ -28,6 +29,25 @@ interface MemberProfile {
   interaction_style: string | null;
 }
 
+interface Booking {
+  id: string;
+  preferred_date: string;
+  preferred_time: string | null;
+  service_item: string;
+  therapist_preference: string | null;
+  note: string | null;
+  status: 'pending' | 'confirmed' | 'declined' | 'cancelled';
+  staff_note: string | null;
+  created_at: string;
+}
+
+const BOOKING_STATUS_LABEL: Record<Booking['status'], { label: string; className: string }> = {
+  pending: { label: '待確認', className: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' },
+  confirmed: { label: '已確認', className: 'text-green-400 border-green-500/30 bg-green-500/10' },
+  declined: { label: '無法安排', className: 'text-red-400 border-red-500/30 bg-red-500/10' },
+  cancelled: { label: '已取消', className: 'text-neutral-500 border-neutral-700 bg-neutral-800/40' },
+};
+
 function MemberComponent() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
@@ -44,6 +64,17 @@ function MemberComponent() {
   const [editingNickname, setEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState('');
   const [nicknameSubmitting, setNicknameSubmitting] = useState(false);
+
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [bookingForm, setBookingForm] = useState({
+    date: '',
+    time: '',
+    service: content.services?.[0]?.name || '',
+    therapist: '',
+    note: '',
+  });
 
   useEffect(() => {
     const initLiff = async () => {
@@ -96,6 +127,7 @@ function MemberComponent() {
         console.error('get_member_by_line_id failed:', error);
       } else if (data && data.length > 0) {
         setProfile(data[0]);
+        loadBookings(activeProfile.userId);
       }
 
       setLoading(false);
@@ -103,6 +135,15 @@ function MemberComponent() {
 
     initLiff();
   }, []);
+
+  const loadBookings = async (lineUserId: string) => {
+    const { data, error } = await supabase.rpc('get_my_bookings', { p_line_user_id: lineUserId });
+    if (error) {
+      console.error('get_my_bookings failed:', error);
+    } else {
+      setBookings(data || []);
+    }
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,6 +265,55 @@ function MemberComponent() {
       console.error(err);
     } finally {
       setNicknameSubmitting(false);
+    }
+  };
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile) return;
+
+    setBookingSubmitting(true);
+    try {
+      const { data, error } = await supabase.rpc('submit_booking_request', {
+        p_line_user_id: profile.line_user_id,
+        p_preferred_date: bookingForm.date,
+        p_preferred_time: bookingForm.time || null,
+        p_service_item: bookingForm.service,
+        p_therapist_preference: bookingForm.therapist || null,
+        p_note: bookingForm.note || null,
+      });
+
+      if (error) {
+        alert('預約送出失敗：' + error.message);
+        console.error(error);
+      } else {
+        setBookings((prev) => [...(data || []), ...prev]);
+        setShowBookingForm(false);
+        setBookingForm({ date: '', time: '', service: content.services?.[0]?.name || '', therapist: '', note: '' });
+        alert('預約請求已送出，我們會盡快與您確認時段！');
+      }
+    } catch (err: any) {
+      alert('連線失敗：' + (err.message || '請稍後再試'));
+      console.error(err);
+    } finally {
+      setBookingSubmitting(false);
+    }
+  };
+
+  const handleCancelBooking = async (id: string) => {
+    if (!profile) return;
+    if (!window.confirm('確定要取消這筆預約請求嗎？')) return;
+
+    const { data, error } = await supabase.rpc('cancel_my_booking', {
+      p_id: id,
+      p_line_user_id: profile.line_user_id,
+    });
+
+    if (error) {
+      alert('取消失敗：' + error.message);
+      console.error(error);
+    } else if (data && data.length > 0) {
+      setBookings((prev) => prev.map((b) => (b.id === id ? data[0] : b)));
     }
   };
 
@@ -471,6 +561,123 @@ function MemberComponent() {
                 </div>
               </div>
             )}
+
+            <div className="text-left bg-[#171821] p-4 rounded-lg border border-neutral-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] text-neutral-400 uppercase tracking-widest">預約服務</p>
+                {!showBookingForm && (
+                  <button
+                    type="button"
+                    onClick={() => setShowBookingForm(true)}
+                    className="flex items-center gap-1 text-[11px] text-[#d4af37] cursor-pointer"
+                  >
+                    <CalendarPlus size={12} /> 我要預約
+                  </button>
+                )}
+              </div>
+
+              {showBookingForm && (
+                <form onSubmit={handleBookingSubmit} className="space-y-2.5 border-b border-neutral-800 pb-3.5">
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="date"
+                      required
+                      min={new Date().toISOString().slice(0, 10)}
+                      value={bookingForm.date}
+                      onChange={(e) => setBookingForm((f) => ({ ...f, date: e.target.value }))}
+                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                    />
+                    <input
+                      type="time"
+                      value={bookingForm.time}
+                      onChange={(e) => setBookingForm((f) => ({ ...f, time: e.target.value }))}
+                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+                  <select
+                    value={bookingForm.service}
+                    onChange={(e) => setBookingForm((f) => ({ ...f, service: e.target.value }))}
+                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                  >
+                    {content.services?.map((s: any) => (
+                      <option key={s.name} value={s.name}>
+                        {s.name}（{s.min}）
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={bookingForm.therapist}
+                    onChange={(e) => setBookingForm((f) => ({ ...f, therapist: e.target.value }))}
+                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                  >
+                    <option value="">不指定人員</option>
+                    {content.therapists?.map((t: any) => (
+                      <option key={t.no} value={t.name}>
+                        {t.name}（{t.no}）
+                      </option>
+                    ))}
+                  </select>
+                  <textarea
+                    value={bookingForm.note}
+                    onChange={(e) => setBookingForm((f) => ({ ...f, note: e.target.value }))}
+                    placeholder="備註（例如：時段可彈性調整）"
+                    rows={2}
+                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37] resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={bookingSubmitting}
+                      className="flex-1 text-xs px-3 py-2 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#aa8024] text-black font-semibold disabled:opacity-50 cursor-pointer"
+                    >
+                      {bookingSubmitting ? '送出中...' : '送出預約請求'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowBookingForm(false)}
+                      className="text-xs px-3 py-2 rounded-lg border border-neutral-700 text-neutral-400 cursor-pointer"
+                    >
+                      取消
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-neutral-500">送出後為「待確認」狀態，我們會盡快與您確認實際時段。</p>
+                </form>
+              )}
+
+              {bookings.length === 0 ? (
+                !showBookingForm && <p className="text-xs text-neutral-500">目前沒有預約紀錄</p>
+              ) : (
+                <div className="space-y-2">
+                  {bookings.map((b) => {
+                    const status = BOOKING_STATUS_LABEL[b.status];
+                    return (
+                      <div key={b.id} className="bg-[#0e0f14] border border-neutral-800 rounded-lg p-2.5 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="flex items-center gap-1.5 text-neutral-200">
+                            <Clock3 size={12} className="text-neutral-500" />
+                            {b.preferred_date}
+                            {b.preferred_time && ` ${b.preferred_time}`}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full border text-[10px] ${status.className}`}>
+                            {status.label}
+                          </span>
+                        </div>
+                        <p className="text-neutral-400 mt-1">{b.service_item}</p>
+                        {b.status === 'pending' && (
+                          <button
+                            type="button"
+                            onClick={() => handleCancelBooking(b.id)}
+                            className="flex items-center gap-1 text-[10px] text-red-400 hover:text-red-300 mt-1.5 cursor-pointer"
+                          >
+                            <X size={10} /> 取消預約
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             <div className="flex items-center justify-center gap-1.5 text-xs text-neutral-500 pt-2">
               <CheckCircle2 size={13} className="text-[#d4af37]" />
