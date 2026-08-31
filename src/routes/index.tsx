@@ -730,7 +730,7 @@ function Index() {
       {/* Services */}
       <section id="services" className="border-t border-border px-6 py-24">
         <div className="mx-auto max-w-xl">
-          <SectionTitle eyebrow="Services & Price" title="服務項目與價目" />
+          <SectionTitle eyebrow="Services" title="服務項目" />
           <div className="space-y-8">
             {services.map((s) => (
               <div
@@ -765,11 +765,20 @@ function Index() {
                 >
                   {s.min}
                 </p>
-                <p
-                  className={`relative z-10 mt-4 text-3xl font-medium ${s.featured ? "text-[#FCEADE]" : "text-gradient-rose"}`}
-                >
-                  {s.price}
-                </p>
+                <div className="relative z-10 mt-4">
+                  <span
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] tracking-[0.2em] ${
+                      s.featured ? "border-[#FCEADE]/50 text-[#FCEADE]" : "border-primary/40 text-primary"
+                    }`}
+                  >
+                    專屬客製
+                  </span>
+                  <p
+                    className={`mt-3 text-sm leading-relaxed ${s.featured ? "text-[#FCEADE]/90" : "text-silver"}`}
+                  >
+                    {s.tagline}
+                  </p>
+                </div>
 
                 <ul
                   className={`relative z-10 mt-6 space-y-2 border-t pt-5 text-xs leading-relaxed ${
@@ -792,17 +801,18 @@ function Index() {
                       rel="noopener noreferrer"
                       className="glow-cta block w-full rounded-full bg-gradient-to-r from-[#E5B292] via-[#FCEADE] to-[#C68B59] py-3 text-center text-xs font-bold tracking-wider text-[#090a0f] shadow-lg transition hover:opacity-90"
                     >
-                      預約{s.name}
+                      預約專屬時段
                     </a>
                   ) : (
-                    <LineButton large>LINE 立即預約</LineButton>
+                    <LineButton large>預約專屬時段</LineButton>
                   )}
                 </div>
               </div>
             ))}
           </div>
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            以上價格已含服務費，實際課程內容以現場說明為準。
+          <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground">
+            ※ Lounge SPA 採全預約專屬制。每項療程均依貴賓當日身心狀態與精油配方進行客製化配置，
+            完整療程細節將於到店時由專業芳療師為您細心諮詢與說明。
           </p>
         </div>
       </section>
