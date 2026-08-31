@@ -4,6 +4,7 @@ import liff from '@line/liff';
 import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../lib/supabase';
 import content from '@/content.json';
+import { BrandMark } from '@/lib/BrandMark';
 import { Sparkles, Crown, Phone, Calendar, User, CheckCircle2, Pencil, CalendarPlus, X, Clock3 } from 'lucide-react';
 
 export const Route = createFileRoute('/member')({
@@ -320,7 +321,7 @@ function MemberComponent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] flex flex-col items-center justify-center text-[#d4af37]">
+      <div className="min-h-screen bg-[#0b1523] flex flex-col items-center justify-center text-[#d4af37]">
         <div className="w-10 h-10 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin mb-4"></div>
         <p className="tracking-widest text-sm text-neutral-400">正在連接 LOUNGE VIP 系統...</p>
       </div>
@@ -334,8 +335,8 @@ function MemberComponent() {
     : '';
 
   return (
-    <main className="min-h-screen bg-[#07080a] text-neutral-200 flex items-center justify-center p-4 py-10">
-      <div className="w-full max-w-md bg-gradient-to-b from-[#14151a] to-[#0c0d10] border border-[#2a2b36] rounded-2xl shadow-2xl p-6 relative overflow-hidden">
+    <main className="min-h-screen bg-[#0a1420] text-neutral-200 flex items-center justify-center p-4 py-10">
+      <div className="w-full max-w-md bg-gradient-to-b from-[#152236] to-[#0d1726] border border-[#2b4670] rounded-2xl shadow-2xl p-6 relative overflow-hidden">
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#d4af37]/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="flex items-center justify-between border-b border-neutral-800 pb-4 mb-6">
@@ -343,12 +344,15 @@ function MemberComponent() {
             {lineProfile?.pictureUrl ? (
               <img src={lineProfile.pictureUrl} alt="Avatar" className="w-10 h-10 rounded-full border border-[#d4af37]/40 object-cover" />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-[#1e2029] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37]">
+              <div className="w-10 h-10 rounded-full bg-[#213759] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37]">
                 <User size={20} />
               </div>
             )}
             <div>
-              <h1 className="font-serif tracking-widest text-[#f5e6c8] text-lg font-bold">LOUNGE SPA</h1>
+              <div className="flex items-center gap-1.5">
+                <BrandMark className="h-4 w-4 text-[#d4af37]" />
+                <h1 className="font-serif tracking-widest text-[#f5e6c8] text-lg font-bold">LOUNGE SPA</h1>
+              </div>
               <p className="text-xs text-neutral-500 tracking-wider">VIP EXCLUSIVE PASS</p>
             </div>
           </div>
@@ -401,7 +405,7 @@ function MemberComponent() {
                 value={realName}
                 onChange={(e) => setRealName(e.target.value)}
                 placeholder="請輸入真實姓名"
-                className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
               />
             </div>
 
@@ -415,7 +419,7 @@ function MemberComponent() {
                 value={regNickname}
                 onChange={(e) => setRegNickname(e.target.value)}
                 placeholder="例如：王小明"
-                className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
               />
             </div>
 
@@ -430,7 +434,7 @@ function MemberComponent() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="0912345678"
-                className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
               />
             </div>
 
@@ -448,7 +452,7 @@ function MemberComponent() {
                   placeholder="年"
                   value={birthYear}
                   onChange={(e) => setBirthYear(e.target.value)}
-                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                 />
                 <input
                   type="number"
@@ -458,7 +462,7 @@ function MemberComponent() {
                   placeholder="月"
                   value={birthMonth}
                   onChange={(e) => setBirthMonth(e.target.value)}
-                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                 />
                 <input
                   type="number"
@@ -468,7 +472,7 @@ function MemberComponent() {
                   placeholder="日"
                   value={birthDay}
                   onChange={(e) => setBirthDay(e.target.value)}
-                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                 />
               </div>
             </div>
@@ -493,7 +497,7 @@ function MemberComponent() {
                     maxLength={20}
                     value={nicknameInput}
                     onChange={(e) => setNicknameInput(e.target.value)}
-                    className="flex-1 max-w-[180px] bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                    className="flex-1 max-w-[180px] bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                   />
                   <button
                     type="submit"
@@ -532,7 +536,7 @@ function MemberComponent() {
               )}
             </div>
 
-            <div className="p-6 bg-gradient-to-br from-[#1c1e29] to-[#101117] border border-[#d4af37]/30 rounded-xl shadow-lg relative">
+            <div className="p-6 bg-gradient-to-br from-[#1e3252] to-[#111c2f] border border-[#d4af37]/30 rounded-xl shadow-lg relative">
               <div className="bg-white p-3.5 rounded-lg inline-block shadow-inner">
                 <QRCodeSVG
                   value={`${window.location.origin}/admin?code=${encodeURIComponent(profile.member_code)}`}
@@ -549,11 +553,11 @@ function MemberComponent() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-left">
-              <div className="bg-[#171821] p-3 rounded-lg border border-neutral-800">
+              <div className="bg-[#1a2941] p-3 rounded-lg border border-neutral-800">
                 <p className="text-[11px] text-neutral-400">真實姓名</p>
                 <p className="text-sm font-semibold text-neutral-200 mt-0.5">{profile.real_name}</p>
               </div>
-              <div className="bg-[#171821] p-3 rounded-lg border border-neutral-800">
+              <div className="bg-[#1a2941] p-3 rounded-lg border border-neutral-800">
                 <p className="text-[11px] text-neutral-400">生日</p>
                 <p className="text-sm font-semibold text-neutral-200 mt-0.5">{birthdayText}</p>
               </div>
@@ -564,7 +568,7 @@ function MemberComponent() {
               profile.focus_areas.length > 0 ||
               profile.avoid_areas.length > 0 ||
               profile.aroma_preference.length > 0) && (
-              <div className="text-left space-y-2 bg-[#171821] p-4 rounded-lg border border-neutral-800">
+              <div className="text-left space-y-2 bg-[#1a2941] p-4 rounded-lg border border-neutral-800">
                 <p className="text-[11px] text-neutral-400 uppercase tracking-widest">我的體驗偏好</p>
                 <div className="flex flex-wrap gap-1.5">
                   {[
@@ -594,7 +598,7 @@ function MemberComponent() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="text-left bg-[#171821] p-4 rounded-lg border border-neutral-800 space-y-3">
+            <div className="text-left bg-[#1a2941] p-4 rounded-lg border border-neutral-800 space-y-3">
               <p className="text-[11px] text-neutral-400 uppercase tracking-widest">預約服務</p>
 
               {!showBookingForm && (
@@ -616,19 +620,19 @@ function MemberComponent() {
                       min={new Date().toISOString().slice(0, 10)}
                       value={bookingForm.date}
                       onChange={(e) => setBookingForm((f) => ({ ...f, date: e.target.value }))}
-                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                     />
                     <input
                       type="time"
                       value={bookingForm.time}
                       onChange={(e) => setBookingForm((f) => ({ ...f, time: e.target.value }))}
-                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
                   <select
                     value={bookingForm.service}
                     onChange={(e) => setBookingForm((f) => ({ ...f, service: e.target.value }))}
-                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                    className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                   >
                     {content.services?.map((s: any) => (
                       <option key={s.name} value={s.name}>
@@ -639,7 +643,7 @@ function MemberComponent() {
                   <select
                     value={bookingForm.therapist}
                     onChange={(e) => setBookingForm((f) => ({ ...f, therapist: e.target.value }))}
-                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                    className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                   >
                     <option value="">不指定人員</option>
                     {content.therapists?.map((t: any) => (
@@ -653,7 +657,7 @@ function MemberComponent() {
                     onChange={(e) => setBookingForm((f) => ({ ...f, note: e.target.value }))}
                     placeholder="備註（例如：時段可彈性調整）"
                     rows={2}
-                    className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37] resize-none"
+                    className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37] resize-none"
                   />
                   <div className="flex gap-2">
                     <button
@@ -682,7 +686,7 @@ function MemberComponent() {
                   {bookings.map((b) => {
                     const status = BOOKING_STATUS_LABEL[b.status];
                     return (
-                      <div key={b.id} className="bg-[#0e0f14] border border-neutral-800 rounded-lg p-2.5 text-xs">
+                      <div key={b.id} className="bg-[#0f1a2b] border border-neutral-800 rounded-lg p-2.5 text-xs">
                         <div className="flex items-center justify-between gap-2">
                           <span className="flex items-center gap-1.5 text-neutral-200">
                             <Clock3 size={12} className="text-neutral-500" />

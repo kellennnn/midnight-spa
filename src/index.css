@@ -9,26 +9,26 @@
   oklch(var(--token) / <alpha-value>).
 */
 
-/* 預設深色模式：午夜星空玫瑰金（飽和度加強版，更鮮豔但仍深邃神秘） */
+/* 預設深色模式：海軍藍夜色 + 香檳金（配合 LOUNGE SPA 新視覺） */
 :root {
-  --background: 0.13 0.035 275; /* 深靛紫，比純黑更有色彩層次 */
-  --foreground: 0.93 0.01 280;
+  --background: 0.15 0.05 255; /* 深海軍藍，比舊版靛紫更藍、更貼近品牌色 */
+  --foreground: 0.93 0.01 255;
 
-  --card: 0.17 0.035 275;
-  --card-foreground: 0.93 0.01 280;
+  --card: 0.19 0.05 255;
+  --card-foreground: 0.93 0.01 255;
 
   --border: 1 0 0;
 
   --primary: 0.72 0.14 38; /* 鮮豔寶石玫瑰金，飽和度大幅提高 */
   --primary-foreground: 0.14 0.02 40;
 
-  --secondary: 0.23 0.035 275;
-  --secondary-foreground: 0.85 0.01 280;
+  --secondary: 0.25 0.05 255;
+  --secondary-foreground: 0.85 0.01 255;
 
-  --muted: 0.19 0.035 275;
-  --muted-foreground: 0.64 0.02 280;
+  --muted: 0.21 0.05 255;
+  --muted-foreground: 0.66 0.03 255;
 
-  --silver: 0.88 0.005 280;
+  --silver: 0.88 0.005 255;
 }
 
 /* 頂級 SPA 淺色模式：溫潤暖燕麥 / 晨光玫瑰金（飽和度加強版）

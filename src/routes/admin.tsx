@@ -3,6 +3,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Html5Qrcode } from 'html5-qrcode';
 import { supabase } from '../lib/supabase';
+import { BrandMark } from '../lib/BrandMark';
 import {
   PRESSURE_OPTIONS,
   FOCUS_AREA_OPTIONS,
@@ -168,7 +169,7 @@ function QrScannerPanel({ onScan, onClose }: { onScan: (code: string) => void; o
   }, []);
 
   return (
-    <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4">
+    <div className="rounded-xl border border-[#2b4670] bg-[#0f1a2b] p-4">
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-semibold text-[#f5e6c8] flex items-center gap-1.5">
           <Camera size={16} /> 相機掃描
@@ -720,7 +721,7 @@ function AdminComponent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center text-neutral-400">
+      <div className="min-h-screen bg-[#0b1523] flex items-center justify-center text-neutral-400">
         載入中...
       </div>
     );
@@ -728,12 +729,13 @@ function AdminComponent() {
 
   if (!session) {
     return (
-      <main className="min-h-screen bg-[#07080a] text-neutral-200 flex items-center justify-center p-4">
+      <main className="min-h-screen bg-[#0a1420] text-neutral-200 flex items-center justify-center p-4">
         <form
           onSubmit={handleLogin}
-          className="w-full max-w-sm bg-gradient-to-b from-[#14151a] to-[#0c0d10] border border-[#2a2b36] rounded-2xl shadow-2xl p-6 space-y-4"
+          className="w-full max-w-sm bg-gradient-to-b from-[#152236] to-[#0d1726] border border-[#2b4670] rounded-2xl shadow-2xl p-6 space-y-4"
         >
-          <h1 className="font-serif tracking-widest text-[#f5e6c8] text-lg font-bold text-center">
+          <h1 className="flex items-center justify-center gap-2 font-serif tracking-widest text-[#f5e6c8] text-lg font-bold text-center">
+            <BrandMark className="h-6 w-6 text-[#d4af37]" />
             LOUNGE SPA 管理後台
           </h1>
 
@@ -744,7 +746,7 @@ function AdminComponent() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+              className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
             />
           </div>
 
@@ -755,7 +757,7 @@ function AdminComponent() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+              className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
             />
           </div>
 
@@ -775,7 +777,7 @@ function AdminComponent() {
 
   if (accessLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center text-neutral-400">
+      <div className="min-h-screen bg-[#0b1523] flex items-center justify-center text-neutral-400">
         載入中...
       </div>
     );
@@ -783,7 +785,7 @@ function AdminComponent() {
 
   if (!myAccess) {
     return (
-      <main className="min-h-screen bg-[#07080a] text-neutral-200 flex flex-col items-center justify-center p-4 gap-4">
+      <main className="min-h-screen bg-[#0a1420] text-neutral-200 flex flex-col items-center justify-center p-4 gap-4">
         <p className="text-sm text-neutral-400">你的帳號尚未被授權使用這個後台，請聯絡管理者。</p>
         <button
           onClick={handleLogout}
@@ -796,10 +798,11 @@ function AdminComponent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#07080a] text-neutral-200 p-4 sm:p-8">
+    <main className="min-h-screen bg-[#0a1420] text-neutral-200 p-4 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="font-serif tracking-widest text-[#f5e6c8] text-xl font-bold">
+          <h1 className="flex items-center gap-2 font-serif tracking-widest text-[#f5e6c8] text-xl font-bold">
+            <BrandMark className="h-6 w-6 text-[#d4af37]" />
             會員管理
           </h1>
           <div className="flex items-center gap-4">
@@ -835,7 +838,7 @@ function AdminComponent() {
         </div>
 
         {canView && (
-          <div className="flex items-center gap-2 border-b border-[#1e1f28]">
+          <div className="flex items-center gap-2 border-b border-[#203658]">
             {(
               [
                 ['members', '會員資料'],
@@ -881,7 +884,7 @@ function AdminComponent() {
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${
                     bookingFilter === key
                       ? 'border-[#d4af37] text-[#f5e6c8] bg-[#d4af3722]'
-                      : 'border-[#2a2b36] text-neutral-500 hover:text-neutral-300'
+                      : 'border-[#2b4670] text-neutral-500 hover:text-neutral-300'
                   }`}
                 >
                   {label}
@@ -899,7 +902,7 @@ function AdminComponent() {
                   const member = members.find((m) => m.id === b.member_id);
                   const status = BOOKING_STATUS_LABEL[b.status];
                   return (
-                    <div key={b.id} className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4">
+                    <div key={b.id} className="rounded-xl border border-[#2b4670] bg-[#0f1a2b] p-4">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div>
                           <div className="flex items-center gap-2">
@@ -958,7 +961,7 @@ function AdminComponent() {
 
         {canView && activeTab === 'overview' && !membersLoading && (
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="flex items-center gap-4 rounded-xl border border-[#2a2b36] bg-gradient-to-r from-[#1c1e29] to-[#101117] px-5 py-5 sm:col-span-1">
+            <div className="flex items-center gap-4 rounded-xl border border-[#2b4670] bg-gradient-to-r from-[#1e3252] to-[#111c2f] px-5 py-5 sm:col-span-1">
               <Users size={30} className="text-[#d4af37] shrink-0" />
               <div>
                 <p className="text-xs text-neutral-400 tracking-widest uppercase">會員總數</p>
@@ -966,7 +969,7 @@ function AdminComponent() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 rounded-xl border border-[#2a2b36] bg-gradient-to-r from-[#1c1e29] to-[#101117] px-5 py-5 sm:col-span-1">
+            <div className="flex items-center gap-4 rounded-xl border border-[#2b4670] bg-gradient-to-r from-[#1e3252] to-[#111c2f] px-5 py-5 sm:col-span-1">
               <UserPlus2 size={30} className="text-[#d4af37] shrink-0" />
               <div>
                 <p className="text-xs text-neutral-400 tracking-widest uppercase">本月新開卡</p>
@@ -974,7 +977,7 @@ function AdminComponent() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] px-5 py-4 sm:col-span-1">
+            <div className="rounded-xl border border-[#2b4670] bg-[#0f1a2b] px-5 py-4 sm:col-span-1">
               <div className="flex items-center justify-between mb-2 gap-2">
                 <p className="text-xs text-neutral-400 tracking-widest uppercase shrink-0">開卡趨勢</p>
                 <div className="flex items-center gap-1">
@@ -990,7 +993,7 @@ function AdminComponent() {
                       className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors cursor-pointer ${
                         chartRangeMonths === opt.v
                           ? 'border-[#d4af37] text-[#f5e6c8] bg-[#d4af3722]'
-                          : 'border-[#2a2b36] text-neutral-500 hover:text-neutral-300'
+                          : 'border-[#2b4670] text-neutral-500 hover:text-neutral-300'
                       }`}
                     >
                       {opt.label}
@@ -1001,11 +1004,11 @@ function AdminComponent() {
               <div className="overflow-x-auto">
                 <ResponsiveContainer width="100%" height={90} minWidth={Math.max(monthlyChartData.length * 34, 200)}>
                   <BarChart data={monthlyChartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2a2b36" vertical={false} />
-                    <XAxis dataKey="label" tick={{ fill: '#8a8a94', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2b4670" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fill: '#8d9bb5', fontSize: 11 }} axisLine={false} tickLine={false} />
                     <YAxis hide allowDecimals={false} />
                     <Tooltip
-                      contentStyle={{ background: '#14151a', border: '1px solid #2a2b36', borderRadius: 8, fontSize: 12 }}
+                      contentStyle={{ background: '#152236', border: '1px solid #2b4670', borderRadius: 8, fontSize: 12 }}
                       labelStyle={{ color: '#f5e6c8' }}
                       cursor={{ fill: '#d4af3712' }}
                     />
@@ -1029,10 +1032,10 @@ function AdminComponent() {
         )}
 
         {isOwner && activeTab === 'overview' && showRoster && (
-          <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4 space-y-4">
+          <div className="rounded-xl border border-[#2b4670] bg-[#0f1a2b] p-4 space-y-4">
             <h2 className="text-sm font-semibold text-[#f5e6c8]">員工權限管理</h2>
 
-            <form onSubmit={handleGrant} className="flex flex-wrap items-end gap-3 border-b border-[#1e1f28] pb-4">
+            <form onSubmit={handleGrant} className="flex flex-wrap items-end gap-3 border-b border-[#203658] pb-4">
               <div className="flex-1 min-w-[200px]">
                 <label className="text-[11px] text-neutral-400 mb-1 block">
                   員工 Email（要先在 Supabase 後台建好這個人的登入帳號）
@@ -1043,7 +1046,7 @@ function AdminComponent() {
                   value={grantEmail}
                   onChange={(e) => setGrantEmail(e.target.value)}
                   placeholder="staff@example.com"
-                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                 />
               </div>
               {(
@@ -1079,7 +1082,7 @@ function AdminComponent() {
                 {adminRoster.map((row) => (
                   <div
                     key={row.id}
-                    className="flex flex-wrap items-center gap-3 text-xs bg-[#14151a] rounded-lg px-3 py-2.5"
+                    className="flex flex-wrap items-center gap-3 text-xs bg-[#152236] rounded-lg px-3 py-2.5"
                   >
                     <span className="min-w-[160px] text-neutral-200">
                       {row.email || row.id}
@@ -1130,7 +1133,7 @@ function AdminComponent() {
         )}
 
         {isOwner && activeTab === 'overview' && (
-          <div className="rounded-xl border border-[#2a2b36] bg-[#0e0f14] p-4 space-y-3">
+          <div className="rounded-xl border border-[#2b4670] bg-[#0f1a2b] p-4 space-y-3">
             <h2 className="text-sm font-semibold text-[#f5e6c8] flex items-center gap-1.5">
               <Bell size={14} /> 預約通知設定
             </h2>
@@ -1152,7 +1155,7 @@ function AdminComponent() {
                         value={notifSettings.telegram_bot_token}
                         onChange={(e) => setNotifSettings((s) => ({ ...s, telegram_bot_token: e.target.value }))}
                         placeholder="123456789:AA..."
-                        className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                        className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                     <div className="flex-1 min-w-[160px]">
@@ -1162,7 +1165,7 @@ function AdminComponent() {
                         value={notifSettings.telegram_chat_id}
                         onChange={(e) => setNotifSettings((s) => ({ ...s, telegram_chat_id: e.target.value }))}
                         placeholder="123456789"
-                        className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                        className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                   </div>
@@ -1177,7 +1180,7 @@ function AdminComponent() {
                       value={notifSettings.line_channel_access_token}
                       onChange={(e) => setNotifSettings((s) => ({ ...s, line_channel_access_token: e.target.value }))}
                       placeholder="長長一串..."
-                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
                 </div>
@@ -1199,8 +1202,8 @@ function AdminComponent() {
             <div
               className={`flex items-center gap-4 rounded-xl border p-5 ${
                 scannedMatch.is_blacklisted
-                  ? 'border-red-500/60 bg-gradient-to-r from-red-950/40 to-[#101117]'
-                  : 'border-[#d4af37]/50 bg-gradient-to-r from-[#1c1e29] to-[#101117]'
+                  ? 'border-red-500/60 bg-gradient-to-r from-red-950/40 to-[#111c2f]'
+                  : 'border-[#d4af37]/50 bg-gradient-to-r from-[#1e3252] to-[#111c2f]'
               }`}
             >
               {scannedMatch.is_blacklisted ? (
@@ -1255,7 +1258,7 @@ function AdminComponent() {
                 placeholder="搜尋暱稱、姓名、電話或會員代碼"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg pl-9 pr-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg pl-9 pr-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-[#d4af37]"
               />
             </div>
 
@@ -1268,10 +1271,10 @@ function AdminComponent() {
             {membersLoading ? (
               <p className="text-sm text-neutral-500">載入中...</p>
             ) : (
-              <div className="hidden sm:block overflow-x-auto rounded-xl border border-[#2a2b36]">
+              <div className="hidden sm:block overflow-x-auto rounded-xl border border-[#2b4670]">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-[#14151a] text-neutral-400 text-xs">
+                    <tr className="bg-[#152236] text-neutral-400 text-xs">
                       <th className="text-left px-3 py-2.5 font-medium">會員代碼</th>
                       <th className="text-left px-3 py-2.5 font-medium">暱稱</th>
                       <th className="text-left px-3 py-2.5 font-medium">真實姓名</th>
@@ -1295,7 +1298,7 @@ function AdminComponent() {
                         const idleDays = daysSince(lastVisitMap[m.id]);
                         return (
                           <Fragment key={m.id}>
-                          <tr className={`border-t border-[#1e1f28] ${m.is_blacklisted ? 'bg-red-950/20' : ''}`}>
+                          <tr className={`border-t border-[#203658] ${m.is_blacklisted ? 'bg-red-950/20' : ''}`}>
                             <td className="px-3 py-2.5 font-mono text-xs text-[#d4af37]">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 {m.member_code}
@@ -1331,7 +1334,7 @@ function AdminComponent() {
                                 <input
                                   value={editForm.real_name ?? ''}
                                   onChange={(e) => setEditForm((f) => ({ ...f, real_name: e.target.value }))}
-                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1 text-xs"
+                                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1 text-xs"
                                 />
                               ) : (
                                 m.real_name
@@ -1342,7 +1345,7 @@ function AdminComponent() {
                                 <input
                                   value={editForm.phone ?? ''}
                                   onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
-                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1 text-xs"
+                                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1 text-xs"
                                 />
                               ) : (
                                 m.phone
@@ -1361,7 +1364,7 @@ function AdminComponent() {
                                         birth_year: e.target.value ? Number(e.target.value) : null,
                                       }))
                                     }
-                                    className="w-14 bg-[#1b1c24] border border-neutral-700 rounded px-1.5 py-1 text-xs"
+                                    className="w-14 bg-[#1c2f4a] border border-neutral-700 rounded px-1.5 py-1 text-xs"
                                   />
                                   <input
                                     type="number"
@@ -1375,7 +1378,7 @@ function AdminComponent() {
                                         birth_month: e.target.value ? Number(e.target.value) : null,
                                       }))
                                     }
-                                    className="w-12 bg-[#1b1c24] border border-neutral-700 rounded px-1.5 py-1 text-xs"
+                                    className="w-12 bg-[#1c2f4a] border border-neutral-700 rounded px-1.5 py-1 text-xs"
                                   />
                                   <input
                                     type="number"
@@ -1389,7 +1392,7 @@ function AdminComponent() {
                                         birth_day: e.target.value ? Number(e.target.value) : null,
                                       }))
                                     }
-                                    className="w-12 bg-[#1b1c24] border border-neutral-700 rounded px-1.5 py-1 text-xs"
+                                    className="w-12 bg-[#1c2f4a] border border-neutral-700 rounded px-1.5 py-1 text-xs"
                                   />
                                 </div>
                               ) : (
@@ -1401,7 +1404,7 @@ function AdminComponent() {
                                 <input
                                   value={editForm.vip_level ?? ''}
                                   onChange={(e) => setEditForm((f) => ({ ...f, vip_level: e.target.value }))}
-                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1 text-xs"
+                                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1 text-xs"
                                 />
                               ) : (
                                 <span className="text-[#d4af37]">{m.vip_level}</span>
@@ -1475,7 +1478,7 @@ function AdminComponent() {
                             </td>
                           </tr>
                           {isEditing && canEditBasic && (
-                            <tr className="border-t border-[#1e1f28] bg-[#111218]">
+                            <tr className="border-t border-[#203658] bg-[#121d31]">
                               <td colSpan={8} className="px-3 py-4">
                                 <div className="grid gap-4 sm:grid-cols-4">
                                   <div className="sm:col-span-2">
@@ -1485,7 +1488,7 @@ function AdminComponent() {
                                       onChange={(e) => setEditForm((f) => ({ ...f, staff_notes: e.target.value }))}
                                       placeholder="例如：左肩有舊傷不能壓太重、喜歡喝溫水"
                                       rows={2}
-                                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37] resize-none"
+                                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37] resize-none"
                                     />
                                   </div>
                                   <div>
@@ -1503,7 +1506,7 @@ function AdminComponent() {
                                         value={editForm.blacklist_reason ?? ''}
                                         onChange={(e) => setEditForm((f) => ({ ...f, blacklist_reason: e.target.value }))}
                                         placeholder="原因（例如：多次無故爽約）"
-                                        className="w-full bg-[#1b1c24] border border-red-500/40 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-red-400"
+                                        className="w-full bg-[#1c2f4a] border border-red-500/40 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-red-400"
                                       />
                                     )}
                                   </div>
@@ -1519,7 +1522,7 @@ function AdminComponent() {
                                           onChange={(e) =>
                                             setEditForm((f) => ({ ...f, no_show_count: Number(e.target.value) }))
                                           }
-                                          className="w-16 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                          className="w-16 bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs"
                                         />
                                       </div>
                                       <div>
@@ -1531,7 +1534,7 @@ function AdminComponent() {
                                           onChange={(e) =>
                                             setEditForm((f) => ({ ...f, cancellation_count: Number(e.target.value) }))
                                           }
-                                          className="w-16 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                          className="w-16 bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs"
                                         />
                                       </div>
                                     </div>
@@ -1541,7 +1544,7 @@ function AdminComponent() {
                             </tr>
                           )}
                           {isEditing && canEditPreferences && (
-                            <tr className="border-t border-[#1e1f28] bg-[#111218]">
+                            <tr className="border-t border-[#203658] bg-[#121d31]">
                               <td colSpan={8} className="px-3 py-4">
                                 <div className="grid gap-4 sm:grid-cols-2">
                                   <div>
@@ -1598,14 +1601,14 @@ function AdminComponent() {
                             </tr>
                           )}
                           {sessionsOpenId === m.id && (
-                            <tr className="border-t border-[#1e1f28] bg-[#111218]">
+                            <tr className="border-t border-[#203658] bg-[#121d31]">
                               <td colSpan={8} className="px-3 py-4">
                                 <p className="text-[11px] text-neutral-400 uppercase tracking-widest mb-3">消費與服務紀錄</p>
 
                                 {canEditBasic && (
                                   <form
                                     onSubmit={(e) => handleAddLog(m.id, e)}
-                                    className="flex flex-wrap items-end gap-2 mb-4 pb-4 border-b border-[#1e1f28]"
+                                    className="flex flex-wrap items-end gap-2 mb-4 pb-4 border-b border-[#203658]"
                                   >
                                     <div>
                                       <label className="text-[10px] text-neutral-500 block mb-1">日期時間</label>
@@ -1614,7 +1617,7 @@ function AdminComponent() {
                                         required
                                         value={newLogForm.session_at}
                                         onChange={(e) => setNewLogForm((f) => ({ ...f, session_at: e.target.value }))}
-                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                        className="bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs"
                                       />
                                     </div>
                                     <div>
@@ -1623,7 +1626,7 @@ function AdminComponent() {
                                         value={newLogForm.service_item}
                                         onChange={(e) => setNewLogForm((f) => ({ ...f, service_item: e.target.value }))}
                                         placeholder="例如：全身指壓 90 分"
-                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs w-40"
+                                        className="bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs w-40"
                                       />
                                     </div>
                                     <div>
@@ -1632,7 +1635,7 @@ function AdminComponent() {
                                         value={newLogForm.therapist}
                                         onChange={(e) => setNewLogForm((f) => ({ ...f, therapist: e.target.value }))}
                                         placeholder="例如：小雨"
-                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs w-24"
+                                        className="bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs w-24"
                                       />
                                     </div>
                                     <div>
@@ -1643,7 +1646,7 @@ function AdminComponent() {
                                         value={newLogForm.amount}
                                         onChange={(e) => setNewLogForm((f) => ({ ...f, amount: e.target.value }))}
                                         placeholder="0"
-                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs w-20"
+                                        className="bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs w-20"
                                       />
                                     </div>
                                     <div>
@@ -1652,7 +1655,7 @@ function AdminComponent() {
                                         value={newLogForm.notes}
                                         onChange={(e) => setNewLogForm((f) => ({ ...f, notes: e.target.value }))}
                                         placeholder="選填"
-                                        className="bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs w-32"
+                                        className="bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs w-32"
                                       />
                                     </div>
                                     <button
@@ -1674,7 +1677,7 @@ function AdminComponent() {
                                     {(sessionLogs[m.id] || []).map((log) => (
                                       <div
                                         key={log.id}
-                                        className="flex items-center gap-3 text-xs bg-[#14151a] rounded-lg px-3 py-2"
+                                        className="flex items-center gap-3 text-xs bg-[#152236] rounded-lg px-3 py-2"
                                       >
                                         <span className="text-neutral-400 shrink-0">
                                           {new Date(log.session_at).toLocaleString('zh-TW', {
@@ -1732,7 +1735,7 @@ function AdminComponent() {
                       <div
                         key={m.id}
                         className={`rounded-xl border p-4 space-y-3 ${
-                          m.is_blacklisted ? 'border-red-500/40 bg-red-950/20' : 'border-[#2a2b36] bg-[#0e0f14]'
+                          m.is_blacklisted ? 'border-red-500/40 bg-red-950/20' : 'border-[#2b4670] bg-[#0f1a2b]'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -1797,7 +1800,7 @@ function AdminComponent() {
                               </div>
                             )}
 
-                            <div className="flex items-center gap-4 pt-2 border-t border-[#1e1f28]">
+                            <div className="flex items-center gap-4 pt-2 border-t border-[#203658]">
                               <button
                                 onClick={() => toggleSessions(m.id)}
                                 className="flex items-center gap-1 text-xs text-neutral-400 cursor-pointer"
@@ -1833,13 +1836,13 @@ function AdminComponent() {
                                   value={editForm.real_name ?? ''}
                                   onChange={(e) => setEditForm((f) => ({ ...f, real_name: e.target.value }))}
                                   placeholder="真實姓名"
-                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
                                 />
                                 <input
                                   value={editForm.phone ?? ''}
                                   onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
                                   placeholder="電話"
-                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
                                 />
                                 <div className="flex gap-1.5">
                                   <input
@@ -1852,7 +1855,7 @@ function AdminComponent() {
                                         birth_year: e.target.value ? Number(e.target.value) : null,
                                       }))
                                     }
-                                    className="w-1/3 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                    className="w-1/3 bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs"
                                   />
                                   <input
                                     type="number"
@@ -1866,7 +1869,7 @@ function AdminComponent() {
                                         birth_month: e.target.value ? Number(e.target.value) : null,
                                       }))
                                     }
-                                    className="w-1/3 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                    className="w-1/3 bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs"
                                   />
                                   <input
                                     type="number"
@@ -1880,21 +1883,21 @@ function AdminComponent() {
                                         birth_day: e.target.value ? Number(e.target.value) : null,
                                       }))
                                     }
-                                    className="w-1/3 bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                    className="w-1/3 bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs"
                                   />
                                 </div>
                                 <input
                                   value={editForm.vip_level ?? ''}
                                   onChange={(e) => setEditForm((f) => ({ ...f, vip_level: e.target.value }))}
                                   placeholder="VIP 等級"
-                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
                                 />
                                 <textarea
                                   value={editForm.staff_notes ?? ''}
                                   onChange={(e) => setEditForm((f) => ({ ...f, staff_notes: e.target.value }))}
                                   placeholder="師傅專用備註"
                                   rows={2}
-                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs resize-none"
+                                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2.5 py-1.5 text-xs resize-none"
                                 />
                                 <div className="flex gap-1.5">
                                   <div className="flex-1">
@@ -1906,7 +1909,7 @@ function AdminComponent() {
                                       onChange={(e) =>
                                         setEditForm((f) => ({ ...f, no_show_count: Number(e.target.value) }))
                                       }
-                                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs"
                                     />
                                   </div>
                                   <div className="flex-1">
@@ -1918,7 +1921,7 @@ function AdminComponent() {
                                       onChange={(e) =>
                                         setEditForm((f) => ({ ...f, cancellation_count: Number(e.target.value) }))
                                       }
-                                      className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2 py-1.5 text-xs"
+                                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2 py-1.5 text-xs"
                                     />
                                   </div>
                                 </div>
@@ -1935,14 +1938,14 @@ function AdminComponent() {
                                     value={editForm.blacklist_reason ?? ''}
                                     onChange={(e) => setEditForm((f) => ({ ...f, blacklist_reason: e.target.value }))}
                                     placeholder="黑名單原因"
-                                    className="w-full bg-[#1b1c24] border border-red-500/40 rounded px-2.5 py-1.5 text-xs"
+                                    className="w-full bg-[#1c2f4a] border border-red-500/40 rounded px-2.5 py-1.5 text-xs"
                                   />
                                 )}
                               </div>
                             )}
 
                             {canEditPreferences && (
-                              <div className="space-y-3 pt-2 border-t border-[#1e1f28]">
+                              <div className="space-y-3 pt-2 border-t border-[#203658]">
                                 <div>
                                   <p className="text-[11px] text-neutral-400 mb-1.5">力道偏好</p>
                                   <SinglePillGroup
@@ -1995,7 +1998,7 @@ function AdminComponent() {
                               </div>
                             )}
 
-                            <div className="flex items-center gap-2 pt-2 border-t border-[#1e1f28]">
+                            <div className="flex items-center gap-2 pt-2 border-t border-[#203658]">
                               <button
                                 onClick={() => saveEdit(m.id)}
                                 disabled={saving}
@@ -2014,30 +2017,30 @@ function AdminComponent() {
                         )}
 
                         {sessionsOpenId === m.id && (
-                          <div className="pt-3 border-t border-[#1e1f28] space-y-3">
+                          <div className="pt-3 border-t border-[#203658] space-y-3">
                             <p className="text-[11px] text-neutral-400 uppercase tracking-widest">消費與服務紀錄</p>
 
                             {canEditBasic && (
-                              <form onSubmit={(e) => handleAddLog(m.id, e)} className="space-y-2 pb-3 border-b border-[#1e1f28]">
+                              <form onSubmit={(e) => handleAddLog(m.id, e)} className="space-y-2 pb-3 border-b border-[#203658]">
                                 <input
                                   type="datetime-local"
                                   required
                                   value={newLogForm.session_at}
                                   onChange={(e) => setNewLogForm((f) => ({ ...f, session_at: e.target.value }))}
-                                  className="w-full bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                  className="w-full bg-[#1c2f4a] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
                                 />
                                 <div className="flex gap-1.5">
                                   <input
                                     value={newLogForm.service_item}
                                     onChange={(e) => setNewLogForm((f) => ({ ...f, service_item: e.target.value }))}
                                     placeholder="服務項目"
-                                    className="flex-1 bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                    className="flex-1 bg-[#1c2f4a] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
                                   />
                                   <input
                                     value={newLogForm.therapist}
                                     onChange={(e) => setNewLogForm((f) => ({ ...f, therapist: e.target.value }))}
                                     placeholder="按摩師"
-                                    className="w-24 bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                    className="w-24 bg-[#1c2f4a] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
                                   />
                                 </div>
                                 <div className="flex gap-1.5">
@@ -2047,13 +2050,13 @@ function AdminComponent() {
                                     value={newLogForm.amount}
                                     onChange={(e) => setNewLogForm((f) => ({ ...f, amount: e.target.value }))}
                                     placeholder="金額"
-                                    className="w-20 bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                    className="w-20 bg-[#1c2f4a] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
                                   />
                                   <input
                                     value={newLogForm.notes}
                                     onChange={(e) => setNewLogForm((f) => ({ ...f, notes: e.target.value }))}
                                     placeholder="備註（選填）"
-                                    className="flex-1 bg-[#1b1c24] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
+                                    className="flex-1 bg-[#1c2f4a] border border-neutral-700 rounded px-2.5 py-1.5 text-xs"
                                   />
                                 </div>
                                 <button
@@ -2073,7 +2076,7 @@ function AdminComponent() {
                             ) : (
                               <div className="space-y-1.5">
                                 {(sessionLogs[m.id] || []).map((log) => (
-                                  <div key={log.id} className="text-xs bg-[#14151a] rounded-lg px-3 py-2 space-y-0.5">
+                                  <div key={log.id} className="text-xs bg-[#152236] rounded-lg px-3 py-2 space-y-0.5">
                                     <div className="flex items-center justify-between">
                                       <span className="text-neutral-400">
                                         {new Date(log.session_at).toLocaleString('zh-TW', {

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Crown } from "lucide-react";
 import content from "@/content.json";
+import { BrandMark } from "@/lib/BrandMark";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -463,7 +464,7 @@ function AgeGate() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background p-6">
       <div className="hairline w-full max-w-sm rounded-lg bg-card/95 p-8 text-center backdrop-blur-md">
         <div className="mb-6 flex items-center justify-center gap-3">
-          <Moon />
+          <BrandMark className="h-5 w-5 text-silver" />
           <span className="text-xs tracking-[0.34em] text-silver">{content.site.name}</span>
         </div>
         <h2 className="text-xl font-light text-silver">年齡確認</h2>
@@ -614,7 +615,7 @@ function Index() {
         <Stardust />
         <div className="relative z-10 mx-auto max-w-3xl py-24 text-center">
           <div className="mb-8 inline-flex items-center gap-3 rounded-full hairline px-5 py-2 backdrop-blur-sm">
-            <Moon />
+            <BrandMark className="h-5 w-5 text-silver" />
             <span className="text-xs tracking-[0.34em] text-silver">{content.hero.badge}</span>
           </div>
           <h1 className="text-4xl font-light leading-[1.35] text-silver sm:text-6xl">
@@ -898,7 +899,7 @@ function Index() {
         <div className="mx-auto grid max-w-6xl gap-12 sm:grid-cols-3">
           <div>
             <div className="mb-4 flex items-center gap-3">
-              <Moon />
+              <BrandMark className="h-5 w-5 text-silver" />
               <span className="text-xs tracking-[0.34em] text-silver">{content.site.name}</span>
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">
