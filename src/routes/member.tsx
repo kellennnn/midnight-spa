@@ -180,60 +180,29 @@ function MemberComponent() {
 
     setSubmitting(true);
     try {
-      // 會員代碼是隨機抽的，理論上有極低機率跟其他會員撞號（資料庫有加 unique
-      // 限制擋掉重複），所以這裡撞到的話就重抽一組再試一次，最多試 5 次。
-      let insertError: { code?: string; message: string } | null = null;
+      // 開卡改走安全函式 register_member（見 supabase/sql/015_rate_limits.sql）：
+      // 會員代碼、撞號重試、擋重複開卡、擋短時間大量開卡，全部在伺服器端處理，
+      // 不再相信前端直接對 members 表 insert 傳來的內容。
+      // 力道偏好、加強/避開部位、香氣偏好、互動風格這些體驗偏好，
+      // 客人開卡當下不用填，只能由店員之後在 /admin 後台幫忙補上。
+      const { data, error } = await supabase.rpc('register_member', {
+        p_line_user_id: lineProfile.userId,
+        p_display_name: regNickname,
+        p_real_name: realName,
+        p_phone: phone,
+        p_birth_month: Number(birthMonth),
+        p_birth_day: Number(birthDay),
+        p_birth_year: Number(birthYear),
+      });
 
-      for (let attempt = 0; attempt < 5; attempt++) {
-        const randomCode = 'LSP-' + Math.floor(100000 + Math.random() * 900000);
-
-        const newMember = {
-          line_user_id: lineProfile.userId,
-          member_code: randomCode,
-          display_name: regNickname,
-          real_name: realName,
-          phone: phone,
-          birth_month: Number(birthMonth),
-          birth_day: Number(birthDay),
-          birth_year: Number(birthYear),
-          vip_level: 'VIP',
-          // 力道偏好、加強/避開部位、香氣偏好、互動風格這些體驗偏好，
-          // 客人開卡當下不用填，只能由店員之後在 /admin 後台幫忙補上。
-        };
-
-        const { error } = await supabase.from('members').insert([newMember]);
-
-        if (!error) {
-          insertError = null;
-          break;
-        }
-
-        insertError = error;
-        if (error.code !== '23505') {
-          // 不是「代碼重複」造成的錯誤，重試也沒用，直接停下來
-          break;
-        }
-      }
-
-      // anon 角色現在只有 insert 權限、沒有 select 權限，insert 後沒辦法直接
-      // .select() 讀回那一列，所以改成用安全函式 get_member_by_line_id 另外撈一次。
-      if (insertError) {
-        const friendlyMessage = insertError.message.includes('at least 18 years old')
+      if (error || !data || data.length === 0) {
+        const friendlyMessage = error?.message.includes('at least 18 years old')
           ? '很抱歉，未滿 18 歲無法開通 VIP 會員卡。'
-          : insertError.message;
+          : error?.message || '開卡失敗，請稍後再試';
         alert('開卡失敗：' + friendlyMessage);
-        console.error(insertError);
+        console.error(error);
       } else {
-        const { data, error } = await supabase.rpc('get_member_by_line_id', {
-          p_line_user_id: lineProfile.userId,
-        });
-
-        if (error || !data || data.length === 0) {
-          alert('開卡成功，但讀取會員卡失敗，請重新整理頁面');
-          console.error(error);
-        } else {
-          setProfile(data[0]);
-        }
+        setProfile(data[0]);
       }
     } catch (err: any) {
       alert('連線失敗：' + (err.message || '請檢查網路與資料庫設定'));
