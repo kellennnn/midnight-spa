@@ -18,7 +18,6 @@ export const Route = createFileRoute("/")({
 });
 
 type Shift = "早班" | "晚班";
-type Tier = "standard" | "premium";
 
 type Therapist = {
   no: string;
@@ -28,7 +27,6 @@ type Therapist = {
   schedule: string;
   shift: Shift;
   onDuty: boolean;
-  tier: Tier;
 };
 
 const therapists = content.therapists as Therapist[];
@@ -134,7 +132,7 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
 function AnnouncementMarquee() {
   const announcements = [
     "✦ 採會員專屬預約制 ｜ 首次使用請先完成會員註冊",
-    "✦ 24H 全年無休 ｜ 獨立私密包廂，全時段開放線上預約",
+    "✦ 10:00–05:00 全年無休 ｜ 獨立私密包廂，線上預約",
     "✦ 全館嚴格執行一客一清消毒 ｜ 享受純淨無干擾的解壓時光",
   ];
   const [index, setIndex] = useState(0);
@@ -420,29 +418,15 @@ function AgeGate() {
   );
 }
 
-/* 人員卡片：一般 / 進階兩組共用同一張卡片，premium 為 true 時套用香檳金
-   邊框、光暈與內框，跟進階價目卡是同一套「黑金珠寶盒」視覺語言。 */
-function TherapistCard({
-  t,
-  onOpen,
-  premium = false,
-}: {
-  t: Therapist;
-  onOpen: (t: Therapist) => void;
-  premium?: boolean;
-}) {
+/* 人員卡片：統一套用香檳金邊框、光暈與內框的「黑金珠寶盒」視覺語言
+   （原本一般 / 進階兩種樣式，現在全部人員都用這一種）。 */
+function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => void }) {
   return (
     <article
       onClick={() => onOpen(t)}
-      className={
-        premium
-          ? "group relative cursor-pointer overflow-hidden rounded-lg border border-[#E5B292]/70 bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_25px_rgba(229,178,146,0.18)] transition-transform duration-500 hover:-translate-y-1"
-          : "group cursor-pointer overflow-hidden rounded-lg hairline bg-card/70 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1"
-      }
+      className="group relative cursor-pointer overflow-hidden rounded-lg border border-[#E5B292]/70 bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_25px_rgba(229,178,146,0.18)] transition-transform duration-500 hover:-translate-y-1"
     >
-      {premium && (
-        <div className="pointer-events-none absolute inset-1.5 z-10 rounded-md border border-[#E5B292]/20" />
-      )}
+      <div className="pointer-events-none absolute inset-1.5 z-10 rounded-md border border-[#E5B292]/20" />
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
           src={t.photos[0]}
@@ -468,26 +452,20 @@ function TherapistCard({
         </span>
       </div>
       <div className="relative z-10 p-5">
-        <h3 className={`text-xl font-light ${premium ? "text-[#FCEADE]" : "text-silver"}`}>
+        <h3 className="text-xl font-light text-[#FCEADE]">
           {t.no} · {t.name}
         </h3>
         <div className="mt-3 flex flex-wrap gap-2">
           {t.tags.map((tag) => (
             <span
               key={tag}
-              className={
-                premium
-                  ? "rounded-full border border-[#E5B292]/40 px-2.5 py-1 text-[11px] text-[#E5B292]"
-                  : "rounded-full hairline px-2.5 py-1 text-[11px] text-muted-foreground"
-              }
+              className="rounded-full border border-[#E5B292]/40 px-2.5 py-1 text-[11px] text-[#E5B292]"
             >
               {tag}
             </span>
           ))}
         </div>
-        <p
-          className={`mt-4 text-xs tracking-[0.16em] ${premium ? "text-gray-300" : "text-muted-foreground"}`}
-        >
+        <p className="mt-4 text-xs tracking-[0.16em] text-gray-300">
           當日班表 {t.schedule}（{t.shift}）
         </p>
       </div>
@@ -502,8 +480,6 @@ function Index() {
   const list = therapists.filter((t) =>
     filter === "全部" ? true : filter === "今日上班中" ? t.onDuty : t.shift === filter,
   );
-  const standardList = list.filter((t) => t.tier === "standard");
-  const premiumList = list.filter((t) => t.tier === "premium");
 
   return (
     <main className="min-h-screen bg-background">
@@ -537,8 +513,12 @@ function Index() {
             {content.hero.titleBefore}
             <span className="text-gradient-rose">{content.hero.titleHighlight}</span>
             {content.hero.titleAfter}
-            <br />
-            {content.hero.titleLine2}
+            {content.hero.titleLine2 && (
+              <>
+                <br />
+                {content.hero.titleLine2}
+              </>
+            )}
           </h1>
           <p className="mt-8 text-sm tracking-[0.32em] text-muted-foreground sm:text-base">
             {content.hero.subtitle}
@@ -578,39 +558,16 @@ function Index() {
             ))}
           </div>
 
-          {/* 一般按摩師 */}
-          <div>
-            <h3 className="mb-6 text-center text-lg font-bold uppercase tracking-[0.24em] text-silver sm:text-xl">
-              一般按摩師 · 經典舒壓
-            </h3>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {standardList.map((t) => (
-                <TherapistCard key={t.no} t={t} onOpen={setOpenPerson} />
-              ))}
-            </div>
-            {standardList.length === 0 && (
-              <p className="mt-6 text-center text-sm text-muted-foreground">
-                此條件目前無可預約人員，歡迎透過 LINE 詢問臨時班表。
-              </p>
-            )}
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {list.map((t) => (
+              <TherapistCard key={t.no} t={t} onOpen={setOpenPerson} />
+            ))}
           </div>
-
-          {/* 進階芳療師 */}
-          <div className="mt-16">
-            <h3 className="mb-6 text-center text-lg font-bold uppercase tracking-[0.24em] text-[#E5B292] sm:text-xl">
-              進階芳療師 · 深層調理
-            </h3>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {premiumList.map((t) => (
-                <TherapistCard key={t.no} t={t} onOpen={setOpenPerson} premium />
-              ))}
-            </div>
-            {premiumList.length === 0 && (
-              <p className="mt-6 text-center text-sm text-muted-foreground">
-                此條件目前無可預約人員，歡迎透過 LINE 詢問臨時班表。
-              </p>
-            )}
-          </div>
+          {list.length === 0 && (
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              此條件目前無可預約人員，歡迎透過 LINE 詢問臨時班表。
+            </p>
+          )}
         </div>
       </section>
 
@@ -712,27 +669,6 @@ function Index() {
         </div>
       </section>
 
-      {/* Map */}
-      <section id="map" className="border-t border-border px-6 py-24">
-        <div className="mx-auto max-w-4xl">
-          <SectionTitle eyebrow="Location" title="交通位置" />
-          <div className="overflow-hidden rounded-lg hairline">
-            <iframe
-              title="Lounge Spa 地圖位置"
-              src={`https://www.google.com/maps?q=${encodeURIComponent(content.footer.address)}&output=embed`}
-              width="100%"
-              height="360"
-              style={{ border: 0, display: "block" }}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-          <div className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
-            <p>{content.footer.parking}</p>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer id="contact" className="border-t border-border px-6 py-20">
         <div className="mx-auto grid max-w-6xl gap-12 sm:grid-cols-3">
@@ -751,8 +687,7 @@ function Index() {
             </p>
           </div>
           <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
-            <h3 className="mb-3 text-sm font-light tracking-[0.2em] text-silver">交通指引</h3>
-            <p>{content.footer.address}</p>
+            <h3 className="mb-3 text-sm font-light tracking-[0.2em] text-silver">貼心提醒</h3>
             <p>{content.footer.parking}</p>
           </div>
           <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">

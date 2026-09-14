@@ -91,7 +91,13 @@ $moreColors = @(
     @{ Id = 13; Top = "#232a2c"; Bottom = "#111516" },
     @{ Id = 14; Top = "#2c1f2b"; Bottom = "#150f15" },
     @{ Id = 15; Top = "#242030"; Bottom = "#121018" },
-    @{ Id = 16; Top = "#1f242b"; Bottom = "#0f1216" }
+    @{ Id = 16; Top = "#1f242b"; Bottom = "#0f1216" },
+    # 17-20: roster expanded to 20 (all one "進階芳療師" style now), same
+    # placeholder treatment — swap in real photos under these filenames later.
+    @{ Id = 17; Top = "#231f2b"; Bottom = "#121016" },
+    @{ Id = 18; Top = "#2b2420"; Bottom = "#151210" },
+    @{ Id = 19; Top = "#1f2a28"; Bottom = "#0f1514" },
+    @{ Id = 20; Top = "#2a1f2a"; Bottom = "#151015" }
 )
 
 for ($j = 0; $j -lt $moreColors.Length; $j++) {
