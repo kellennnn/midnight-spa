@@ -65,6 +65,15 @@
     scroll-behavior: smooth;
   }
 
+  /* 客人反應電腦上看字偏小：桌面／平板寬度把根字級調大一階（16px -> 18px），
+     Tailwind 的 text-xs/sm/base... 都是 rem 單位會跟著等比放大；手機維持原本
+     大小不動（原本手機上大小是 ok 的，只有桌面被反應偏小）。 */
+  @media (min-width: 768px) {
+    html {
+      font-size: 18px;
+    }
+  }
+
   /* Anchor targets (the quick-nav links) land below the two fixed bars
      (marquee 48px + navbar 80px = 128px total) instead of hiding underneath them. */
   [id] {

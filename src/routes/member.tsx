@@ -327,7 +327,7 @@ function MemberComponent() {
             )}
             <div>
               <div className="flex items-center gap-1.5">
-                <BrandMark className="h-4 w-7 text-[#d4af37]" />
+                <BrandMark className="h-6 w-6 text-[#d4af37]" />
                 <h1 className="font-serif tracking-widest text-[#f5e6c8] text-lg font-bold">Lounge Spa</h1>
               </div>
               <p className="text-xs text-neutral-500 tracking-wider">VIP EXCLUSIVE PASS</p>
