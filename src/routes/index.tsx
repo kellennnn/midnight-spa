@@ -588,44 +588,44 @@ function Index() {
                 {s.featured && (
                   <>
                     <div className="pointer-events-none absolute inset-1.5 rounded-xl border border-[#E5B292]/20" />
-                    <span className="absolute -top-3 right-6 rounded-full border border-[#E5B292] bg-[#12131d] px-3 py-1 text-[10px] font-bold tracking-wider text-[#FCEADE] shadow-md">
+                    <span className="absolute -top-3 right-6 rounded-full border border-[#E5B292] bg-[#12131d] px-3 py-1 text-xs font-bold tracking-wider text-[#FCEADE] shadow-md">
                       {s.badge}
                     </span>
                   </>
                 )}
                 {!s.featured && (
-                  <span className="inline-block rounded-full hairline px-3 py-1 text-[11px] tracking-[0.14em] text-muted-foreground">
+                  <span className="inline-block rounded-full hairline px-3 py-1 text-xs tracking-[0.14em] text-muted-foreground">
                     {s.badge}
                   </span>
                 )}
 
                 <h3
-                  className={`relative z-10 mt-3 text-xl font-light ${s.featured ? "text-[#FCEADE]" : "text-silver"}`}
+                  className={`relative z-10 mt-3 text-2xl font-light ${s.featured ? "text-[#FCEADE]" : "text-silver"}`}
                 >
                   {s.name}
                 </h3>
                 <p
-                  className={`relative z-10 mt-1 text-xs tracking-wide ${s.featured ? "text-[#E5B292]" : "text-muted-foreground"}`}
+                  className={`relative z-10 mt-1 text-sm tracking-wide ${s.featured ? "text-[#E5B292]" : "text-muted-foreground"}`}
                 >
                   {s.min}
                 </p>
                 <div className="relative z-10 mt-4">
                   <span
-                    className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] tracking-[0.2em] ${
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-xs tracking-[0.2em] ${
                       s.featured ? "border-[#FCEADE]/50 text-[#FCEADE]" : "border-primary/40 text-primary"
                     }`}
                   >
                     專屬客製
                   </span>
                   <p
-                    className={`mt-3 text-sm leading-relaxed ${s.featured ? "text-[#FCEADE]/90" : "text-silver"}`}
+                    className={`mt-3 text-base leading-relaxed ${s.featured ? "text-[#FCEADE]/90" : "text-silver"}`}
                   >
                     {s.tagline}
                   </p>
                 </div>
 
                 <ul
-                  className={`relative z-10 mt-6 space-y-2 border-t pt-5 text-xs leading-relaxed ${
+                  className={`relative z-10 mt-6 space-y-2 border-t pt-5 text-sm leading-relaxed ${
                     s.featured ? "border-white/10 text-gray-200" : "border-border text-muted-foreground"
                   }`}
                 >
@@ -639,7 +639,7 @@ function Index() {
               </div>
             ))}
           </div>
-          <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-8 text-center text-sm leading-relaxed text-muted-foreground">
             ※ Lounge Spa 採全預約專屬制。每項療程均依貴賓當日身心狀態與精油配方進行客製化配置，
             完整療程細節將於到店時由專業芳療師為您細心諮詢與說明。
           </p>
@@ -656,13 +656,13 @@ function Index() {
                 key={item.q}
                 className="group rounded-lg hairline bg-card/70 p-5 backdrop-blur-sm [&_summary::-webkit-details-marker]:hidden"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between text-sm text-silver">
+                <summary className="flex cursor-pointer list-none items-center justify-between text-base text-silver">
                   {item.q}
                   <span className="ml-4 shrink-0 text-lg text-primary transition-transform duration-300 group-open:rotate-45">
                     +
                   </span>
                 </summary>
-                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{item.a}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
               </details>
             ))}
           </div>
