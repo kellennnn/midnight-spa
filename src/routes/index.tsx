@@ -418,14 +418,35 @@ function AgeGate() {
   );
 }
 
-/* 人員卡片：統一套用香檳金邊框、光暈與內框的「黑金珠寶盒」視覺語言
-   （原本一般 / 進階兩種樣式，現在全部人員都用這一種）。 */
+/* 卡片專屬角飾：圓角 L 型邊框線 + 小鑽石飾釘，同一個圖形旋轉四次貼在
+   四個角，呼應「黑金珠寶盒」的品牌視覺語言——比單純一條細框更有專屬
+   訂製感，也跟 logo 的星星/鑽石意象呼應。 */
+function CardCorner({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 28 28"
+      fill="none"
+      aria-hidden="true"
+      className={`pointer-events-none absolute z-20 h-6 w-6 text-[#E5B292] sm:h-7 sm:w-7 ${className}`}
+    >
+      <path d="M2 16V6C2 3.79 3.79 2 6 2H16" stroke="currentColor" strokeWidth="1.2" />
+      <rect x="4" y="4" width="4" height="4" transform="rotate(45 6 6)" fill="currentColor" />
+    </svg>
+  );
+}
+
+/* 人員卡片：統一套用香檳金邊框、光暈、角飾與內框的「黑金珠寶盒」視覺
+   語言（原本一般 / 進階兩種樣式，現在全部人員都用這一種）。 */
 function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => void }) {
   return (
     <article
       onClick={() => onOpen(t)}
       className="group relative cursor-pointer overflow-hidden rounded-lg border border-[#E5B292]/70 bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_25px_rgba(229,178,146,0.18)] transition-transform duration-500 hover:-translate-y-1"
     >
+      <CardCorner className="left-1.5 top-1.5" />
+      <CardCorner className="right-1.5 top-1.5 rotate-90" />
+      <CardCorner className="bottom-1.5 right-1.5 rotate-180" />
+      <CardCorner className="bottom-1.5 left-1.5 -rotate-90" />
       <div className="pointer-events-none absolute inset-1.5 z-10 rounded-md border border-[#E5B292]/20" />
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
