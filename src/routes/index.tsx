@@ -418,36 +418,91 @@ function AgeGate() {
   );
 }
 
-/* 卡片專屬角飾：圓角 L 型邊框線 + 小鑽石飾釘，同一個圖形旋轉四次貼在
-   四個角，呼應「黑金珠寶盒」的品牌視覺語言——比單純一條細框更有專屬
-   訂製感，也跟 logo 的星星/鑽石意象呼應。 */
+/* 精品雙細金線邊框：外線是主邊框、內線是極細微光，中間留出間距做出
+   「卡牌鑲金」的層次感。用 mask-composite 挖空矩形中間只留一圈線，
+   跟 border-image 不同，圓角不會被裁掉——border-image 對圓角完全沒轍。 */
+function GoldHairline({
+  inset,
+  radius,
+  width = 1,
+  from = "rgba(212,175,55,0.4)",
+  to = "rgba(255,235,170,0.7)",
+}: {
+  inset: number;
+  radius: number;
+  width?: number;
+  from?: string;
+  to?: string;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute z-20"
+      style={{
+        inset,
+        borderRadius: radius,
+        padding: width,
+        background: `linear-gradient(135deg, ${from}, ${to})`,
+        WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+        WebkitMaskComposite: "xor",
+        maskComposite: "exclude",
+      }}
+    />
+  );
+}
+
+/* 頂部微型品牌鋼印：坐在外框線正中央、把線「切開」的一個小圓章，裡面
+   是縮小版的四芒星（跟文案裡常出現的 ✦ 同一個符號），呼應品牌但不搶
+   中央視覺。 */
+function CardSeal() {
+  return (
+    <div className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2 -translate-y-1/2">
+      <div className="flex h-4 w-4 items-center justify-center rounded-full border border-[#E5B292]/70 bg-[#0f1017] shadow-[0_0_6px_rgba(212,175,55,0.55)]">
+        <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 text-[#E5B292]" fill="currentColor" aria-hidden="true">
+          <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/* 卡片四角收邊：極細圓角括弧線 + 縮小版四芒星飾釘，取代原本較具遊戲感
+   的幾何菱形包角，改用跟品牌文案裡的 ✦ 同一個符號，質地更細緻。 */
 function CardCorner({ className = "" }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 28 28"
       fill="none"
       aria-hidden="true"
-      className={`pointer-events-none absolute z-20 h-6 w-6 text-[#E5B292] sm:h-7 sm:w-7 ${className}`}
+      className={`pointer-events-none absolute z-20 h-5 w-5 text-[#E5B292]/80 sm:h-6 sm:w-6 ${className}`}
     >
-      <path d="M2 16V6C2 3.79 3.79 2 6 2H16" stroke="currentColor" strokeWidth="1.2" />
-      <rect x="4" y="4" width="4" height="4" transform="rotate(45 6 6)" fill="currentColor" />
+      <path d="M2 13.5V6.5C2 4 4 2 6.5 2H13.5" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" />
+      <path d="M6.4 4.4 L7.3 6.3 L9.2 7.2 L7.3 8.1 L6.4 10 L5.5 8.1 L3.6 7.2 L5.5 6.3 Z" fill="currentColor" />
     </svg>
   );
 }
 
-/* 人員卡片：統一套用香檳金邊框、光暈、角飾與內框的「黑金珠寶盒」視覺
-   語言（原本一般 / 進階兩種樣式，現在全部人員都用這一種）。 */
+/* 人員卡片：精品雙細金線邊框 + 頂部鋼印 + 細緻四角星芒的「黑金珠寶盒」
+   視覺語言（原本一般 / 進階兩種樣式，現在全部人員都用這一種）。 */
 function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => void }) {
   return (
     <article
       onClick={() => onOpen(t)}
-      className="group relative cursor-pointer overflow-hidden rounded-lg border border-[#E5B292]/70 bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_25px_rgba(229,178,146,0.18)] transition-transform duration-500 hover:-translate-y-1"
+      className="group relative cursor-pointer overflow-hidden rounded-lg bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_25px_rgba(229,178,146,0.18)] transition-transform duration-500 hover:-translate-y-1"
     >
+      <GoldHairline inset={0} radius={8} width={1} />
+      <GoldHairline
+        inset={7}
+        radius={6}
+        width={1}
+        from="rgba(212,175,55,0.12)"
+        to="rgba(255,235,170,0.28)"
+      />
+      <CardSeal />
       <CardCorner className="left-1.5 top-1.5" />
       <CardCorner className="right-1.5 top-1.5 rotate-90" />
       <CardCorner className="bottom-1.5 right-1.5 rotate-180" />
       <CardCorner className="bottom-1.5 left-1.5 -rotate-90" />
-      <div className="pointer-events-none absolute inset-1.5 z-10 rounded-md border border-[#E5B292]/20" />
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
           src={t.photos[0]}
@@ -463,12 +518,17 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
           </span>
         </div>
         <span
-          className={`absolute right-3 top-3 rounded-full px-3 py-1 text-[10px] tracking-[0.18em] ${
+          className={`absolute right-3 top-3 z-20 flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] tracking-[0.18em] backdrop-blur-md ${
             t.onDuty
-              ? "bg-primary/90 text-primary-foreground font-medium"
-              : "bg-secondary text-muted-foreground"
+              ? "border-[#E5B292]/50 bg-black/45 text-[#F5E6C8]"
+              : "border-white/15 bg-black/45 text-muted-foreground"
           }`}
         >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              t.onDuty ? "animate-pulse bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.6)]" : "bg-neutral-500"
+            }`}
+          />
           {t.onDuty ? "上班中" : "休假"}
         </span>
       </div>
@@ -480,7 +540,7 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
           {t.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-[#E5B292]/40 px-2.5 py-1 text-[11px] text-[#E5B292]"
+              className="rounded-full border border-[#E5B292]/35 px-2.5 py-1 text-[11px] tracking-[0.05em] text-[#E5B292]"
             >
               {tag}
             </span>
