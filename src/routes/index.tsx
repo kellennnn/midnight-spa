@@ -27,6 +27,8 @@ type Therapist = {
   schedule: string;
   shift: Shift;
   onDuty: boolean;
+  /* 卡片底部的自訂文字（一句話介紹、留言…），寫在 content.json，留空就不顯示 */
+  note?: string;
 };
 
 const therapists = content.therapists as Therapist[];
@@ -247,6 +249,9 @@ function TherapistModal({
         <p className="mt-3 text-xs tracking-[0.16em] text-muted-foreground">
           當日班表 {therapist.schedule}（{therapist.shift}）
         </p>
+        {therapist.note && (
+          <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-[#F5E6C8]/85">{therapist.note}</p>
+        )}
 
         <button
           onClick={() => setZoomIndex(0)}
@@ -451,16 +456,15 @@ function GoldHairline({
   );
 }
 
-/* 頂部微型品牌鋼印：坐在外框線正中央、把線「切開」的一個小圓章，裡面
-   是縮小版的四芒星（跟文案裡常出現的 ✦ 同一個符號），呼應品牌但不搶
-   中央視覺。 */
+/* 品牌徽章：照片與資訊區交界的正中央，嵌一枚圓形金框徽章，裡面是
+   Lounge Spa 的壁虎弦月標誌，讓每張卡片一眼就認得出是自家的。 */
 function CardSeal() {
   return (
     <div className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2 -translate-y-1/2">
-      <div className="flex h-4 w-4 items-center justify-center rounded-full border border-[#E5B292]/70 bg-[#0f1017] shadow-[0_0_6px_rgba(212,175,55,0.55)]">
-        <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 text-[#E5B292]" fill="currentColor" aria-hidden="true">
-          <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
-        </svg>
+      <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E5B292]/70 bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_12px_rgba(212,175,55,0.45)]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E5B292]/25">
+          <BrandMark className="h-6 w-6" />
+        </div>
       </div>
     </div>
   );
@@ -482,6 +486,23 @@ function CardCorner({ className = "" }: { className?: string }) {
   );
 }
 
+/* 卡片底部自訂文字：上方一條中間嵌弦月的細金線分隔，下面是置中的文字，
+   換行照 content.json 裡打的 \n 顯示。 */
+function CardNote({ note }: { note: string }) {
+  return (
+    <div className="mt-4">
+      <div className="flex items-center gap-2" aria-hidden="true">
+        <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#E5B292]/40" />
+        <span className="text-[10px] text-[#E5B292]/80">☾</span>
+        <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#E5B292]/40" />
+      </div>
+      <p className="mt-3 whitespace-pre-line text-center text-[13px] leading-relaxed tracking-wide text-[#F5E6C8]/85">
+        {note}
+      </p>
+    </div>
+  );
+}
+
 /* 人員卡片：精品雙細金線邊框 + 頂部鋼印 + 細緻四角星芒的「黑金珠寶盒」
    視覺語言（原本一般 / 進階兩種樣式，現在全部人員都用這一種）。 */
 function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => void }) {
@@ -498,7 +519,6 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
         from="rgba(212,175,55,0.12)"
         to="rgba(255,235,170,0.28)"
       />
-      <CardSeal />
       <CardCorner className="left-1.5 top-1.5" />
       <CardCorner className="right-1.5 top-1.5 rotate-90" />
       <CardCorner className="bottom-1.5 right-1.5 rotate-180" />
@@ -532,11 +552,14 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
           {t.onDuty ? "上班中" : "休假"}
         </span>
       </div>
-      <div className="relative z-10 p-5">
-        <h3 className="text-xl font-light text-[#FCEADE]">
+      <div className="relative z-10 p-5 pt-7">
+        <CardSeal />
+        {/* 資訊區右下角的品牌浮水印 */}
+        <BrandMark className="pointer-events-none absolute bottom-3 right-3 h-16 w-16 opacity-[0.07]" />
+        <h3 className="text-center text-xl font-light text-[#FCEADE]">
           {t.no} · {t.name}
         </h3>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
           {t.tags.map((tag) => (
             <span
               key={tag}
@@ -546,9 +569,10 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
             </span>
           ))}
         </div>
-        <p className="mt-4 text-xs tracking-[0.16em] text-gray-300">
-          當日班表 {t.schedule}（{t.shift}）
+        <p className="mt-4 text-center text-xs tracking-[0.12em] text-gray-300">
+          當日班表 <span className="whitespace-nowrap">{t.schedule}（{t.shift}）</span>
         </p>
+        {t.note && <CardNote note={t.note} />}
       </div>
     </article>
   );
