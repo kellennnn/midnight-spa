@@ -330,7 +330,6 @@ function MemberComponent() {
                 <BrandMark className="h-6 w-6 text-[#d4af37]" />
                 <h1 className="font-serif tracking-widest text-[#f5e6c8] text-lg font-bold">Lounge Spa</h1>
               </div>
-              <p className="text-xs text-neutral-500 tracking-wider">VIP EXCLUSIVE PASS</p>
             </div>
           </div>
           <div className="flex items-center gap-1 text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-1 rounded-full text-xs font-semibold">
