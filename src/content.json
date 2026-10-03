@@ -65,7 +65,8 @@
       ],
       "schedule": "14:00 - 02:00",
       "shift": "晚班",
-      "onDuty": true
+      "onDuty": true,
+      "note": "每一次相遇，都是為了讓您好好休息。今晚，把疲憊交給我。"
     },
     {
       "no": "512號",
@@ -80,7 +81,8 @@
       ],
       "schedule": "10:00 - 20:00",
       "shift": "早班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "306號",
@@ -95,7 +97,8 @@
       ],
       "schedule": "18:00 - 06:00",
       "shift": "晚班",
-      "onDuty": false
+      "onDuty": false,
+      "note": ""
     },
     {
       "no": "148號",
@@ -110,7 +113,8 @@
       ],
       "schedule": "12:00 - 22:00",
       "shift": "早班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "275號",
@@ -125,7 +129,8 @@
       ],
       "schedule": "11:00 - 21:00",
       "shift": "早班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "630號",
@@ -140,7 +145,8 @@
       ],
       "schedule": "15:00 - 01:00",
       "shift": "晚班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "419號",
@@ -155,7 +161,8 @@
       ],
       "schedule": "09:00 - 19:00",
       "shift": "早班",
-      "onDuty": false
+      "onDuty": false,
+      "note": ""
     },
     {
       "no": "852號",
@@ -170,7 +177,8 @@
       ],
       "schedule": "16:00 - 02:00",
       "shift": "晚班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "901號",
@@ -185,7 +193,8 @@
       ],
       "schedule": "13:00 - 23:00",
       "shift": "早班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "366號",
@@ -200,7 +209,8 @@
       ],
       "schedule": "17:00 - 03:00",
       "shift": "晚班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "528號",
@@ -215,7 +225,8 @@
       ],
       "schedule": "12:00 - 22:00",
       "shift": "早班",
-      "onDuty": false
+      "onDuty": false,
+      "note": ""
     },
     {
       "no": "743號",
@@ -230,7 +241,8 @@
       ],
       "schedule": "19:00 - 05:00",
       "shift": "晚班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "214號",
@@ -245,7 +257,8 @@
       ],
       "schedule": "10:00 - 20:00",
       "shift": "早班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "687號",
@@ -260,7 +273,8 @@
       ],
       "schedule": "14:00 - 00:00",
       "shift": "晚班",
-      "onDuty": false
+      "onDuty": false,
+      "note": ""
     },
     {
       "no": "359號",
@@ -275,7 +289,8 @@
       ],
       "schedule": "11:00 - 21:00",
       "shift": "早班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "792號",
@@ -290,7 +305,8 @@
       ],
       "schedule": "18:00 - 04:00",
       "shift": "晚班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "633號",
@@ -305,7 +321,8 @@
       ],
       "schedule": "10:00 - 20:00",
       "shift": "早班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "217號",
@@ -320,7 +337,8 @@
       ],
       "schedule": "16:00 - 02:00",
       "shift": "晚班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "958號",
@@ -335,7 +353,8 @@
       ],
       "schedule": "12:00 - 22:00",
       "shift": "早班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     },
     {
       "no": "471號",
@@ -350,7 +369,8 @@
       ],
       "schedule": "18:00 - 04:00",
       "shift": "晚班",
-      "onDuty": true
+      "onDuty": true,
+      "note": ""
     }
   ],
   "booking": {
