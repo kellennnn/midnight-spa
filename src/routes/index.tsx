@@ -218,59 +218,119 @@ function TherapistModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md"
       onClick={onClose}
     >
+      {/* 詳細資料面板：沿用人員卡片的「黑金珠寶盒」語言——雙細金線邊框 + 四角星芒，
+          左邊照片、右邊資料（手機上改成上下排）。 */}
       <div
-        className="hairline relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-card p-6 sm:p-8"
+        className="relative w-full max-w-3xl overflow-hidden rounded-xl bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_40px_rgba(229,178,146,0.22)]"
         onClick={(e) => e.stopPropagation()}
       >
+        <GoldHairline inset={0} radius={12} width={1} />
+        <GoldHairline inset={8} radius={8} width={1} from="rgba(212,175,55,0.12)" to="rgba(255,235,170,0.28)" />
+        <CardCorner className="left-2 top-2" />
+        <CardCorner className="right-2 top-2 rotate-90" />
+        <CardCorner className="bottom-2 right-2 rotate-180" />
+        <CardCorner className="bottom-2 left-2 -rotate-90" />
+
         <button
           onClick={onClose}
           aria-label="關閉"
-          className="hairline absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-silver"
+          className="absolute right-5 top-5 z-30 flex h-9 w-9 items-center justify-center rounded-full border border-[#E5B292]/40 bg-black/40 text-[#E5B292] backdrop-blur-sm transition-colors hover:border-[#E5B292] hover:text-[#FCEADE]"
         >
           ✕
         </button>
 
-        <h3 className="text-2xl font-light text-silver">
-          {therapist.no} · {therapist.name}
-        </h3>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {therapist.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full hairline px-2.5 py-1 text-[11px] text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-        <p className="mt-3 text-xs tracking-[0.16em] text-muted-foreground">
-          當日班表 {therapist.schedule}（{therapist.shift}）
-        </p>
-        {therapist.note && (
-          <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-[#F5E6C8]/85">{therapist.note}</p>
-        )}
+        <div className="relative z-10 max-h-[90vh] overflow-y-auto">
+          <div className="grid gap-7 p-7 sm:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] sm:gap-9 sm:p-10">
+            {/* 照片 */}
+            <div className="mx-auto w-full max-w-[300px] sm:max-w-none">
+              <button
+                onClick={() => setZoomIndex(0)}
+                aria-label="放大檢視照片"
+                className="group relative block aspect-[3/4] w-full overflow-hidden rounded-lg border border-[#E5B292]/40 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+              >
+                <img
+                  src={therapist.photos[0]}
+                  alt={therapist.name}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent" />
+                <span
+                  className={`absolute left-3 top-3 flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] tracking-[0.18em] backdrop-blur-md ${
+                    therapist.onDuty
+                      ? "border-[#E5B292]/50 bg-black/45 text-[#F5E6C8]"
+                      : "border-white/15 bg-black/45 text-muted-foreground"
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      therapist.onDuty
+                        ? "animate-pulse bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.6)]"
+                        : "bg-neutral-500"
+                    }`}
+                  />
+                  {therapist.onDuty ? "上班中" : "休假"}
+                </span>
+                <span className="absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] tracking-[0.3em] text-[#F5E6C8]/80">
+                  點擊放大
+                </span>
+              </button>
+            </div>
 
-        <button
-          onClick={() => setZoomIndex(0)}
-          aria-label="放大檢視照片"
-          className="group relative mx-auto mt-6 block aspect-[3/4] w-full max-w-xs overflow-hidden rounded-md hairline"
-        >
-          <img
-            src={therapist.photos[0]}
-            alt={therapist.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 flex items-center justify-center bg-background/0 opacity-0 backdrop-blur-0 transition-all duration-300 group-hover:bg-background/50 group-hover:opacity-100 group-hover:backdrop-blur-sm">
-            <span className="rounded-full hairline bg-card/90 px-4 py-2 text-[11px] tracking-[0.18em] text-silver">
-              點擊放大
-            </span>
+            {/* 資料 */}
+            <div className="flex flex-col text-center sm:text-left">
+              <div className="flex items-center justify-center gap-2 sm:justify-start">
+                <BrandMark className="h-6 w-6" />
+                <span className="text-[10px] tracking-[0.34em] text-[#E5B292]/70">LOUNGE SPA · THERAPIST</span>
+              </div>
+
+              <span className="mt-5 self-center rounded-full border border-[#E5B292]/50 px-3 py-0.5 text-xs tracking-[0.2em] text-[#E5B292] sm:self-start">
+                {therapist.no}
+              </span>
+              <h3 className="mt-2 text-4xl font-light tracking-wide text-[#FCEADE]">{therapist.name}</h3>
+
+              <div className="mt-4 flex items-center gap-2" aria-hidden="true">
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#E5B292]/45 sm:from-[#E5B292]/45 sm:to-[#E5B292]/10" />
+                <span className="text-xs text-[#E5B292]/80">☾</span>
+                <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#E5B292]/45 sm:from-transparent sm:to-[#E5B292]/10" />
+              </div>
+
+              <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">
+                {therapist.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-[#E5B292]/35 bg-[#E5B292]/5 px-3 py-1 text-xs tracking-[0.05em] text-[#E5B292]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              <dl className="mt-6 grid grid-cols-2 gap-3 text-left">
+                <div className="rounded-lg border border-[#E5B292]/20 bg-black/20 px-4 py-3">
+                  <dt className="text-[10px] tracking-[0.24em] text-[#E5B292]/70">當日班表</dt>
+                  <dd className="mt-1 whitespace-nowrap text-sm tracking-wider text-[#F5E6C8]">{therapist.schedule}</dd>
+                </div>
+                <div className="rounded-lg border border-[#E5B292]/20 bg-black/20 px-4 py-3">
+                  <dt className="text-[10px] tracking-[0.24em] text-[#E5B292]/70">班別</dt>
+                  <dd className="mt-1 text-sm tracking-wider text-[#F5E6C8]">{therapist.shift}</dd>
+                </div>
+              </dl>
+
+              {therapist.note && (
+                <blockquote className="relative mt-6 rounded-lg border-l-2 border-[#E5B292]/60 bg-[#E5B292]/5 py-4 pl-5 pr-4 text-left">
+                  <span aria-hidden="true" className="absolute -top-3 left-3 font-serif text-4xl leading-none text-[#E5B292]/40">
+                    “
+                  </span>
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-[#F5E6C8]/90">{therapist.note}</p>
+                </blockquote>
+              )}
+            </div>
           </div>
-        </button>
-
+        </div>
       </div>
 
       {zoomIndex !== null && (
