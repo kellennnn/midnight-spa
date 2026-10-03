@@ -222,7 +222,7 @@ function TherapistModal({
       onClick={onClose}
     >
       {/* 詳細資料面板：沿用人員卡片的「黑金珠寶盒」語言——雙細金線邊框 + 四角星芒，
-          左邊照片、右邊資料（手機上改成上下排），最下面直接接 LINE 預約。 */}
+          左邊照片、右邊資料（手機上改成上下排）。 */}
       <div
         className="relative w-full max-w-3xl overflow-hidden rounded-xl bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_40px_rgba(229,178,146,0.22)]"
         onClick={(e) => e.stopPropagation()}
@@ -328,20 +328,6 @@ function TherapistModal({
                   <p className="whitespace-pre-line text-sm leading-relaxed text-[#F5E6C8]/90">{therapist.note}</p>
                 </blockquote>
               )}
-
-              <div className="mt-7 sm:mt-auto sm:pt-7">
-                <a
-                  href={content.site.lineUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#d4af37] to-[#b8892b] px-6 py-3 text-sm font-medium tracking-[0.18em] text-[#12131d] shadow-[0_0_18px_rgba(212,175,55,0.35)] transition-shadow hover:shadow-[0_0_28px_rgba(212,175,55,0.55)]"
-                >
-                  LINE 預約 {therapist.name}
-                </a>
-                <p className="mt-2 text-center text-[11px] tracking-wider text-muted-foreground">
-                  私訊時告知「{therapist.no} {therapist.name}」即可
-                </p>
-              </div>
             </div>
           </div>
         </div>
