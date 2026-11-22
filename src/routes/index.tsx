@@ -130,6 +130,17 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   );
 }
 
+/* 區塊分隔：兩端淡出的金色細線，中間嵌一枚弦月，取代原本整片寬的白色實線 */
+function SectionDivider() {
+  return (
+    <div className="mx-auto flex max-w-6xl items-center gap-4 px-6" aria-hidden="true">
+      <span className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/40" />
+      <span className="text-sm text-primary/70">☾</span>
+      <span className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/40" />
+    </div>
+  );
+}
+
 /* 置頂公告列：低調單行輪播，一次只顯示一則，淡入淡出切換 */
 function AnnouncementMarquee() {
   const announcements = [
@@ -160,9 +171,11 @@ function AnnouncementMarquee() {
   );
 }
 
-/* 頂部導覽列：釘在公告列下方，左側品牌標誌，右側導覽連結 */
+/* 頂部導覽列：釘在公告列下方，左側品牌標誌，右側導覽連結；
+   手機寬度改成右上角選單按鈕，點開後從導覽列下方展開 */
 function QuickNav() {
-  const accentColors = ["text-primary", "text-[#e5b292]", "text-silver"];
+  const [menuOpen, setMenuOpen] = useState(false);
+  const links = content.nav.filter((item) => item.href !== "/member" && item.href !== "#booking");
   return (
     <nav className="fixed inset-x-0 top-12 z-30 h-20 border-b border-white/5 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6">
@@ -172,21 +185,47 @@ function QuickNav() {
             Lounge <span className="text-primary">Spa</span>
           </span>
         </a>
-        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto sm:gap-3">
-          {content.nav
-            .filter((item) => item.href !== "/member" && item.href !== "#booking")
-            .map((item, i) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`group relative shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-medium tracking-[0.18em] transition-colors sm:text-base ${accentColors[i % accentColors.length]} opacity-80 hover:opacity-100`}
-              >
-                {item.label}
-                <span className="absolute inset-x-3 -bottom-0.5 h-px scale-x-0 bg-current transition-transform duration-300 group-hover:scale-x-100" />
-              </a>
-            ))}
+        <div className="hidden items-center gap-3 md:flex">
+          {links.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="group relative shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-base font-medium tracking-[0.18em] text-silver/80 transition-colors hover:text-primary"
+            >
+              {item.label}
+              <span className="absolute inset-x-3 -bottom-0.5 h-px scale-x-0 bg-current transition-transform duration-300 group-hover:scale-x-100" />
+            </a>
+          ))}
         </div>
+        <button
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-label={menuOpen ? "關閉選單" : "開啟選單"}
+          aria-expanded={menuOpen}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/40 text-primary md:hidden"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true">
+            {menuOpen ? (
+              <path d="M6 6l12 12M18 6L6 18" />
+            ) : (
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            )}
+          </svg>
+        </button>
       </div>
+      {menuOpen && (
+        <div className="border-b border-primary/20 bg-background/95 backdrop-blur-md md:hidden">
+          {links.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              onClick={() => setMenuOpen(false)}
+              className="block border-t border-primary/10 px-8 py-4 text-sm tracking-[0.24em] text-silver/85 transition-colors hover:text-primary"
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }
@@ -702,8 +741,10 @@ function Index() {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* Team */}
-      <section id="team" className="ripple-field relative overflow-hidden border-t border-border px-6 py-24">
+      <section id="team" className="ripple-field relative overflow-hidden px-6 py-24">
         <div className="relative mx-auto max-w-6xl">
           <SectionTitle eyebrow="Today's Team" title="今日服務人員陣容" />
 
@@ -737,7 +778,8 @@ function Index() {
       </section>
 
       {/* Services */}
-      <section id="services" className="border-t border-border px-6 py-24">
+      <SectionDivider />
+      <section id="services" className="px-6 py-24">
         <div className="mx-auto max-w-xl">
           <SectionTitle eyebrow="Services" title="服務項目" />
           <div className="space-y-8">
@@ -812,7 +854,8 @@ function Index() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="border-t border-border px-6 py-24">
+      <SectionDivider />
+      <section id="faq" className="px-6 py-24">
         <div className="mx-auto max-w-3xl">
           <SectionTitle eyebrow="FAQ" title="常見問題" />
           <div className="space-y-3">
@@ -835,7 +878,8 @@ function Index() {
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="border-t border-border px-6 py-20">
+      <SectionDivider />
+      <footer id="contact" className="px-6 py-20">
         <div className="mx-auto grid max-w-6xl gap-12 sm:grid-cols-3">
           <div>
             <div className="mb-4 flex items-center gap-3">
@@ -861,7 +905,7 @@ function Index() {
             <p>{content.footer.telegramId}</p>
           </div>
         </div>
-        <div className="mx-auto mt-14 max-w-6xl border-t border-border pt-8 text-center text-[11px] leading-relaxed text-muted-foreground">
+        <div className="mx-auto mt-14 max-w-6xl border-t border-primary/15 pt-8 text-center text-[11px] leading-relaxed text-muted-foreground">
           <p>{content.footer.disclaimer1}</p>
           <p className="mt-1">{content.footer.disclaimer2}</p>
           <p className="mt-4">© {new Date().getFullYear()} {content.site.name}. All rights reserved.</p>

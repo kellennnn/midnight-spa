@@ -98,9 +98,10 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   }
 
-  /* 玫瑰金漸層字體 */
+  /* 品牌漸層字體：深色模式是香檳金（中段提亮做出金屬光澤，不再混入橘色），
+     淺色模式維持玫瑰金 */
   .text-gradient-rose {
-    @apply bg-gradient-to-r from-primary via-[oklch(0.8_0.17_46)] to-primary bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary via-[oklch(0.9_0.07_88)] to-primary bg-clip-text text-transparent;
   }
   .light .text-gradient-rose {
     @apply bg-gradient-to-r from-[oklch(0.5_0.17_36)] via-[oklch(0.62_0.15_44)] to-[oklch(0.5_0.17_36)] bg-clip-text text-transparent;
