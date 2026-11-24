@@ -1,22 +1,13 @@
 // 後台「班表管理」：一週一張表，橫列是人員、直欄是日期，點格子設定當天上班時間或休假。
 // 讀取走 get_public_schedule，寫入走 admin_upsert_shifts / admin_delete_shifts / admin_copy_week
 // 這幾支安全函式（見 supabase/sql/016_therapist_schedule.sql），權限在伺服器端檢查。
-// 人員清單來自 content.json，用每個人固定的 id 對應班表，所以名字 / 編號改了也不影響已排的班。
+// 人員清單來自後台「人員管理」（只列上架中的人員），用每個人固定的 id 對應班表，
+// 所以名字 / 編號改了也不影響已排的班。
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Copy, CalendarCheck, AlertTriangle } from 'lucide-react';
-import content from '@/content.json';
+import { ChevronLeft, ChevronRight, Copy, CalendarCheck } from 'lucide-react';
 import { supabase } from './supabase';
-import {
-  addDays,
-  businessDate,
-  HALF_HOUR_OPTIONS,
-  parseScheduleText,
-  shiftKind,
-  shortTime,
-  type ShiftRow,
-} from './schedule';
-
-type TherapistInfo = { id?: string; no: string; name: string; schedule?: string };
+import { addDays, businessDate, HALF_HOUR_OPTIONS, shiftKind, shortTime, type ShiftRow } from './schedule';
+import { useTherapists, type TherapistProfile } from './therapists';
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -32,19 +23,8 @@ function dayLabel(date: string) {
 }
 
 export function ScheduleManager({ canEdit }: { canEdit: boolean }) {
-  const allTherapists = content.therapists as TherapistInfo[];
-  const therapists = allTherapists.filter((t): t is TherapistInfo & { id: string } => !!t.id);
-
-  // content.json 的 id 漏填或重複時提醒，避免班表默默對錯人
-  const idProblems = useMemo(() => {
-    const missing = allTherapists.filter((t) => !t.id).map((t) => `${t.no} ${t.name}`);
-    const seen = new Map<string, string[]>();
-    allTherapists.forEach((t) => {
-      if (t.id) seen.set(t.id, [...(seen.get(t.id) || []), `${t.no} ${t.name}`]);
-    });
-    const duplicated = [...seen.entries()].filter(([, names]) => names.length > 1);
-    return { missing, duplicated };
-  }, [allTherapists]);
+  const { therapists: allTherapists } = useTherapists('admin');
+  const therapists = useMemo(() => allTherapists.filter((t) => t.active), [allTherapists]);
 
   const today = businessDate();
   const [weekStart, setWeekStart] = useState(() => weekStartOf(today));
@@ -53,7 +33,7 @@ export function ScheduleManager({ canEdit }: { canEdit: boolean }) {
   const [shifts, setShifts] = useState<ShiftRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [editing, setEditing] = useState<{ therapist: TherapistInfo & { id: string }; date: string } | null>(null);
+  const [editing, setEditing] = useState<{ therapist: TherapistProfile; date: string } | null>(null);
   const [editStart, setEditStart] = useState('14:00');
   const [editEnd, setEditEnd] = useState('02:00');
 
@@ -76,12 +56,11 @@ export function ScheduleManager({ canEdit }: { canEdit: boolean }) {
   const shiftOf = (therapistId: string, date: string) =>
     shifts.find((s) => s.therapist_id === therapistId && s.shift_date === date);
 
-  const openEditor = (therapist: TherapistInfo & { id: string }, date: string) => {
+  const openEditor = (therapist: TherapistProfile, date: string) => {
     if (!canEdit) return;
     const current = shiftOf(therapist.id, date);
-    const fallback = parseScheduleText(therapist.schedule);
-    setEditStart(current ? shortTime(current.start_time) : fallback?.start ?? '14:00');
-    setEditEnd(current ? shortTime(current.end_time) : fallback?.end ?? '02:00');
+    setEditStart(shortTime(current?.start_time ?? therapist.default_start ?? '14:00'));
+    setEditEnd(shortTime(current?.end_time ?? therapist.default_end ?? '02:00'));
     setEditing({ therapist, date });
   };
 
@@ -146,36 +125,21 @@ export function ScheduleManager({ canEdit }: { canEdit: boolean }) {
 
   const fillDefaults = async () => {
     const rows = therapists.flatMap((t) => {
-      const parsed = parseScheduleText(t.schedule);
-      if (!parsed) return [];
-      return days.map((date) => ({ therapist_id: t.id, shift_date: date, start_time: parsed.start, end_time: parsed.end }));
+      if (!t.default_start || !t.default_end) return [];
+      const start = shortTime(t.default_start);
+      const end = shortTime(t.default_end);
+      return days.map((date) => ({ therapist_id: t.id, shift_date: date, start_time: start, end_time: end }));
     });
     if (rows.length === 0) {
-      alert('content.json 裡沒有可以套用的預設時段');
+      alert('目前沒有人員設定預設時段，請先到「人員管理」設定');
       return;
     }
-    if (!window.confirm('這一週每位人員、每一天都套用 content.json 裡的預設時段？已經排好的會被覆蓋，休假要之後再一格一格設定。')) return;
+    if (!window.confirm('這一週每位人員、每一天都套用「人員管理」裡設定的預設時段？已經排好的會被覆蓋，休假要之後再一格一格設定。')) return;
     upsert(rows);
   };
 
   return (
     <div className="space-y-4">
-      {(idProblems.missing.length > 0 || idProblems.duplicated.length > 0) && (
-        <div className="flex gap-2 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300">
-          <AlertTriangle size={16} className="shrink-0" />
-          <div className="space-y-1">
-            {idProblems.missing.length > 0 && (
-              <p>這些人員在 content.json 裡沒有 id，暫時無法排班：{idProblems.missing.join('、')}</p>
-            )}
-            {idProblems.duplicated.map(([id, names]) => (
-              <p key={id}>
-                id「{id}」重複了：{names.join('、')}。每個人的 id 都要不一樣，不然班表會對錯人。
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
