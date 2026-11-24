@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import content from "@/content.json";
 import { BrandMark } from "@/lib/BrandMark";
+import { supabase } from "@/lib/supabase";
+import { businessDate, shiftInterval, shiftKind, shiftLabel, taipeiNow, type ShiftRow } from "@/lib/schedule";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,18 +22,67 @@ export const Route = createFileRoute("/")({
 type Shift = "早班" | "晚班";
 
 type Therapist = {
+  /* 固定不變的內部代號（t01、t02…），班表跟預約都靠它對應，名字跟編號可以隨便改，這個不行 */
+  id: string;
   no: string;
   name: string;
   photos: string[];
   tags: string[];
+  /* 下面三個欄位：資料庫有排今天的班表時，會被班表的內容蓋過去；
+     讀不到班表（例如還沒排）才用 content.json 裡寫的值 */
   schedule: string;
-  shift: Shift;
+  /* null = 今天沒排班（休假） */
+  shift: Shift | null;
   onDuty: boolean;
+  /* true = 上面三個欄位來自資料庫的即時班表 */
+  live?: boolean;
   /* 卡片底部的自訂文字（一句話介紹、留言…），寫在 content.json，留空就不顯示 */
   note?: string;
 };
 
 const therapists = content.therapists as Therapist[];
+
+/* 卡片 / 詳細資料上的狀態文字 */
+function dutyText(t: Therapist) {
+  if (t.onDuty) return "上班中";
+  // 即時班表：今天有班但還沒到 / 已經下班 = 休息中；沒排班 = 休假
+  return t.live && t.shift ? "休息中" : "休假";
+}
+
+function scheduleText(t: Therapist) {
+  return t.shift ? `${t.schedule}（${t.shift}）` : "今日休假";
+}
+
+/* 今天（營業日）的班表：從資料庫讀，每分鐘重新算一次誰正在上班。
+   讀取失敗、或今天整天都沒有任何人排班（通常代表班表還沒開始用）時，
+   回傳 content.json 原本寫的資料，網站不會因此變成全部休假。 */
+function useTodayTherapists(): Therapist[] {
+  const [shifts, setShifts] = useState<ShiftRow[] | null>(null);
+  const [nowAbs, setNowAbs] = useState(() => taipeiNow().abs);
+
+  useEffect(() => {
+    const day = businessDate();
+    supabase.rpc("get_public_schedule", { p_from: day, p_to: day }).then(({ data, error }) => {
+      if (error) {
+        console.warn("讀取班表失敗，改用 content.json 的資料", error);
+        return;
+      }
+      setShifts((data as ShiftRow[]) ?? []);
+    });
+    const timer = window.setInterval(() => setNowAbs(taipeiNow().abs), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return useMemo(() => {
+    if (!shifts || shifts.length === 0) return therapists;
+    return therapists.map((t) => {
+      const s = shifts.find((row) => row.therapist_id === t.id);
+      if (!s) return { ...t, schedule: "", shift: null, onDuty: false, live: true };
+      const [from, to] = shiftInterval(s);
+      return { ...t, schedule: shiftLabel(s), shift: shiftKind(s), onDuty: from <= nowAbs && nowAbs < to, live: true };
+    });
+  }, [shifts, nowAbs]);
+}
 const services = content.services;
 
 function Moon() {
@@ -311,7 +362,7 @@ function TherapistModal({
                         : "bg-neutral-500"
                     }`}
                   />
-                  {therapist.onDuty ? "上班中" : "休假"}
+                  {dutyText(therapist)}
                 </span>
                 <span className="absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] tracking-[0.3em] text-[#F5E6C8]/80">
                   點擊放大
@@ -351,11 +402,13 @@ function TherapistModal({
               <dl className="mt-6 grid grid-cols-2 gap-3 text-left">
                 <div className="rounded-lg border border-[#E5B292]/20 bg-black/20 px-4 py-3">
                   <dt className="text-[10px] tracking-[0.24em] text-[#E5B292]/70">當日班表</dt>
-                  <dd className="mt-1 whitespace-nowrap text-sm tracking-wider text-[#F5E6C8]">{therapist.schedule}</dd>
+                  <dd className="mt-1 whitespace-nowrap text-sm tracking-wider text-[#F5E6C8]">
+                    {therapist.shift ? therapist.schedule : "今日休假"}
+                  </dd>
                 </div>
                 <div className="rounded-lg border border-[#E5B292]/20 bg-black/20 px-4 py-3">
                   <dt className="text-[10px] tracking-[0.24em] text-[#E5B292]/70">班別</dt>
-                  <dd className="mt-1 text-sm tracking-wider text-[#F5E6C8]">{therapist.shift}</dd>
+                  <dd className="mt-1 text-sm tracking-wider text-[#F5E6C8]">{therapist.shift ?? "—"}</dd>
                 </div>
               </dl>
 
@@ -649,7 +702,7 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
               t.onDuty ? "animate-pulse bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.6)]" : "bg-neutral-500"
             }`}
           />
-          {t.onDuty ? "上班中" : "休假"}
+          {dutyText(t)}
         </span>
       </div>
       <div className="relative z-10 px-3 pb-4 pt-6 sm:p-5 sm:pt-7">
@@ -673,8 +726,14 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
           ))}
         </div>
         <p className="mt-3 text-center text-[10px] tracking-[0.08em] text-gray-300 sm:mt-4 sm:text-xs sm:tracking-[0.12em]">
-          <span className="block sm:inline">當日班表</span>{" "}
-          <span className="whitespace-nowrap">{t.schedule}（{t.shift}）</span>
+          {t.shift ? (
+            <>
+              <span className="block sm:inline">當日班表</span>{" "}
+              <span className="whitespace-nowrap">{scheduleText(t)}</span>
+            </>
+          ) : (
+            scheduleText(t)
+          )}
         </p>
         {t.note && <CardNote note={t.note} />}
       </div>
@@ -686,7 +745,8 @@ function Index() {
   const [filter, setFilter] = useState<"全部" | "今日上班中" | Shift>("全部");
   const [openPerson, setOpenPerson] = useState<Therapist | null>(null);
 
-  const list = therapists.filter((t) =>
+  const todayTherapists = useTodayTherapists();
+  const list = todayTherapists.filter((t) =>
     filter === "全部" ? true : filter === "今日上班中" ? t.onDuty : t.shift === filter,
   );
 

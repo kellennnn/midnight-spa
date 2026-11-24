@@ -6,7 +6,7 @@
 
 一個三頁式的 Vite + React 網站：
 
-- **`/`** — 對外行銷首頁（品牌介紹、人員陣容、服務項目、FAQ），純靜態內容由 [src/content.json](src/content.json) 驅動，不接資料庫。
+- **`/`** — 對外行銷首頁（品牌介紹、人員陣容、服務項目、FAQ），內容由 [src/content.json](src/content.json) 驅動；只有「今天誰上班」會從資料庫讀班表（見下方「班表」）。
 - **`/member`** — 會員卡系統，透過 **LINE LIFF** 登入，客人可以開卡、看會員 QR Code、送出預約請求。
 - **`/admin`** — 店家後台，透過 **Supabase Auth（email/password）** 登入，管理會員資料、消費紀錄、預約確認、員工權限、掃碼核銷。
 
@@ -37,6 +37,8 @@ src/
   lib/
     supabase.ts        # createClient，讀 VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
     preferenceOptions.tsx  # 開卡表單跟後台共用的「體驗偏好」選項清單（力道/加強部位/香氣/互動風格），兩邊共用同一份定義
+    schedule.ts        # 班表 / 預約時段的時間計算（跨夜班、營業日、可預約時段），首頁、會員頁、後台共用
+    ScheduleManager.tsx  # 後台「班表管理」分頁（一週一張表排班），admin.tsx 引用
     utils.ts     # cn()，clsx + tailwind-merge
     BrandMark.tsx  # 品牌 logo（<img src="/brand-mark.png">，不是手繪 SVG）
   content.json   # 首頁全部文案：人員陣容、服務項目、FAQ、公告跑馬燈等，改文案改這裡就好，不用碰 index.tsx
@@ -54,18 +56,26 @@ scripts/         # PowerShell 小工具（產生佔位圖片等本機用途，�
 這個 repo 的 git 歷史踩過一次真的資安漏洞（`anon` 角色可以整表 SELECT 撈走所有會員真實姓名/電話/生日），修完之後就定下這條規矩，之後每一支新寫入邏輯都照這個模式做：
 
 - 會員端（`/member`，用 `line_user_id` 當身分依據，因為沒有 Supabase Auth session）：
-  `register_member`、`get_member_by_line_id`、`update_member_nickname`、`submit_booking_request`、`get_my_bookings`、`cancel_my_booking`
-- 後台端（`/admin`，用 Supabase Auth session + `admin_users` 表的權限欄位 `can_view`/`can_edit_basic`/`can_edit_preferences`/`can_delete` 把關）：
-  `admin_update_basic`、`admin_update_preferences`、`admin_delete_member`、`admin_add_session_log`、`admin_delete_session_log`、`admin_grant_access`、`admin_update_booking_status`、`admin_redeem_booking`
+  `register_member`、`get_member_by_line_id`、`update_member_nickname`、`submit_booking_request`、`get_my_bookings`、`cancel_my_booking`、`get_public_schedule`、`get_busy_slots`
+- 後台端（`/admin`，用 Supabase Auth session + `admin_users` 表的權限欄位 `can_view`/`can_edit_basic`/`can_edit_preferences`/`can_delete`/`can_edit_schedule` 把關）：
+  `admin_update_basic`、`admin_update_preferences`、`admin_delete_member`、`admin_add_session_log`、`admin_delete_session_log`、`admin_grant_access`、`admin_update_booking_status`、`admin_redeem_booking`、`admin_upsert_shifts`、`admin_delete_shifts`、`admin_copy_week`
   （後台的**讀取**倒是直接 `supabase.from('members').select('*')` 這樣查，因為 RLS policy 已經把 `authenticated` 角色的讀取權限開給有 `can_view` 的帳號了——只有寫入才強制走 RPC）
 
 每支函式內部都會再檢查一次身分／權限／欄位合法性，就算有人繞過前端 UI 直接打 API，也改不了別人的資料。加新功能時**照抄這個模式**，不要為了方便直接開放前端寫表。
 
 Rate limit：開卡跟送預約請求都有伺服器端頻率限制（防機器人洗資料），門檻設得很寬鬆不影響正常客人，邏輯在 [supabase/sql/015_rate_limits.sql](supabase/sql/015_rate_limits.sql)。
 
+### 班表（[supabase/sql/016_therapist_schedule.sql](supabase/sql/016_therapist_schedule.sql)）
+
+- 班表存在 `therapist_shifts`（一位人員一天一筆，沒資料 = 休假），在後台「班表管理」排；人員的名字、編號、照片、標籤還是寫在 `content.json`。
+- **兩邊用 `content.json` 每位人員的 `"id"`（`t01`、`t02`…）對應**。老闆會常改名字跟編號，所以名字 / 編號可以隨便改，`id` 不能改、不能重複；新增人員要給一個沒用過的新 id。預約表的 `therapist_id` 也是存這個，撞單檢查一律用 id，`therapist_preference` 只是送出當下的名字（顯示用）。
+- 時間規則（SQL 跟 [src/lib/schedule.ts](src/lib/schedule.ts) 要一致）：台灣時間牆上時間；結束 <= 開始 = 跨夜班，算在開始那天；每筆預約固定佔 60 分鐘（`booking_block_minutes()` / `BOOKING_BLOCK_MINUTES`）；營業日以凌晨 5 點為界；跨夜的班算晚班、當天下班的算早班。
+- 會員送預約時伺服器端檢查：有排班、沒被**已確認**的預約佔掉（待確認的不佔位）；後台按「確認」時再檢查一次撞單。
+- 首頁讀不到班表、或今天完全沒人排班時，退回用 `content.json` 裡的 `schedule`/`shift`/`onDuty`（所以那三個欄位先留著當備援）。
+
 ### Migration 管理方式（沒有用 supabase CLI）
 
-[supabase/sql/](supabase/sql/) 底下是照編號累加的純 SQL 檔（`001_...` 到 `015_...`），**每一份都是手動貼到 Supabase 後台的 SQL Editor 執行**，不是用 `supabase migration` 指令跑的，這個專案也沒有 `supabase/config.toml`。之後要改資料庫結構：
+[supabase/sql/](supabase/sql/) 底下是照編號累加的純 SQL 檔（`001_...` 到 `016_...`），**每一份都是手動貼到 Supabase 後台的 SQL Editor 執行**，不是用 `supabase migration` 指令跑的，這個專案也沒有 `supabase/config.toml`。之後要改資料庫結構：
 
 1. 新增一份 `0XX_描述.sql`（編號接續最後一個），檔案開頭寫清楚「這份在幹嘛」+「執行方式：Supabase 後台 -> SQL Editor -> 貼上整段 -> Run」（照抄現有檔案的開頭格式）
 2. 提醒使用者去 Supabase 後台手動執行，**我自己沒有 Supabase 的資料庫直接存取權**，不能替他跑這段

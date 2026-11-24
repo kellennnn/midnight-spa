@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js';
 import { Html5Qrcode } from 'html5-qrcode';
 import { supabase } from '../lib/supabase';
 import { BrandMark } from '../lib/BrandMark';
+import { ScheduleManager } from '../lib/ScheduleManager';
 import {
   PRESSURE_OPTIONS,
   FOCUS_AREA_OPTIONS,
@@ -84,6 +85,7 @@ interface AdminUser {
   can_edit_basic: boolean;
   can_edit_preferences: boolean;
   can_delete: boolean;
+  can_edit_schedule?: boolean;
 }
 
 interface Booking {
@@ -222,7 +224,7 @@ function AdminComponent() {
   const [addingLog, setAddingLog] = useState(false);
   const [lastVisitMap, setLastVisitMap] = useState<Record<string, string>>({});
   const [chartRangeMonths, setChartRangeMonths] = useState<6 | 12 | 24 | 0>(6); // 0 = 全部時間
-  const [activeTab, setActiveTab] = useState<'members' | 'overview' | 'bookings'>('members');
+  const [activeTab, setActiveTab] = useState<'members' | 'overview' | 'bookings' | 'schedule'>('members');
 
   const [showRoster, setShowRoster] = useState(false);
   const [adminRoster, setAdminRoster] = useState<AdminUser[]>([]);
@@ -233,6 +235,7 @@ function AdminComponent() {
     can_edit_basic: false,
     can_edit_preferences: false,
     can_delete: false,
+    can_edit_schedule: false,
   });
   const [granting, setGranting] = useState(false);
 
@@ -257,6 +260,7 @@ function AdminComponent() {
   const canEditBasic = isOwner || !!myAccess?.can_edit_basic;
   const canEditPreferences = isOwner || !!myAccess?.can_edit_preferences;
   const canDelete = isOwner || !!myAccess?.can_delete;
+  const canEditSchedule = isOwner || !!myAccess?.can_edit_schedule;
   const canEditAny = canEditBasic || canEditPreferences;
 
   useEffect(() => {
@@ -298,6 +302,11 @@ function AdminComponent() {
 
     loadMyAccess();
   }, [session]);
+
+  // 只有排班權限、沒有查看會員權限的員工，一登入就直接進班表管理
+  useEffect(() => {
+    if (myAccess && !canView && canEditSchedule) setActiveTab('schedule');
+  }, [myAccess]);
 
   useEffect(() => {
     if (myAccess && canView) {
@@ -654,6 +663,7 @@ function AdminComponent() {
         can_edit_basic: row.can_edit_basic,
         can_edit_preferences: row.can_edit_preferences,
         can_delete: row.can_delete,
+        can_edit_schedule: !!row.can_edit_schedule,
       })
       .eq('id', row.id);
 
@@ -687,6 +697,7 @@ function AdminComponent() {
       p_can_edit_basic: grantForm.can_edit_basic,
       p_can_edit_preferences: grantForm.can_edit_preferences,
       p_can_delete: grantForm.can_delete,
+      p_can_edit_schedule: grantForm.can_edit_schedule,
     });
 
     if (error) {
@@ -694,7 +705,13 @@ function AdminComponent() {
       console.error(error);
     } else {
       setGrantEmail('');
-      setGrantForm({ can_view: true, can_edit_basic: false, can_edit_preferences: false, can_delete: false });
+      setGrantForm({
+        can_view: true,
+        can_edit_basic: false,
+        can_edit_preferences: false,
+        can_delete: false,
+        can_edit_schedule: false,
+      });
       loadRoster();
     }
     setGranting(false);
@@ -865,34 +882,39 @@ function AdminComponent() {
           </div>
         </div>
 
-        {canView && (
-          <div className="flex items-center gap-2 border-b border-[#203658]">
+        {(canView || canEditSchedule) && (
+          <div className="flex items-center gap-2 overflow-x-auto border-b border-[#203658]">
             {(
               [
-                ['members', '會員資料'],
-                ['bookings', '預約管理'],
-                ['overview', '總覽 / 管理'],
+                ['members', '會員資料', canView],
+                ['bookings', '預約管理', canView],
+                ['schedule', '班表管理', canView || canEditSchedule],
+                ['overview', '總覽 / 管理', canView],
               ] as const
-            ).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
-                  activeTab === key
-                    ? 'border-[#d4af37] text-[#f5e6c8]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-300'
-                }`}
-              >
-                {label}
-                {key === 'bookings' && pendingBookingCount > 0 && (
-                  <span className="bg-red-500 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5">
-                    {pendingBookingCount}
-                  </span>
-                )}
-              </button>
-            ))}
+            )
+              .filter(([, , visible]) => visible)
+              .map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+                    activeTab === key
+                      ? 'border-[#d4af37] text-[#f5e6c8]'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-300'
+                  }`}
+                >
+                  {label}
+                  {key === 'bookings' && pendingBookingCount > 0 && (
+                    <span className="bg-red-500 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5">
+                      {pendingBookingCount}
+                    </span>
+                  )}
+                </button>
+              ))}
           </div>
         )}
+
+        {(canView || canEditSchedule) && activeTab === 'schedule' && <ScheduleManager canEdit={canEditSchedule} />}
 
         {canView && activeTab === 'bookings' && (
           <div className="space-y-4">
@@ -1142,6 +1164,7 @@ function AdminComponent() {
                   ['can_edit_basic', '編輯基本資料'],
                   ['can_edit_preferences', '編輯體驗偏好'],
                   ['can_delete', '刪除會員'],
+                  ['can_edit_schedule', '編輯班表'],
                 ] as const
               ).map(([field, label]) => (
                 <label key={field} className="flex items-center gap-1.5 text-xs text-neutral-300 cursor-pointer">
@@ -1187,12 +1210,13 @@ function AdminComponent() {
                             ['can_edit_basic', '編輯基本資料'],
                             ['can_edit_preferences', '編輯體驗偏好'],
                             ['can_delete', '刪除會員'],
+                            ['can_edit_schedule', '編輯班表'],
                           ] as const
                         ).map(([field, label]) => (
                           <label key={field} className="flex items-center gap-1.5 text-neutral-300 cursor-pointer">
                             <input
                               type="checkbox"
-                              checked={row[field]}
+                              checked={!!row[field]}
                               onChange={(e) => updateRosterField(row.id, field, e.target.checked)}
                             />
                             {label}
