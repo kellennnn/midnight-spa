@@ -560,9 +560,9 @@ function GoldHairline({
 function CardSeal() {
   return (
     <div className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2 -translate-y-1/2">
-      <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E5B292]/70 bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_12px_rgba(212,175,55,0.45)]">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E5B292]/25">
-          <BrandMark className="h-6 w-6" />
+      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E5B292]/70 bg-gradient-to-b from-[#1c1e2b] to-[#0f1017] shadow-[0_0_12px_rgba(212,175,55,0.45)] sm:h-11 sm:w-11">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-[#E5B292]/25 sm:h-9 sm:w-9">
+          <BrandMark className="h-5 w-5 sm:h-6 sm:w-6" />
         </div>
       </div>
     </div>
@@ -589,13 +589,13 @@ function CardCorner({ className = "" }: { className?: string }) {
    換行照 content.json 裡打的 \n 顯示。 */
 function CardNote({ note }: { note: string }) {
   return (
-    <div className="mt-4">
+    <div className="mt-3 sm:mt-4">
       <div className="flex items-center gap-2" aria-hidden="true">
         <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#E5B292]/40" />
         <span className="text-[10px] text-[#E5B292]/80">☾</span>
         <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#E5B292]/40" />
       </div>
-      <p className="mt-3 whitespace-pre-line text-center text-[13px] leading-relaxed tracking-wide text-[#F5E6C8]/85">
+      <p className="mt-2 line-clamp-3 whitespace-pre-line text-center text-[11px] leading-relaxed tracking-wide text-[#F5E6C8]/85 sm:mt-3 sm:line-clamp-none sm:text-[13px]">
         {note}
       </p>
     </div>
@@ -603,7 +603,8 @@ function CardNote({ note }: { note: string }) {
 }
 
 /* 人員卡片：精品雙細金線邊框 + 頂部鋼印 + 細緻四角星芒的「黑金珠寶盒」
-   視覺語言（原本一般 / 進階兩種樣式，現在全部人員都用這一種）。 */
+   視覺語言（原本一般 / 進階兩種樣式，現在全部人員都用這一種）。
+   手機上一排兩張，所以字級、間距、徽章都有一組較小的手機尺寸（sm: 以上恢復原尺寸）。 */
 function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => void }) {
   return (
     <article
@@ -631,13 +632,13 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        <div className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+        <div className="absolute inset-0 hidden items-center justify-center bg-background/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 sm:flex">
           <span className="rounded-full hairline bg-card/90 px-4 py-2 text-[11px] tracking-[0.18em] text-silver">
             查看詳細資料
           </span>
         </div>
         <span
-          className={`absolute right-3 top-3 z-20 flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] tracking-[0.18em] backdrop-blur-md ${
+          className={`absolute right-2 top-2 z-20 flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] tracking-[0.12em] backdrop-blur-md sm:right-3 sm:top-3 sm:gap-1.5 sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.18em] ${
             t.onDuty
               ? "border-[#E5B292]/50 bg-black/45 text-[#F5E6C8]"
               : "border-white/15 bg-black/45 text-muted-foreground"
@@ -651,25 +652,29 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
           {t.onDuty ? "上班中" : "休假"}
         </span>
       </div>
-      <div className="relative z-10 p-5 pt-7">
+      <div className="relative z-10 px-3 pb-4 pt-6 sm:p-5 sm:pt-7">
         <CardSeal />
         {/* 資訊區右下角的品牌浮水印 */}
-        <BrandMark className="pointer-events-none absolute bottom-3 right-3 h-16 w-16 opacity-[0.07]" />
-        <h3 className="text-center text-xl font-light text-[#FCEADE]">
+        <BrandMark className="pointer-events-none absolute bottom-2 right-2 h-10 w-10 opacity-[0.07] sm:bottom-3 sm:right-3 sm:h-16 sm:w-16" />
+        <h3 className="text-center text-[15px] font-light leading-snug text-[#FCEADE] sm:text-xl">
           {t.no} · {t.name}
         </h3>
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
-          {t.tags.map((tag) => (
+        {/* 手機卡片窄，標籤只顯示前兩個 */}
+        <div className="mt-2 flex flex-wrap justify-center gap-1 sm:mt-3 sm:gap-2">
+          {t.tags.map((tag, i) => (
             <span
               key={tag}
-              className="rounded-full border border-[#E5B292]/35 px-2.5 py-1 text-[11px] tracking-[0.05em] text-[#E5B292]"
+              className={`rounded-full border border-[#E5B292]/35 px-2 py-0.5 text-[10px] tracking-[0.05em] text-[#E5B292] sm:px-2.5 sm:py-1 sm:text-[11px] ${
+                i > 1 ? "hidden sm:inline" : ""
+              }`}
             >
               {tag}
             </span>
           ))}
         </div>
-        <p className="mt-4 text-center text-xs tracking-[0.12em] text-gray-300">
-          當日班表 <span className="whitespace-nowrap">{t.schedule}（{t.shift}）</span>
+        <p className="mt-3 text-center text-[10px] tracking-[0.08em] text-gray-300 sm:mt-4 sm:text-xs sm:tracking-[0.12em]">
+          <span className="block sm:inline">當日班表</span>{" "}
+          <span className="whitespace-nowrap">{t.schedule}（{t.shift}）</span>
         </p>
         {t.note && <CardNote note={t.note} />}
       </div>
@@ -744,16 +749,16 @@ function Index() {
       <SectionDivider />
 
       {/* Team */}
-      <section id="team" className="ripple-field relative overflow-hidden px-6 py-24">
+      <section id="team" className="ripple-field relative overflow-hidden px-4 py-24 sm:px-6">
         <div className="relative mx-auto max-w-6xl">
           <SectionTitle eyebrow="Today's Team" title="今日服務人員陣容" />
 
-          <div className="mb-12 flex flex-wrap justify-center gap-3">
+          <div className="mb-10 flex flex-wrap justify-center gap-2 sm:mb-12 sm:gap-3">
             {(["全部", "今日上班中", "早班", "晚班"] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`rounded-full px-6 py-2 text-xs tracking-[0.22em] transition-colors ${
+                className={`rounded-full px-4 py-2 text-xs tracking-[0.12em] transition-colors sm:px-6 sm:tracking-[0.22em] ${
                   filter === f
                     ? "bg-primary text-primary-foreground font-medium"
                     : "hairline text-muted-foreground hover:text-silver"
@@ -764,7 +769,7 @@ function Index() {
             ))}
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-8 lg:grid-cols-4">
             {list.map((t) => (
               <TherapistCard key={t.no} t={t} onOpen={setOpenPerson} />
             ))}
