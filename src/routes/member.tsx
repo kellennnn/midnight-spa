@@ -1,10 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import liff from '@line/liff';
 import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../lib/supabase';
 import content from '@/content.json';
 import { BrandMark } from '@/lib/BrandMark';
+import {
+  addDays,
+  availableSlots,
+  shiftLabel,
+  shortTime,
+  taipeiNow,
+  type BusySlot,
+  type ShiftRow,
+} from '@/lib/schedule';
 import { Sparkles, Crown, Phone, Calendar, User, CheckCircle2, Pencil, CalendarPlus, X, Clock3 } from 'lucide-react';
 
 export const Route = createFileRoute('/member')({
@@ -42,12 +51,11 @@ interface Booking {
   created_at: string;
 }
 
-// 24 小時營業，時段選單以 30 分鐘為一格（00:00、00:30 ... 23:30）
-const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
-  const h = String(Math.floor(i / 2)).padStart(2, '0');
-  const m = i % 2 === 0 ? '00' : '30';
-  return `${h}:${m}`;
-});
+type TherapistInfo = { id: string; no: string; name: string };
+const THERAPISTS = content.therapists as TherapistInfo[];
+
+// 預約只開放 30 天內（伺服器端也有同樣的限制）
+const BOOKING_WINDOW_DAYS = 30;
 
 const BOOKING_STATUS_LABEL: Record<Booking['status'], { label: string; className: string }> = {
   pending: { label: '待確認', className: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' },
@@ -82,9 +90,65 @@ function MemberComponent() {
     date: '',
     time: '',
     service: content.services?.[0]?.name || '',
-    therapist: '',
+    therapist: '', // 人員的固定代號（content.json 的 id），空字串 = 不指定
     note: '',
   });
+  // 選定日期那天的班表 + 已被確認預約佔掉的時段，用來決定可以選哪些人員 / 時段
+  const [daySchedule, setDaySchedule] = useState<{ date: string; shifts: ShiftRow[]; busy: BusySlot[] } | null>(null);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleError, setScheduleError] = useState('');
+
+  useEffect(() => {
+    const date = bookingForm.date;
+    if (!date) {
+      setDaySchedule(null);
+      return;
+    }
+    let cancelled = false;
+    setScheduleLoading(true);
+    setScheduleError('');
+    // 前一天的跨夜班會延續到這一天凌晨，所以從前一天開始查
+    Promise.all([
+      supabase.rpc('get_public_schedule', { p_from: addDays(date, -1), p_to: date }),
+      supabase.rpc('get_busy_slots', { p_from: addDays(date, -1), p_to: date }),
+    ]).then(([shiftRes, busyRes]) => {
+      if (cancelled) return;
+      if (shiftRes.error || busyRes.error) {
+        console.error(shiftRes.error || busyRes.error);
+        setScheduleError('目前無法讀取班表，請稍後再試');
+        setDaySchedule(null);
+      } else {
+        setDaySchedule({ date, shifts: shiftRes.data ?? [], busy: busyRes.data ?? [] });
+      }
+      setScheduleLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingForm.date]);
+
+  // 這一天有空的人員（附上班時間），跟目前條件下可以選的時段
+  const bookingOptions = useMemo(() => {
+    if (!daySchedule || daySchedule.date !== bookingForm.date) return null;
+    const { date, shifts, busy } = daySchedule;
+    const therapists = THERAPISTS.filter((t) => availableSlots(date, t.id, shifts, busy).length > 0).map((t) => {
+      const own = shifts.find((s) => s.therapist_id === t.id && s.shift_date === date);
+      const carried = shifts.find((s) => s.therapist_id === t.id && s.shift_date !== date);
+      return { ...t, hours: own ? shiftLabel(own) : carried ? `~ ${shortTime(carried.end_time)}` : '' };
+    });
+    const therapistId = therapists.some((t) => t.id === bookingForm.therapist) ? bookingForm.therapist : null;
+    return { therapists, times: availableSlots(date, therapistId, shifts, busy) };
+  }, [daySchedule, bookingForm.date, bookingForm.therapist]);
+
+  // 換了日期 / 人員之後，原本選的人員或時段不能約了就清掉，避免送出不存在的組合
+  useEffect(() => {
+    if (!bookingOptions) return;
+    setBookingForm((f) => {
+      const therapistOk = !f.therapist || bookingOptions.therapists.some((t) => t.id === f.therapist);
+      const next = therapistOk ? f : { ...f, therapist: '' };
+      return next.time && !bookingOptions.times.includes(next.time) ? { ...next, time: '' } : next;
+    });
+  }, [bookingOptions]);
 
   useEffect(() => {
     const initLiff = async () => {
@@ -251,14 +315,22 @@ function MemberComponent() {
     e.preventDefault();
     if (!profile) return;
 
+    if (!bookingForm.time) {
+      alert('請選擇預約時段');
+      return;
+    }
+
     setBookingSubmitting(true);
     try {
+      // 人員用固定代號送出（名字以後改了也對得上），名字另外附上給後台 / 通知顯示
+      const therapist = THERAPISTS.find((t) => t.id === bookingForm.therapist);
       const { data, error } = await supabase.rpc('submit_booking_request', {
         p_line_user_id: profile.line_user_id,
         p_preferred_date: bookingForm.date,
-        p_preferred_time: bookingForm.time || null,
+        p_preferred_time: bookingForm.time,
         p_service_item: bookingForm.service,
-        p_therapist_preference: bookingForm.therapist || null,
+        p_therapist_preference: therapist?.name ?? null,
+        p_therapist_id: therapist?.id ?? null,
         p_note: bookingForm.note || null,
       });
 
@@ -589,57 +661,75 @@ function MemberComponent() {
 
               {showBookingForm && (
                 <form onSubmit={handleBookingSubmit} className="space-y-2.5 border-b border-neutral-800 pb-3.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div className="min-w-0">
-                      <label className="text-[10px] text-neutral-500 mb-1 block">預約日期</label>
-                      <input
-                        type="date"
-                        required
-                        min={new Date().toISOString().slice(0, 10)}
-                        value={bookingForm.date}
-                        onChange={(e) => setBookingForm((f) => ({ ...f, date: e.target.value }))}
-                        className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <label className="text-[10px] text-neutral-500 mb-1 block">預約時段</label>
-                      <select
-                        value={bookingForm.time}
-                        onChange={(e) => setBookingForm((f) => ({ ...f, time: e.target.value }))}
-                        className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-                      >
-                        <option value="">選擇時段</option>
-                        {TIME_SLOTS.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="min-w-0">
+                    <label className="text-[10px] text-neutral-500 mb-1 block">預約日期</label>
+                    <input
+                      type="date"
+                      required
+                      min={taipeiNow().date}
+                      max={addDays(taipeiNow().date, BOOKING_WINDOW_DAYS)}
+                      value={bookingForm.date}
+                      onChange={(e) => setBookingForm((f) => ({ ...f, date: e.target.value }))}
+                      className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                    />
                   </div>
-                  <select
-                    value={bookingForm.service}
-                    onChange={(e) => setBookingForm((f) => ({ ...f, service: e.target.value }))}
-                    className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-                  >
-                    {content.services?.map((s: any) => (
-                      <option key={s.name} value={s.name}>
-                        {s.name}（{s.min}）
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={bookingForm.therapist}
-                    onChange={(e) => setBookingForm((f) => ({ ...f, therapist: e.target.value }))}
-                    className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
-                  >
-                    <option value="">不指定人員</option>
-                    {content.therapists?.map((t: any) => (
-                      <option key={t.no} value={t.name}>
-                        {t.name}（{t.no}）
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <label className="text-[10px] text-neutral-500 mb-1 block">指定人員</label>
+                    <select
+                      value={bookingForm.therapist}
+                      onChange={(e) => setBookingForm((f) => ({ ...f, therapist: e.target.value }))}
+                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                    >
+                      <option value="">不指定人員</option>
+                      {bookingOptions?.therapists.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}（{t.no}）{t.hours && `・${t.hours}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {bookingForm.date && (
+                    <p className="text-[10px] text-neutral-500">
+                      {scheduleLoading
+                        ? '讀取班表中...'
+                        : scheduleError
+                          ? scheduleError
+                          : bookingOptions && bookingOptions.times.length === 0
+                            ? '這天目前沒有可預約的時段，請選擇其他日期'
+                            : '只會列出當天有排班、時段還空著的人員'}
+                    </p>
+                  )}
+                  <div className="min-w-0">
+                    <label className="text-[10px] text-neutral-500 mb-1 block">預約時段</label>
+                    <select
+                      required
+                      value={bookingForm.time}
+                      disabled={!bookingOptions || bookingOptions.times.length === 0}
+                      onChange={(e) => setBookingForm((f) => ({ ...f, time: e.target.value }))}
+                      className="w-full min-w-0 bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37] disabled:opacity-50"
+                    >
+                      <option value="">{bookingForm.date ? '選擇時段' : '請先選日期'}</option>
+                      {bookingOptions?.times.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-neutral-500 mb-1 block">服務項目</label>
+                    <select
+                      value={bookingForm.service}
+                      onChange={(e) => setBookingForm((f) => ({ ...f, service: e.target.value }))}
+                      className="w-full bg-[#1c2f4a] border border-neutral-700 rounded-lg px-2.5 py-2 text-xs text-neutral-100 focus:outline-none focus:border-[#d4af37]"
+                    >
+                      {content.services?.map((s: any) => (
+                        <option key={s.name} value={s.name}>
+                          {s.name}（{s.min}）
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <textarea
                     value={bookingForm.note}
                     onChange={(e) => setBookingForm((f) => ({ ...f, note: e.target.value }))}
