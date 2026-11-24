@@ -4,6 +4,7 @@ import content from "@/content.json";
 import { BrandMark } from "@/lib/BrandMark";
 import { supabase } from "@/lib/supabase";
 import { businessDate, shiftInterval, shiftKind, shiftLabel, taipeiNow, type ShiftRow } from "@/lib/schedule";
+import { firstPhoto, useTherapists, type TherapistProfile } from "@/lib/therapists";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,42 +22,30 @@ export const Route = createFileRoute("/")({
 
 type Shift = "早班" | "晚班";
 
-type Therapist = {
-  /* 固定不變的內部代號（t01、t02…），班表跟預約都靠它對應，名字跟編號可以隨便改，這個不行 */
-  id: string;
-  no: string;
-  name: string;
-  photos: string[];
-  tags: string[];
-  /* 下面三個欄位：資料庫有排今天的班表時，會被班表的內容蓋過去；
-     讀不到班表（例如還沒排）才用 content.json 裡寫的值 */
+/* 首頁顯示用的人員：人員資料（後台「人員管理」）+ 今天的班表狀態 */
+type Therapist = TherapistProfile & {
+  /* 今天的時段文字，例如 14:00 - 02:00 */
   schedule: string;
   /* null = 今天沒排班（休假） */
   shift: Shift | null;
   onDuty: boolean;
-  /* true = 上面三個欄位來自資料庫的即時班表 */
-  live?: boolean;
-  /* 卡片底部的自訂文字（一句話介紹、留言…），寫在 content.json，留空就不顯示 */
-  note?: string;
 };
 
-const therapists = content.therapists as Therapist[];
-
-/* 卡片 / 詳細資料上的狀態文字 */
+/* 卡片 / 詳細資料上的狀態文字：今天有班但還沒到 / 已經下班 = 休息中；沒排班 = 休假 */
 function dutyText(t: Therapist) {
   if (t.onDuty) return "上班中";
-  // 即時班表：今天有班但還沒到 / 已經下班 = 休息中；沒排班 = 休假
-  return t.live && t.shift ? "休息中" : "休假";
+  return t.shift ? "休息中" : "休假";
 }
 
 function scheduleText(t: Therapist) {
   return t.shift ? `${t.schedule}（${t.shift}）` : "今日休假";
 }
 
-/* 今天（營業日）的班表：從資料庫讀，每分鐘重新算一次誰正在上班。
+/* 今天（營業日）的人員 + 班表：從資料庫讀，每分鐘重新算一次誰正在上班。
    讀取失敗、或今天整天都沒有任何人排班（通常代表班表還沒開始用）時，
-   回傳 content.json 原本寫的資料，網站不會因此變成全部休假。 */
+   改用每個人的預設時段當作今天的班，網站不會因此變成全部休假。 */
 function useTodayTherapists(): Therapist[] {
+  const { therapists } = useTherapists("public");
   const [shifts, setShifts] = useState<ShiftRow[] | null>(null);
   const [nowAbs, setNowAbs] = useState(() => taipeiNow().abs);
 
@@ -64,7 +53,7 @@ function useTodayTherapists(): Therapist[] {
     const day = businessDate();
     supabase.rpc("get_public_schedule", { p_from: day, p_to: day }).then(({ data, error }) => {
       if (error) {
-        console.warn("讀取班表失敗，改用 content.json 的資料", error);
+        console.warn("讀取班表失敗，改用預設時段", error);
         return;
       }
       setShifts((data as ShiftRow[]) ?? []);
@@ -74,15 +63,21 @@ function useTodayTherapists(): Therapist[] {
   }, []);
 
   return useMemo(() => {
-    if (!shifts || shifts.length === 0) return therapists;
+    const day = businessDate();
+    const useDefaults = !shifts || shifts.length === 0;
     return therapists.map((t) => {
-      const s = shifts.find((row) => row.therapist_id === t.id);
-      if (!s) return { ...t, schedule: "", shift: null, onDuty: false, live: true };
+      const s: ShiftRow | undefined = useDefaults
+        ? t.default_start && t.default_end
+          ? { therapist_id: t.id, shift_date: day, start_time: t.default_start, end_time: t.default_end }
+          : undefined
+        : shifts.find((row) => row.therapist_id === t.id);
+      if (!s) return { ...t, schedule: "", shift: null, onDuty: false };
       const [from, to] = shiftInterval(s);
-      return { ...t, schedule: shiftLabel(s), shift: shiftKind(s), onDuty: from <= nowAbs && nowAbs < to, live: true };
+      return { ...t, schedule: shiftLabel(s), shift: shiftKind(s), onDuty: from <= nowAbs && nowAbs < to };
     });
-  }, [shifts, nowAbs]);
+  }, [therapists, shifts, nowAbs]);
 }
+
 const services = content.services;
 
 function Moon() {
@@ -342,7 +337,7 @@ function TherapistModal({
                 className="group relative block aspect-[3/4] w-full overflow-hidden rounded-lg border border-[#E5B292]/40 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
               >
                 <img
-                  src={therapist.photos[0]}
+                  src={firstPhoto(therapist)}
                   alt={therapist.name}
                   loading="lazy"
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -427,7 +422,7 @@ function TherapistModal({
 
       {zoomIndex !== null && (
         <PhotoLightbox
-          photos={therapist.photos}
+          photos={therapist.photos.length > 0 ? therapist.photos : [firstPhoto(therapist)]}
           name={therapist.name}
           index={zoomIndex}
           onClose={() => setZoomIndex(null)}
@@ -678,7 +673,7 @@ function TherapistCard({ t, onOpen }: { t: Therapist; onOpen: (t: Therapist) => 
       <CardCorner className="bottom-1.5 left-1.5 -rotate-90" />
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
-          src={t.photos[0]}
+          src={firstPhoto(t)}
           alt={`${t.no} ${t.name}`}
           width={768}
           height={1024}

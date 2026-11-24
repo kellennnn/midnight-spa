@@ -14,6 +14,7 @@ import {
   type BusySlot,
   type ShiftRow,
 } from '@/lib/schedule';
+import { useTherapists } from '@/lib/therapists';
 import { Sparkles, Crown, Phone, Calendar, User, CheckCircle2, Pencil, CalendarPlus, X, Clock3 } from 'lucide-react';
 
 export const Route = createFileRoute('/member')({
@@ -51,9 +52,6 @@ interface Booking {
   created_at: string;
 }
 
-type TherapistInfo = { id: string; no: string; name: string };
-const THERAPISTS = content.therapists as TherapistInfo[];
-
 // 預約只開放 30 天內（伺服器端也有同樣的限制）
 const BOOKING_WINDOW_DAYS = 30;
 
@@ -90,9 +88,11 @@ function MemberComponent() {
     date: '',
     time: '',
     service: content.services?.[0]?.name || '',
-    therapist: '', // 人員的固定代號（content.json 的 id），空字串 = 不指定
+    therapist: '', // 人員的固定代號（therapists 表的 id），空字串 = 不指定
     note: '',
   });
+  // 人員清單（後台「人員管理」編輯，只有上架中的人員）
+  const { therapists: activeTherapists } = useTherapists('public');
   // 選定日期那天的班表 + 已被確認預約佔掉的時段，用來決定可以選哪些人員 / 時段
   const [daySchedule, setDaySchedule] = useState<{ date: string; shifts: ShiftRow[]; busy: BusySlot[] } | null>(null);
   const [scheduleLoading, setScheduleLoading] = useState(false);
@@ -131,14 +131,16 @@ function MemberComponent() {
   const bookingOptions = useMemo(() => {
     if (!daySchedule || daySchedule.date !== bookingForm.date) return null;
     const { date, shifts, busy } = daySchedule;
-    const therapists = THERAPISTS.filter((t) => availableSlots(date, t.id, shifts, busy).length > 0).map((t) => {
-      const own = shifts.find((s) => s.therapist_id === t.id && s.shift_date === date);
-      const carried = shifts.find((s) => s.therapist_id === t.id && s.shift_date !== date);
-      return { ...t, hours: own ? shiftLabel(own) : carried ? `~ ${shortTime(carried.end_time)}` : '' };
-    });
+    const therapists = activeTherapists
+      .filter((t) => availableSlots(date, t.id, shifts, busy).length > 0)
+      .map((t) => {
+        const own = shifts.find((s) => s.therapist_id === t.id && s.shift_date === date);
+        const carried = shifts.find((s) => s.therapist_id === t.id && s.shift_date !== date);
+        return { ...t, hours: own ? shiftLabel(own) : carried ? `~ ${shortTime(carried.end_time)}` : '' };
+      });
     const therapistId = therapists.some((t) => t.id === bookingForm.therapist) ? bookingForm.therapist : null;
     return { therapists, times: availableSlots(date, therapistId, shifts, busy) };
-  }, [daySchedule, bookingForm.date, bookingForm.therapist]);
+  }, [daySchedule, bookingForm.date, bookingForm.therapist, activeTherapists]);
 
   // 換了日期 / 人員之後，原本選的人員或時段不能約了就清掉，避免送出不存在的組合
   useEffect(() => {
@@ -323,7 +325,7 @@ function MemberComponent() {
     setBookingSubmitting(true);
     try {
       // 人員用固定代號送出（名字以後改了也對得上），名字另外附上給後台 / 通知顯示
-      const therapist = THERAPISTS.find((t) => t.id === bookingForm.therapist);
+      const therapist = activeTherapists.find((t) => t.id === bookingForm.therapist);
       const { data, error } = await supabase.rpc('submit_booking_request', {
         p_line_user_id: profile.line_user_id,
         p_preferred_date: bookingForm.date,

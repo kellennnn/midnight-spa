@@ -5,6 +5,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { supabase } from '../lib/supabase';
 import { BrandMark } from '../lib/BrandMark';
 import { ScheduleManager } from '../lib/ScheduleManager';
+import { TherapistManager } from '../lib/TherapistManager';
 import {
   PRESSURE_OPTIONS,
   FOCUS_AREA_OPTIONS,
@@ -86,6 +87,7 @@ interface AdminUser {
   can_edit_preferences: boolean;
   can_delete: boolean;
   can_edit_schedule?: boolean;
+  can_edit_therapists?: boolean;
 }
 
 interface Booking {
@@ -224,7 +226,9 @@ function AdminComponent() {
   const [addingLog, setAddingLog] = useState(false);
   const [lastVisitMap, setLastVisitMap] = useState<Record<string, string>>({});
   const [chartRangeMonths, setChartRangeMonths] = useState<6 | 12 | 24 | 0>(6); // 0 = 全部時間
-  const [activeTab, setActiveTab] = useState<'members' | 'overview' | 'bookings' | 'schedule'>('members');
+  const [activeTab, setActiveTab] = useState<'members' | 'overview' | 'bookings' | 'schedule' | 'therapists'>(
+    'members',
+  );
 
   const [showRoster, setShowRoster] = useState(false);
   const [adminRoster, setAdminRoster] = useState<AdminUser[]>([]);
@@ -236,6 +240,7 @@ function AdminComponent() {
     can_edit_preferences: false,
     can_delete: false,
     can_edit_schedule: false,
+    can_edit_therapists: false,
   });
   const [granting, setGranting] = useState(false);
 
@@ -261,6 +266,7 @@ function AdminComponent() {
   const canEditPreferences = isOwner || !!myAccess?.can_edit_preferences;
   const canDelete = isOwner || !!myAccess?.can_delete;
   const canEditSchedule = isOwner || !!myAccess?.can_edit_schedule;
+  const canEditTherapists = isOwner || !!myAccess?.can_edit_therapists;
   const canEditAny = canEditBasic || canEditPreferences;
 
   useEffect(() => {
@@ -303,9 +309,12 @@ function AdminComponent() {
     loadMyAccess();
   }, [session]);
 
-  // 只有排班權限、沒有查看會員權限的員工，一登入就直接進班表管理
+  // 沒有查看會員權限、只有排班 / 編輯人員權限的員工，一登入就直接進他能用的分頁
   useEffect(() => {
-    if (myAccess && !canView && canEditSchedule) setActiveTab('schedule');
+    if (myAccess && !canView) {
+      if (canEditSchedule) setActiveTab('schedule');
+      else if (canEditTherapists) setActiveTab('therapists');
+    }
   }, [myAccess]);
 
   useEffect(() => {
@@ -664,6 +673,7 @@ function AdminComponent() {
         can_edit_preferences: row.can_edit_preferences,
         can_delete: row.can_delete,
         can_edit_schedule: !!row.can_edit_schedule,
+        can_edit_therapists: !!row.can_edit_therapists,
       })
       .eq('id', row.id);
 
@@ -698,6 +708,7 @@ function AdminComponent() {
       p_can_edit_preferences: grantForm.can_edit_preferences,
       p_can_delete: grantForm.can_delete,
       p_can_edit_schedule: grantForm.can_edit_schedule,
+      p_can_edit_therapists: grantForm.can_edit_therapists,
     });
 
     if (error) {
@@ -711,6 +722,7 @@ function AdminComponent() {
         can_edit_preferences: false,
         can_delete: false,
         can_edit_schedule: false,
+        can_edit_therapists: false,
       });
       loadRoster();
     }
@@ -882,13 +894,14 @@ function AdminComponent() {
           </div>
         </div>
 
-        {(canView || canEditSchedule) && (
+        {(canView || canEditSchedule || canEditTherapists) && (
           <div className="flex items-center gap-2 overflow-x-auto border-b border-[#203658]">
             {(
               [
                 ['members', '會員資料', canView],
                 ['bookings', '預約管理', canView],
                 ['schedule', '班表管理', canView || canEditSchedule],
+                ['therapists', '人員管理', canEditTherapists],
                 ['overview', '總覽 / 管理', canView],
               ] as const
             )
@@ -897,7 +910,7 @@ function AdminComponent() {
                 <button
                   key={key}
                   onClick={() => setActiveTab(key)}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
                     activeTab === key
                       ? 'border-[#d4af37] text-[#f5e6c8]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-300'
@@ -915,6 +928,8 @@ function AdminComponent() {
         )}
 
         {(canView || canEditSchedule) && activeTab === 'schedule' && <ScheduleManager canEdit={canEditSchedule} />}
+
+        {canEditTherapists && activeTab === 'therapists' && <TherapistManager canEdit={canEditTherapists} />}
 
         {canView && activeTab === 'bookings' && (
           <div className="space-y-4">
@@ -1165,6 +1180,7 @@ function AdminComponent() {
                   ['can_edit_preferences', '編輯體驗偏好'],
                   ['can_delete', '刪除會員'],
                   ['can_edit_schedule', '編輯班表'],
+                  ['can_edit_therapists', '編輯人員'],
                 ] as const
               ).map(([field, label]) => (
                 <label key={field} className="flex items-center gap-1.5 text-xs text-neutral-300 cursor-pointer">
@@ -1211,6 +1227,7 @@ function AdminComponent() {
                             ['can_edit_preferences', '編輯體驗偏好'],
                             ['can_delete', '刪除會員'],
                             ['can_edit_schedule', '編輯班表'],
+                            ['can_edit_therapists', '編輯人員'],
                           ] as const
                         ).map(([field, label]) => (
                           <label key={field} className="flex items-center gap-1.5 text-neutral-300 cursor-pointer">
